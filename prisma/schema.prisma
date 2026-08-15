@@ -1,0 +1,272 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum AccountType {
+  CASH
+  BANK
+  CARD
+  SAVINGS
+  OTHER
+}
+
+enum TransactionType {
+  EXPENSE
+  INCOME
+  TRANSFER
+}
+
+enum CategoryGroup {
+  ESSENTIAL
+  LIVING
+  LIFESTYLE
+  FINANCIAL
+}
+
+enum CategoryKind {
+  EXPENSE
+  INCOME
+  BOTH
+}
+
+enum RecurringFrequency {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum RuleMatchField {
+  MERCHANT
+  NOTE
+}
+
+enum RuleMatchType {
+  EXACT
+  CONTAINS
+}
+
+model User {
+  id                   String    @id @default(cuid())
+  phone                String    @unique
+  name                 String?
+  plan                 Plan      @default(FREE)
+  incomeDayOfMonth     Int?
+  expectedIncomeAmount BigInt?
+  locale               String    @default("fa-IR")
+  currency             String    @default("TOMAN")
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  sessions             Session[]
+  accounts             Account[]
+  categories           Category[]
+  transactions         Transaction[]
+  budgets              Budget[]
+  goals                Goal[]
+  recurring            RecurringTransaction[]
+  rules                TransactionRule[]
+  notificationPref     NotificationPreference?
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?
+  ip        String?
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model OtpChallenge {
+  id         String    @id @default(cuid())
+  phone      String
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  ip         String?
+
+  @@index([phone, createdAt])
+}
+
+model Account {
+  id                 String      @id @default(cuid())
+  userId             String
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name               String
+  type               AccountType
+  balance            BigInt      @default(0)
+  currency           String      @default("TOMAN")
+  color              String?
+  icon               String?
+  isActive           Boolean     @default(true)
+  includeInAvailable Boolean     @default(true)
+  sortOrder          Int         @default(0)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  outgoingTransactions Transaction[]          @relation("AccountFrom")
+  incomingTransfers    Transaction[]          @relation("AccountTo")
+  recurring            RecurringTransaction[]
+  goals                Goal[]
+
+  @@index([userId, isActive])
+}
+
+model Category {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  group     CategoryGroup
+  kind      CategoryKind  @default(EXPENSE)
+  icon      String
+  isSystem  Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  transactions Transaction[]
+  budgetItems  BudgetCategory[]
+  recurring    RecurringTransaction[]
+  rules        TransactionRule[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Transaction {
+  id                     String          @id @default(cuid())
+  userId                 String
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                   TransactionType
+  amount                 BigInt
+  accountId              String
+  account                Account         @relation("AccountFrom", fields: [accountId], references: [id], onDelete: Restrict)
+  toAccountId            String?
+  toAccount              Account?        @relation("AccountTo", fields: [toAccountId], references: [id], onDelete: Restrict)
+  categoryId             String?
+  category               Category?       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  occurredAt             DateTime
+  merchant               String?
+  note                   String?
+  recurringTransactionId String?
+  recurringTransaction   RecurringTransaction? @relation(fields: [recurringTransactionId], references: [id], onDelete: SetNull)
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  @@index([userId, occurredAt])
+  @@index([userId, accountId])
+  @@index([userId, categoryId])
+}
+
+model Budget {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jalaliYear   Int
+  jalaliMonth  Int
+  overallLimit BigInt?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  categories BudgetCategory[]
+
+  @@unique([userId, jalaliYear, jalaliMonth])
+}
+
+model BudgetCategory {
+  id         String   @id @default(cuid())
+  budgetId   String
+  budget     Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  limit      BigInt
+
+  @@unique([budgetId, categoryId])
+}
+
+model Goal {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  targetAmount  BigInt
+  currentAmount BigInt    @default(0)
+  targetDate    DateTime?
+  accountId     String?
+  account       Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  icon          String?
+  isArchived    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId, isArchived])
+}
+
+model RecurringTransaction {
+  id         String              @id @default(cuid())
+  userId     String
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  type       TransactionType
+  amount     BigInt
+  frequency  RecurringFrequency
+  interval   Int                 @default(1)
+  startDate  DateTime
+  endDate    DateTime?
+  nextRunAt  DateTime
+  dayOfMonth Int?
+  categoryId String
+  category   Category            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  accountId  String
+  account    Account             @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  isActive   Boolean             @default(true)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  transactions Transaction[]
+
+  @@index([userId, isActive, nextRunAt])
+}
+
+model TransactionRule {
+  id         String         @id @default(cuid())
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchField RuleMatchField
+  matchType  RuleMatchType
+  matchValue String
+  categoryId String
+  category   Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  accountId  String?
+  priority   Int            @default(0)
+  isActive   Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+
+  @@index([userId, isActive])
+}
+
+model NotificationPreference {
+  userId         String  @id
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgetAlert    Boolean @default(true)
+  weeklyReview   Boolean @default(true)
+  goalMilestone  Boolean @default(true)
+  recurringDue   Boolean @default(true)
+  incomeExpected Boolean @default(false)
+}

@@ -1,0 +1,81 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(0.985 0.006 85);
+  --foreground: oklch(0.22 0.025 255);
+  --surface: oklch(0.995 0.003 85);
+  --surface-muted: oklch(0.96 0.008 85);
+  --border: oklch(0.9 0.012 85);
+  --primary: oklch(0.36 0.055 250);
+  --primary-foreground: oklch(0.99 0.004 85);
+  --success: oklch(0.55 0.1 165);
+  --warning: oklch(0.72 0.12 75);
+  --destructive: oklch(0.55 0.14 25);
+  --income: oklch(0.5 0.09 175);
+  --expense: oklch(0.58 0.08 20);
+  --savings: oklch(0.48 0.09 280);
+  --radius: 0.9rem;
+}
+
+.dark {
+  --background: oklch(0.17 0.018 260);
+  --foreground: oklch(0.96 0.01 85);
+  --surface: oklch(0.21 0.018 260);
+  --surface-muted: oklch(0.25 0.018 260);
+  --border: oklch(0.32 0.02 260);
+  --primary: oklch(0.8 0.04 250);
+  --primary-foreground: oklch(0.18 0.02 260);
+  --success: oklch(0.72 0.1 165);
+  --warning: oklch(0.8 0.1 75);
+  --destructive: oklch(0.7 0.12 25);
+  --income: oklch(0.72 0.08 175);
+  --expense: oklch(0.74 0.07 20);
+  --savings: oklch(0.72 0.08 280);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --color-income: var(--income);
+  --color-expense: var(--expense);
+  --color-savings: var(--savings);
+  --font-sans: var(--font-vazirmatn);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-vazirmatn), Tahoma, sans-serif;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--primary) 22%, transparent);
+}
+
+.numeric-display {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
