@@ -1,13 +1,9 @@
-import { EmptyState } from "@/components/empty-state";
+import { requireUser } from "@/lib/auth/session";
+import { BudgetView } from "@/features/budgets/budget-view";
+import { getBudgetMonth } from "@/server/queries/budgets";
 
-export default function BudgetsPage() {
-  return (
-    <main className="flex flex-col gap-6 px-5 pt-8">
-      <h1 className="text-2xl font-semibold tracking-tight">بودجه</h1>
-      <EmptyState
-        title="هنوز بودجه‌ای نداری"
-        description="برای دسته‌های مهم مثل غذا سقف بگذار تا وسط ماه غافلگیر نشوی."
-      />
-    </main>
-  );
+export default async function BudgetsPage() {
+  const user = await requireUser();
+  const budget = await getBudgetMonth(user.id);
+  return <BudgetView budget={budget} />;
 }

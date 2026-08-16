@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { logout } from "@/server/actions/auth";
 import { requireUser } from "@/lib/auth/session";
 import { maskPhone } from "@/lib/auth/phone";
 import { toPersianDigits } from "@/lib/currency/format";
+import { PaydayForm } from "@/features/settings/payday-form";
 import { ProfileForm } from "@/features/settings/profile-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,23 @@ export default async function MorePage() {
         </div>
         <ThemeToggle />
       </header>
+
+      <nav className="flex flex-col overflow-hidden rounded-3xl border border-border bg-surface">
+        <Link href="/accounts" className="px-5 py-4 text-sm hover:bg-surface-muted">
+          حساب‌ها
+        </Link>
+        <Link href="/rules" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          قوانین دسته‌بندی
+        </Link>
+        <Link href="/recurring" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          خرج و درآمد تکراری
+        </Link>
+      </nav>
+
+      <section className="rounded-3xl border border-border bg-surface p-5">
+        <h2 className="mb-4 text-base font-semibold">روز درآمد</h2>
+        <PaydayForm incomeDayOfMonth={user.incomeDayOfMonth} />
+      </section>
 
       <section className="rounded-3xl border border-border bg-surface p-5">
         <h2 className="mb-4 text-base font-semibold">پروفایل</h2>

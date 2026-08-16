@@ -6,6 +6,7 @@ import {
   isLeapJalaliYear,
   jalaliMonthLength,
   monthsRemainingForGoal,
+  tehranMidnightUtc,
 } from "@/lib/dates/tehran";
 
 describe("jalali helpers", () => {
@@ -38,6 +39,25 @@ describe("getIncomeCycle", () => {
     const lastDay = getIncomeCycle({ year: 1404, month: 5, day: 31 }, null);
     expect(lastDay.remainingDays).toBe(1);
   });
+
+  it("uses next recurring income when payday is missing", () => {
+    const cycle = getIncomeCycle(
+      { year: 1404, month: 5, day: 20 },
+      null,
+      { year: 1404, month: 6, day: 5 },
+    );
+    expect(cycle.nextIncomeDate).toEqual({ year: 1404, month: 6, day: 5 });
+    expect(cycle.remainingDays).toBe(17);
+  });
+
+  it("prefers payday over recurring income", () => {
+    const cycle = getIncomeCycle(
+      { year: 1404, month: 5, day: 10 },
+      15,
+      { year: 1404, month: 6, day: 5 },
+    );
+    expect(cycle.nextIncomeDate).toEqual({ year: 1404, month: 5, day: 15 });
+  });
 });
 
 describe("monthsRemainingForGoal", () => {
@@ -48,6 +68,21 @@ describe("monthsRemainingForGoal", () => {
         { year: 1404, month: 10, day: 1 },
       ),
     ).toBe(9);
+  });
+});
+
+describe("tehranMidnightUtc", () => {
+  it("is 3.5 hours before UTC midnight of the Gregorian day", () => {
+    // 1 Farvardin 1403 = 20 March 2024
+    expect(tehranMidnightUtc({ year: 1403, month: 1, day: 1 }).toISOString()).toBe(
+      "2024-03-19T20:30:00.000Z",
+    );
+  });
+
+  it("keeps consecutive Jalali days 24 hours apart", () => {
+    const first = tehranMidnightUtc({ year: 1404, month: 5, day: 1 });
+    const next = tehranMidnightUtc({ year: 1404, month: 5, day: 2 });
+    expect(next.getTime() - first.getTime()).toBe(86_400_000);
   });
 });
 

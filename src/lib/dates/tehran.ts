@@ -146,14 +146,13 @@ function dateBefore(from: JalaliDate, dayOfMonth: number): JalaliDate {
 export function getIncomeCycle(
   today: JalaliDate,
   incomeDayOfMonth: number | null,
+  nextRecurringIncome: JalaliDate | null = null,
 ): IncomeCycle {
-  if (incomeDayOfMonth == null) {
-    const nextIncomeDate = endOfJalaliMonth(today);
-    const previousIncomeDate = addJalaliDays(
-      { year: today.year, month: today.month, day: 1 },
-      -1,
-    );
-    const daysInCycle = jalaliMonthLength(today.year, today.month);
+  if (incomeDayOfMonth != null) {
+    const nextIncomeDate = dateOnOrAfter(today, incomeDayOfMonth);
+    const previousIncomeDate = dateBefore(nextIncomeDate, incomeDayOfMonth);
+    const daysInCycle = Math.max(1, diffDaysInclusive(previousIncomeDate, nextIncomeDate) - 1);
+
     return {
       previousIncomeDate,
       nextIncomeDate,
@@ -162,15 +161,26 @@ export function getIncomeCycle(
     };
   }
 
-  const nextIncomeDate = dateOnOrAfter(today, incomeDayOfMonth);
-  const previousIncomeDate = dateBefore(nextIncomeDate, incomeDayOfMonth);
-  const daysInCycle = Math.max(1, diffDaysInclusive(previousIncomeDate, nextIncomeDate) - 1);
+  if (nextRecurringIncome && compareJalaliDate(nextRecurringIncome, today) >= 0) {
+    const previousIncomeDate = addJalaliMonths(nextRecurringIncome, -1);
+    return {
+      previousIncomeDate,
+      nextIncomeDate: nextRecurringIncome,
+      remainingDays: Math.max(1, diffDaysInclusive(today, nextRecurringIncome)),
+      daysInCycle: Math.max(1, diffDaysInclusive(previousIncomeDate, nextRecurringIncome) - 1),
+    };
+  }
 
+  const nextIncomeDate = endOfJalaliMonth(today);
+  const previousIncomeDate = addJalaliDays(
+    { year: today.year, month: today.month, day: 1 },
+    -1,
+  );
   return {
     previousIncomeDate,
     nextIncomeDate,
     remainingDays: Math.max(1, diffDaysInclusive(today, nextIncomeDate)),
-    daysInCycle,
+    daysInCycle: jalaliMonthLength(today.year, today.month),
   };
 }
 
@@ -190,6 +200,52 @@ export function monthsRemainingForGoal(from: JalaliDate, target: JalaliDate): nu
 export function gregorianUtcFromJalali(date: JalaliDate): Date {
   const gregorian = toGregorian(date.year, date.month, date.day);
   return new Date(Date.UTC(gregorian.gy, gregorian.gm - 1, gregorian.gd, 12));
+}
+
+const TEHRAN_OFFSET_MS = 3.5 * 60 * 60 * 1000;
+
+export function tehranMidnightUtc(date: JalaliDate): Date {
+  const gregorian = toGregorian(date.year, date.month, date.day);
+  return new Date(Date.UTC(gregorian.gy, gregorian.gm - 1, gregorian.gd) - TEHRAN_OFFSET_MS);
+}
+
+export function jalaliFromInstant(date: Date): JalaliDate {
+  return getTehranJalaliDate(date);
+}
+
+export function formatJalaliDay(date: JalaliDate, today: JalaliDate): string {
+  if (isSameJalaliDay(date, today)) {
+    return "امروز";
+  }
+  if (isSameJalaliDay(date, addJalaliDays(today, -1))) {
+    return "دیروز";
+  }
+
+  const months = [
+    "فروردین",
+    "اردیبهشت",
+    "خرداد",
+    "تیر",
+    "مرداد",
+    "شهریور",
+    "مهر",
+    "آبان",
+    "آذر",
+    "دی",
+    "بهمن",
+    "اسفند",
+  ] as const;
+  const month = months[date.month - 1] ?? "";
+  const day = String(date.day).replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]!);
+  if (date.year !== today.year) {
+    const year = String(date.year).replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]!);
+    return `${day} ${month} ${year}`;
+  }
+  return `${day} ${month}`;
+}
+
+export function isSameJalaliDay(left: JalaliDate, right: JalaliDate): boolean {
+  return compareJalaliDate(left, right) === 0;
 }
 
 export function jalaliFromUtc(date: Date): JalaliDate {
