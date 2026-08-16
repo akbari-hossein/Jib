@@ -4,6 +4,8 @@ import type {
   RecurringFrequency,
   TransactionType,
 } from "@prisma/client";
+import { toPersianDigits } from "@/lib/currency/format";
+import type { MonthlyChange } from "@/lib/finance/monthly-change";
 import type { BudgetStatus } from "@/lib/finance/types";
 
 export const ACCOUNT_TYPE_LABEL: Record<AccountType, string> = {
@@ -32,6 +34,26 @@ export const FREQUENCY_LABEL: Record<RecurringFrequency, string> = {
   MONTHLY: "ماهانه",
   YEARLY: "سالانه",
 };
+
+export function periodChangeCopy(
+  change: MonthlyChange,
+  unit: "month" | "week",
+): string {
+  const previous = unit === "week" ? "هفته قبل" : "ماه قبل";
+  if (change.direction === "new") {
+    return unit === "week" ? "هفته اولته." : "ماه اولته.";
+  }
+  if (change.direction === "flat") {
+    return `مثل ${previous}.`;
+  }
+  if (change.pct == null) {
+    return "";
+  }
+  if (change.direction === "up") {
+    return `${toPersianDigits(change.pct)}٪ بیشتر از ${previous}`;
+  }
+  return `${toPersianDigits(change.pct)}٪ کمتر از ${previous}`;
+}
 
 export function budgetUsageCopy(name: string, pct: number, status: BudgetStatus): string {
   if (status === "over") {

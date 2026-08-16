@@ -4,7 +4,9 @@ import {
   diffDaysInclusive,
   getIncomeCycle,
   isLeapJalaliYear,
+  formatJalaliRange,
   jalaliMonthLength,
+  jalaliWeekStart,
   monthsRemainingForGoal,
   tehranMidnightUtc,
 } from "@/lib/dates/tehran";
@@ -83,6 +85,30 @@ describe("tehranMidnightUtc", () => {
     const first = tehranMidnightUtc({ year: 1404, month: 5, day: 1 });
     const next = tehranMidnightUtc({ year: 1404, month: 5, day: 2 });
     expect(next.getTime() - first.getTime()).toBe(86_400_000);
+  });
+});
+
+describe("jalaliWeekStart", () => {
+  it("starts the Iranian week on Saturday", () => {
+    // 1 Farvardin 1403 = Wednesday 20 March 2024
+    expect(jalaliWeekStart({ year: 1403, month: 1, day: 1 })).toEqual({
+      year: 1402,
+      month: 12,
+      day: 26,
+    });
+  });
+
+  it("keeps Saturday as the start of its own week", () => {
+    const saturday = { year: 1402, month: 12, day: 26 };
+    expect(jalaliWeekStart(saturday)).toEqual(saturday);
+  });
+});
+
+describe("formatJalaliRange", () => {
+  it("collapses a same-month range", () => {
+    expect(
+      formatJalaliRange({ year: 1404, month: 5, day: 10 }, { year: 1404, month: 5, day: 16 }),
+    ).toBe("۱۰ تا ۱۶ مرداد");
   });
 });
 

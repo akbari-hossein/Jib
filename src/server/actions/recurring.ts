@@ -38,6 +38,7 @@ function revalidateRecurring() {
   revalidatePath("/transactions");
   revalidatePath("/accounts");
   revalidatePath("/budgets");
+  revalidatePath("/reports");
 }
 
 function categoryFits(kind: "EXPENSE" | "INCOME" | "BOTH", type: TransactionType) {

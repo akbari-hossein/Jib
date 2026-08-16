@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MoneyDisplay } from "@/components/money/money-display";
 import { TransactionList } from "@/features/transactions/transaction-list";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
-import { JALALI_MONTHS } from "@/lib/labels";
+import { JALALI_MONTHS, periodChangeCopy } from "@/lib/labels";
 import type { DashboardDto } from "@/server/queries/dashboard";
 
 export function DashboardView({
@@ -97,7 +97,12 @@ export function DashboardView({
             <p className="mt-1 text-lg font-semibold">
               {formatCompactToman(dashboard.monthlySpent)} خرج کردی
             </p>
-            <p className="mt-1 text-sm text-foreground/55">{monthlyCopy(dashboard)}</p>
+            <p className="mt-1 text-sm text-foreground/55">
+              {periodChangeCopy(dashboard.monthlyChange, "month")}
+            </p>
+            <Link href="/reports" className="mt-3 inline-block text-sm text-primary">
+              گزارش کامل
+            </Link>
           </section>
 
           {dashboard.recent.length === 0 ? (
@@ -142,19 +147,3 @@ function BreakdownRow({
   );
 }
 
-function monthlyCopy(dashboard: DashboardDto): string {
-  const { direction, pct } = dashboard.monthlyChange;
-  if (direction === "new") {
-    return "ماه اولته.";
-  }
-  if (direction === "flat") {
-    return "مثل ماه قبل.";
-  }
-  if (pct == null) {
-    return "";
-  }
-  if (direction === "up") {
-    return `${toPersianDigits(pct)}٪ بیشتر از ماه قبل`;
-  }
-  return `${toPersianDigits(pct)}٪ کمتر از ماه قبل`;
-}

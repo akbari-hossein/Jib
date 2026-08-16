@@ -39,6 +39,7 @@ async function currentBudgetId(userId: string) {
 function revalidateBudgets() {
   revalidatePath("/budgets");
   revalidatePath("/home");
+  revalidatePath("/reports");
 }
 
 export async function upsertBudgetCategory(

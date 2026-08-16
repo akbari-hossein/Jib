@@ -20,6 +20,7 @@ export type GoalActionState = {
 function revalidateGoals() {
   revalidatePath("/goals");
   revalidatePath("/home");
+  revalidatePath("/reports");
 }
 
 export async function createGoal(

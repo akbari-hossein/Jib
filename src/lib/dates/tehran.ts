@@ -59,6 +59,13 @@ export function addJalaliMonths(date: JalaliDate, months: number): JalaliDate {
   return { year, month, day: Math.min(date.day, maxDay) };
 }
 
+export function jalaliWeekStart(date: JalaliDate): JalaliDate {
+  const gregorian = toGregorian(date.year, date.month, date.day);
+  const weekday = new Date(Date.UTC(gregorian.gy, gregorian.gm - 1, gregorian.gd)).getUTCDay();
+  const daysSinceSaturday = (weekday + 1) % 7;
+  return addJalaliDays(date, -daysSinceSaturday);
+}
+
 export function addJalaliDays(date: JalaliDate, days: number): JalaliDate {
   const gregorian = toGregorian(date.year, date.month, date.day);
   const utc = new Date(Date.UTC(gregorian.gy, gregorian.gm - 1, gregorian.gd + days));
@@ -242,6 +249,35 @@ export function formatJalaliDay(date: JalaliDate, today: JalaliDate): string {
     return `${day} ${month} ${year}`;
   }
   return `${day} ${month}`;
+}
+
+export function formatJalaliRange(from: JalaliDate, to: JalaliDate): string {
+  const months = [
+    "فروردین",
+    "اردیبهشت",
+    "خرداد",
+    "تیر",
+    "مرداد",
+    "شهریور",
+    "مهر",
+    "آبان",
+    "آذر",
+    "دی",
+    "بهمن",
+    "اسفند",
+  ] as const;
+  const digit = (value: number) =>
+    String(value).replace(/[0-9]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]!);
+  const fromMonth = months[from.month - 1] ?? "";
+  const toMonth = months[to.month - 1] ?? "";
+
+  if (from.year === to.year && from.month === to.month) {
+    return `${digit(from.day)} تا ${digit(to.day)} ${fromMonth}`;
+  }
+  if (from.year === to.year) {
+    return `${digit(from.day)} ${fromMonth} تا ${digit(to.day)} ${toMonth}`;
+  }
+  return `${digit(from.day)} ${fromMonth} ${digit(from.year)} تا ${digit(to.day)} ${toMonth} ${digit(to.year)}`;
 }
 
 export function isSameJalaliDay(left: JalaliDate, right: JalaliDate): boolean {
