@@ -13,6 +13,7 @@ const protectedPrefixes = [
   "/rules",
   "/recurring",
   "/reports",
+  "/export",
 ];
 
 export function proxy(request: NextRequest) {
@@ -48,6 +49,8 @@ export const config = {
     "/recurring/:path*",
     "/reports",
     "/reports/:path*",
+    "/export",
+    "/export/:path*",
     "/login",
     "/verify",
   ],

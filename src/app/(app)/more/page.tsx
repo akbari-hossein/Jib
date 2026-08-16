@@ -4,12 +4,15 @@ import { requireUser } from "@/lib/auth/session";
 import { maskPhone } from "@/lib/auth/phone";
 import { toPersianDigits } from "@/lib/currency/format";
 import { PaydayForm } from "@/features/settings/payday-form";
+import { PlanCard } from "@/features/settings/plan-card";
 import { ProfileForm } from "@/features/settings/profile-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { getPlanAccess } from "@/server/queries/plan";
 
 export default async function MorePage() {
   const user = await requireUser();
+  const access = await getPlanAccess(user.id, user.plan);
 
   return (
     <main className="flex flex-col gap-8 px-5 pt-8">
@@ -37,6 +40,8 @@ export default async function MorePage() {
           خرج و درآمد تکراری
         </Link>
       </nav>
+
+      <PlanCard access={access} />
 
       <section className="rounded-3xl border border-border bg-surface p-5">
         <h2 className="mb-4 text-base font-semibold">روز درآمد</h2>

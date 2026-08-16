@@ -1,13 +1,17 @@
+import Link from "next/link";
 import { CategoryIcon } from "@/components/category-icon";
 import { EmptyState } from "@/components/empty-state";
+import { UpgradeCallout } from "@/components/upgrade-callout";
 import { UsageBar } from "@/components/usage-bar";
 import { Button } from "@/components/ui/button";
 import { MoneyDisplay } from "@/components/money/money-display";
 import { BudgetCategoryForm, OverallLimitForm } from "@/features/budgets/budget-form";
+import { featureCopy, limitCopy } from "@/lib/billing/plan";
 import { formatToman, toPersianDigits } from "@/lib/currency/format";
 import { budgetUsageCopy } from "@/lib/labels";
 import { deleteBudgetCategory } from "@/server/actions/budgets";
 import type { BudgetMonthDto } from "@/server/queries/budgets";
+import type { PlanAccess } from "@/server/queries/plan";
 import type { BudgetStatus } from "@/lib/finance/types";
 
 function toneFor(status: BudgetStatus) {
@@ -16,7 +20,13 @@ function toneFor(status: BudgetStatus) {
   return "primary" as const;
 }
 
-export function BudgetView({ budget }: { budget: BudgetMonthDto }) {
+export function BudgetView({
+  budget,
+  access,
+}: {
+  budget: BudgetMonthDto;
+  access: PlanAccess;
+}) {
   return (
     <main className="flex flex-col gap-6 px-5 pt-8">
       <header>
@@ -87,15 +97,35 @@ export function BudgetView({ budget }: { budget: BudgetMonthDto }) {
 
       <section className="rounded-3xl border border-border bg-surface p-5">
         <h2 className="mb-4 text-base font-semibold">سقف دسته</h2>
-        <BudgetCategoryForm categories={budget.categories} />
-      </section>
-
-      <section className="rounded-3xl border border-border bg-surface p-5">
-        <h2 className="mb-4 text-base font-semibold">سقف کل</h2>
-        <OverallLimitForm
-          overallLimit={budget.overallLimit == null ? "" : budget.overallLimit.toString()}
+        {access.canCreateBudgetCategory ? null : (
+          <p className="mb-4 text-sm leading-7 text-foreground/55">
+            {limitCopy("budgetCategories")}{" "}
+            <Link href="/pricing" className="text-primary">
+              نسخه حرفه‌ای
+            </Link>
+          </p>
+        )}
+        <BudgetCategoryForm
+          categories={
+            access.canCreateBudgetCategory
+              ? budget.categories
+              : budget.categories.filter((category) =>
+                  budget.items.some((item) => item.categoryId === category.id),
+                )
+          }
         />
       </section>
+
+      {access.canSetOverallBudget ? (
+        <section className="rounded-3xl border border-border bg-surface p-5">
+          <h2 className="mb-4 text-base font-semibold">سقف کل</h2>
+          <OverallLimitForm
+            overallLimit={budget.overallLimit == null ? "" : budget.overallLimit.toString()}
+          />
+        </section>
+      ) : (
+        <UpgradeCallout title="سقف کل ماه" description={featureCopy("overallBudget")} />
+      )}
     </main>
   );
 }

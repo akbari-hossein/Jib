@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { PlanLimitError } from "@/server/services/plan";
 
 export class OwnershipError extends Error {
   constructor() {
@@ -80,6 +81,9 @@ export async function assertBudgetCategoryOwned(userId: string, budgetCategoryId
 export function userFacingMutationError(error: unknown, fallback: string): string {
   if (error instanceof OwnershipError) {
     return "این مورد در دسترس نیست.";
+  }
+  if (error instanceof PlanLimitError) {
+    return error.userMessage;
   }
   return fallback;
 }

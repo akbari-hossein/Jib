@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { parseTomanInput } from "@/lib/validation/money";
 import { assertAccountOwned, userFacingMutationError } from "@/server/services/ownership";
+import { assertCanCreate } from "@/server/services/plan";
 
 export type AccountActionState = {
   ok: boolean;
@@ -41,6 +42,7 @@ export async function createAccount(
   }
 
   try {
+    await assertCanCreate(user.id, user.plan, "accounts");
     const count = await prisma.account.count({ where: { userId: user.id } });
     await prisma.account.create({
       data: {
