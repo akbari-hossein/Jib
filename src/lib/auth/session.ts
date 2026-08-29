@@ -1,10 +1,15 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { OTP_PHONE_COOKIE, SESSION_COOKIE } from "@/lib/config/app";
-import { hashSecret } from "@/lib/auth/crypto";
+import {
+  OAUTH_STATE_COOKIE,
+  OAUTH_VERIFIER_COOKIE,
+  SESSION_COOKIE,
+} from "@/lib/config/app";
+import { generateSessionToken, hashSecret, sessionExpiry } from "@/lib/auth/crypto";
+import { clientIp } from "@/lib/auth/request";
 import { prisma } from "@/lib/db/prisma";
 
-const cookieOptions = {
+export const cookieOptions = {
   httpOnly: true,
   sameSite: "lax" as const,
   secure: process.env.NODE_ENV === "production",
@@ -55,20 +60,30 @@ export async function clearSessionCookie() {
   store.delete(SESSION_COOKIE);
 }
 
-export async function setPendingPhoneCookie(phone: string) {
-  const store = await cookies();
-  store.set(OTP_PHONE_COOKIE, phone, {
-    ...cookieOptions,
-    maxAge: 10 * 60,
+export async function createSession(userId: string, headerList: Headers) {
+  const { token, tokenHash } = generateSessionToken();
+  const expiresAt = sessionExpiry();
+  await prisma.session.create({
+    data: {
+      userId,
+      tokenHash,
+      expiresAt,
+      ip: clientIp(headerList),
+      userAgent: headerList.get("user-agent")?.slice(0, 180),
+    },
   });
+  return { token, expiresAt };
 }
 
-export async function readPendingPhone(): Promise<string | null> {
-  const store = await cookies();
-  return store.get(OTP_PHONE_COOKIE)?.value ?? null;
+export async function issueSession(userId: string, headerList: Headers) {
+  const { token, expiresAt } = await createSession(userId, headerList);
+  await setSessionCookie(token, expiresAt);
 }
 
-export async function clearPendingPhoneCookie() {
+export async function readOAuthCookies(): Promise<{ state: string | null; verifier: string | null }> {
   const store = await cookies();
-  store.delete(OTP_PHONE_COOKIE);
+  return {
+    state: store.get(OAUTH_STATE_COOKIE)?.value ?? null,
+    verifier: store.get(OAUTH_VERIFIER_COOKIE)?.value ?? null,
+  };
 }

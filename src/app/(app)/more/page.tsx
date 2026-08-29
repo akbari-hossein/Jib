@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { logout } from "@/server/actions/auth";
 import { requireUser } from "@/lib/auth/session";
-import { maskPhone } from "@/lib/auth/phone";
-import { toPersianDigits } from "@/lib/currency/format";
 import { PaydayForm } from "@/features/settings/payday-form";
 import { PlanCard } from "@/features/settings/plan-card";
 import { ProfileForm } from "@/features/settings/profile-form";
@@ -20,7 +18,7 @@ export default async function MorePage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">بیشتر</h1>
           <p className="mt-1 text-sm text-foreground/50" dir="ltr">
-            {toPersianDigits(maskPhone(user.phone))}
+            {user.email}
           </p>
         </div>
         <ThemeToggle />

@@ -57,7 +57,9 @@ enum RuleMatchType {
 
 model User {
   id                   String    @id @default(cuid())
-  phone                String    @unique
+  email                String    @unique
+  passwordHash         String?
+  googleId             String?   @unique
   name                 String?
   plan                 Plan      @default(FREE)
   incomeDayOfMonth     Int?
@@ -90,19 +92,6 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
-}
-
-model OtpChallenge {
-  id         String    @id @default(cuid())
-  phone      String
-  codeHash   String
-  expiresAt  DateTime
-  attempts   Int       @default(0)
-  consumedAt DateTime?
-  createdAt  DateTime  @default(now())
-  ip         String?
-
-  @@index([phone, createdAt])
 }
 
 model Account {

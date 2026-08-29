@@ -1,0 +1,33 @@
+import type { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/db/prisma";
+import { SYSTEM_CATEGORIES } from "@/server/services/categories";
+
+type DbClient = Prisma.TransactionClient | typeof prisma;
+
+type NewUserInput = {
+  email: string;
+  passwordHash?: string | null;
+  googleId?: string | null;
+  name?: string | null;
+};
+
+export async function createUserWithDefaults(data: NewUserInput, db: DbClient = prisma) {
+  return db.user.create({
+    data: {
+      email: data.email,
+      passwordHash: data.passwordHash ?? null,
+      googleId: data.googleId ?? null,
+      name: data.name ?? null,
+      notificationPref: { create: {} },
+      categories: {
+        create: SYSTEM_CATEGORIES.map((category) => ({
+          name: category.name,
+          group: category.group,
+          kind: category.kind,
+          icon: category.icon,
+          isSystem: true,
+        })),
+      },
+    },
+  });
+}

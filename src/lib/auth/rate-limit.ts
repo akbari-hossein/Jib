@@ -2,11 +2,12 @@ type Window = {
   timestamps: number[];
 };
 
-const sendByPhone = new Map<string, Window>();
-const sendByIp = new Map<string, Window>();
+const loginByEmail = new Map<string, Window>();
+const loginByIp = new Map<string, Window>();
+const signupByIp = new Map<string, Window>();
 
 const HOUR_MS = 60 * 60 * 1000;
-const MINUTE_MS = 60 * 1000;
+const FIFTEEN_MIN_MS = 15 * 60 * 1000;
 
 function prune(window: Window, now: number, maxAge: number) {
   window.timestamps = window.timestamps.filter((stamp) => now - stamp < maxAge);
@@ -22,29 +23,30 @@ function take(map: Map<string, Window>, key: string): Window {
   return created;
 }
 
-export function assertOtpSendAllowed(phone: string, ip: string): void {
+function assertUnderLimit(window: Window, now: number, maxAge: number, max: number, message: string) {
+  prune(window, now, maxAge);
+  if (window.timestamps.length >= max) {
+    throw new RateLimitError(message);
+  }
+  window.timestamps.push(now);
+}
+
+export function assertLoginAllowed(email: string, ip: string): void {
   const now = Date.now();
-  const phoneWindow = take(sendByPhone, phone);
-  const ipWindow = take(sendByIp, ip);
+  const tooMany = "تعداد تلاش‌ها زیاد شده. کمی بعد دوباره تلاش کن.";
+  assertUnderLimit(take(loginByEmail, email), now, FIFTEEN_MIN_MS, 10, tooMany);
+  assertUnderLimit(take(loginByIp, ip), now, FIFTEEN_MIN_MS, 30, tooMany);
+}
 
-  prune(phoneWindow, now, HOUR_MS);
-  prune(ipWindow, now, HOUR_MS);
-
-  const lastSend = phoneWindow.timestamps.at(-1);
-  if (lastSend && now - lastSend < MINUTE_MS) {
-    throw new RateLimitError("لطفاً یک دقیقه صبر کن و دوباره تلاش کن.");
-  }
-
-  if (phoneWindow.timestamps.length >= 5) {
-    throw new RateLimitError("تعداد درخواست‌ها زیاد شده. کمی بعد دوباره تلاش کن.");
-  }
-
-  if (ipWindow.timestamps.length >= 10) {
-    throw new RateLimitError("تعداد درخواست‌ها زیاد شده. کمی بعد دوباره تلاش کن.");
-  }
-
-  phoneWindow.timestamps.push(now);
-  ipWindow.timestamps.push(now);
+export function assertSignupAllowed(ip: string): void {
+  const now = Date.now();
+  assertUnderLimit(
+    take(signupByIp, ip),
+    now,
+    HOUR_MS,
+    8,
+    "تعداد ساخت حساب زیاد شده. کمی بعد دوباره تلاش کن.",
+  );
 }
 
 export class RateLimitError extends Error {

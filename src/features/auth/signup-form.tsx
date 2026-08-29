@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { login, type AuthActionState } from "@/server/actions/auth";
+import { signup, type AuthActionState } from "@/server/actions/auth";
 import { GoogleButton } from "@/features/auth/google-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,19 +10,16 @@ import { Label } from "@/components/ui/label";
 
 const initial: AuthActionState = { ok: false };
 
-export function LoginForm({
-  googleEnabled,
-  oauthError,
-}: {
-  googleEnabled: boolean;
-  oauthError?: string;
-}) {
-  const [state, action, pending] = useActionState(login, initial);
-  const error = state.error ?? oauthError;
+export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
+  const [state, action, pending] = useActionState(signup, initial);
 
   return (
     <div className="flex flex-col gap-5">
       <form action={action} className="flex flex-col gap-5">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="name">نام</Label>
+          <Input id="name" name="name" autoComplete="name" placeholder="مثلاً حسین" maxLength={60} />
+        </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="email">ایمیل</Label>
           <Input
@@ -42,26 +39,27 @@ export function LoginForm({
             id="password"
             name="password"
             type="password"
-            autoComplete="current-password"
+            autoComplete="new-password"
             dir="ltr"
+            minLength={8}
             className="text-left"
             required
           />
         </div>
-        {error ? (
+        {state.error ? (
           <p role="alert" className="text-sm text-destructive">
-            {error}
+            {state.error}
           </p>
         ) : null}
         <Button type="submit" disabled={pending} className="w-full">
-          {pending ? "در حال ورود…" : "ورود"}
+          {pending ? "در حال ساخت حساب…" : "ثبت‌نام"}
         </Button>
       </form>
       {googleEnabled ? <GoogleButton /> : null}
       <p className="text-center text-sm text-foreground/55">
-        حساب نداری؟{" "}
-        <Link href="/signup" className="text-primary">
-          ثبت‌نام
+        قبلاً حساب ساختی؟{" "}
+        <Link href="/login" className="text-primary">
+          ورود
         </Link>
       </p>
     </div>

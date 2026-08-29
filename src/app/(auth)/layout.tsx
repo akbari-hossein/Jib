@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { APP_NAME } from "@/lib/config/app";
 
 export const metadata: Metadata = {
-  title: "ورود",
+  title: "حساب کاربری",
 };
 
 export default function AuthLayout({ children }: { children: ReactNode }) {

@@ -4,7 +4,7 @@
 
 Jib is a Persian, RTL personal-finance PWA. It answers one question on the home screen: how much you can spend today — after liquid balances, upcoming bills, and savings goals.
 
-The product is designed for Iran: Jalali calendar, Tehran timezone, Iranian mobile OTP, and amounts in تومان.
+The product is designed for Iran: Jalali calendar, Tehran timezone, and amounts in تومان.
 
 ---
 
@@ -19,7 +19,7 @@ The product is designed for Iran: Jalali calendar, Tehran timezone, Iranian mobi
 - **Category rules** — auto-categorize by merchant or note (exact / contains)
 - **Reports** — calm weekly and monthly reviews, category spend, budget performance
 - **PWA** — installable, standalone, with an offline fallback page
-- **Auth** — Iranian mobile number + 5-digit OTP, cookie sessions
+- **Auth** — email and password, optional Google sign-in, cookie sessions
 
 The free plan is the current product. A `PRO` plan exists in the schema but is not billed yet.
 
@@ -33,7 +33,7 @@ The free plan is the current product. A `PRO` plan exists in the schema but is n
 | Language | TypeScript (strict) |
 | UI | Tailwind CSS 4, Radix Slot, Vaul drawers, Lucide, Vazirmatn |
 | Data | PostgreSQL 16, Prisma 6 |
-| Auth | Phone OTP, hashed session cookies |
+| Auth | Email/password + Google OAuth, hashed session cookies |
 | Dates | Jalali via `jalaali-js`, all “today” math in `Asia/Tehran` |
 | Money | `BigInt` amounts (toman, no decimals) |
 | Tests | Vitest |
@@ -104,15 +104,18 @@ cp .env.example .env
 | Variable | Purpose |
 | --- | --- |
 | `DATABASE_URL` | Postgres connection string |
-| `OTP_PEPPER` | Secret mixed into OTP and session hashes. Use a long random string (16+ chars). |
-| `SMS_PROVIDER` | Currently only `mock` is implemented. In development the OTP is returned to the UI and logged. |
+| `AUTH_SECRET` | Secret mixed into session hashes. Use a long random string (16+ chars). |
+| `GOOGLE_CLIENT_ID` | Optional. Google OAuth client ID. Leave empty to hide Google sign-in. |
+| `GOOGLE_CLIENT_SECRET` | Optional. Google OAuth client secret. |
+| `GOOGLE_REDIRECT_URI` | Optional. Defaults to `{origin}/api/auth/google/callback`. |
 
 Example `.env`:
 
 ```env
 DATABASE_URL="postgresql://jib:jib@localhost:5432/jib"
-OTP_PEPPER="replace-with-a-long-random-string"
-SMS_PROVIDER="mock"
+AUTH_SECRET="replace-with-a-long-random-string"
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
 ```
 
 ### 3. Database
@@ -137,7 +140,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Sign in with any valid Iranian mobile number (e.g. `09123456789`). In development, the 5-digit OTP is shown on the verify screen and printed to the server log as `[jib:sms]`.
+Create an account at `/signup` with email and password (at least 8 characters). To enable Google sign-in, create OAuth credentials in Google Cloud and set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. The authorized redirect URI is `http://localhost:3000/api/auth/google/callback`.
 
 ---
 
@@ -163,7 +166,7 @@ Sign in with any valid Iranian mobile number (e.g. `09123456789`). In developmen
 | --- | --- | --- |
 | `/` | Public | Landing |
 | `/features`, `/pricing` | Public | Marketing |
-| `/login`, `/verify` | Auth | Phone OTP |
+| `/login`, `/signup` | Auth | Email/password and optional Google |
 | `/home` | Signed in | Spendable today + recent activity |
 | `/transactions` | Signed in | Ledger |
 | `/budgets` | Signed in | This Jalali month |
@@ -181,7 +184,7 @@ Sign in with any valid Iranian mobile number (e.g. `09123456789`). In developmen
 
 Prisma lives in `prisma/schema.prisma`. The main entities:
 
-- **User** — phone, optional name, payday, locale `fa-IR`, currency `TOMAN`
+- **User** — email, optional password hash, optional Google id, optional name, payday, locale `fa-IR`, currency `TOMAN`
 - **Account** — type, balance, `includeInAvailable`
 - **Category** — system defaults seeded on first login (essential / living / lifestyle / financial)
 - **Transaction** — expense, income, or transfer; Jalali-aware `occurredAt`
@@ -189,7 +192,7 @@ Prisma lives in `prisma/schema.prisma`. The main entities:
 - **Goal** — target, current amount, optional account
 - **RecurringTransaction** — frequency, `nextRunAt`, day-of-month
 - **TransactionRule** — match merchant/note → category
-- **Session** / **OtpChallenge** — hashed tokens, expiry, attempt limits
+- **Session** — hashed tokens and expiry
 
 Amounts are `BigInt` (whole toman). Never use floating-point for money.
 
@@ -197,7 +200,7 @@ Amounts are `BigInt` (whole toman). Never use floating-point for money.
 
 ## Testing
 
-Finance formulas, Jalali helpers, phone parsing, and money validation are covered by unit tests under `tests/`.
+Finance formulas, Jalali helpers, auth validation, and money validation are covered by unit tests under `tests/`.
 
 ```bash
 npm test
@@ -209,10 +212,10 @@ When you change spendable-today, budgets, goals, or reports, add or update tests
 
 ## Production notes
 
-- Set a strong unique `OTP_PEPPER`. Rotating it invalidates existing sessions and unused OTPs.
+- Set a strong unique `AUTH_SECRET`. Rotating it invalidates existing sessions.
 - Point `DATABASE_URL` at a managed Postgres and run `npm run db:deploy` on release.
-- SMS is still a mock. Wire a real provider in `src/lib/sms` before exposing login beyond development.
-- Sessions last 30 days; OTPs expire in 5 minutes and allow 5 attempts. Send rate limits live in `src/lib/auth/rate-limit.ts`.
+- For Google sign-in, set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and add the callback URL in Google Cloud (`https://your-domain/api/auth/google/callback`).
+- Sessions last 30 days. Login and signup rate limits live in `src/lib/auth/rate-limit.ts`.
 - The service worker caches `/offline` only. Treat the PWA as an installable shell, not a full offline ledger.
 
 ---
@@ -223,4 +226,4 @@ When you change spendable-today, budgets, goals, or reports, add or update tests
 2. **Quick capture** — logging a spend should take seconds.
 3. **Calm copy** — no shame language when someone goes over budget.
 4. **Private by default** — data is per-user; no ads in the product UI.
-5. **Iran-native** — RTL, Jalali, تومان, Iranian mobile numbers.
+5. **Iran-native** — RTL, Jalali, تومان.
