@@ -25,7 +25,7 @@ export default async function LoginPage({
     <section className="flex flex-col gap-6">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">ورود</h1>
-        <p className="mt-2 text-sm leading-7 text-foreground/60">
+        <p className="mt-2 text-sm leading-7 text-muted-foreground">
           با ایمیل و رمز عبور وارد شو.
         </p>
       </div>

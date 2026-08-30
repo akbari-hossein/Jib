@@ -10,7 +10,9 @@ export function AppShell({
   return (
     <div className="min-h-dvh bg-background">
       <OfflineBanner />
-      <div className="mx-auto min-h-dvh w-full max-w-xl pb-24">{children}</div>
+      <div className="mx-auto min-h-dvh w-full max-w-xl pb-[calc(6rem+env(safe-area-inset-bottom))]">
+        {children}
+      </div>
       <BottomNav />
     </div>
   );

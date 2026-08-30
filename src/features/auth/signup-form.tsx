@@ -52,7 +52,7 @@ export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
           </p>
         ) : null}
         <Button type="submit" disabled={pending} className="w-full">
-          {pending ? "در حال ساخت حساب…" : "ثبت‌نام"}
+          {pending ? "در حال ساخت حساب…" : "رایگان شروع کن"}
         </Button>
       </form>
       {googleEnabled ? <GoogleButton /> : null}

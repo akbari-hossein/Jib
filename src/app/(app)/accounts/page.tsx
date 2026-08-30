@@ -4,8 +4,11 @@ import { getPlanAccess } from "@/server/queries/plan";
 import { AccountForm } from "@/features/accounts/account-form";
 import { AccountList } from "@/features/accounts/account-list";
 import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { UpgradeCallout } from "@/components/upgrade-callout";
 import { limitCopy } from "@/lib/billing/plan";
+
+export const metadata = { title: "حساب‌ها" };
 
 export default async function AccountsPage() {
   const user = await requireUser();
@@ -16,11 +19,11 @@ export default async function AccountsPage() {
 
   return (
     <main className="flex flex-col gap-6 px-5 pt-8">
-      <h1 className="text-2xl font-semibold tracking-tight">حساب‌ها</h1>
+      <PageHeader title="حساب‌ها" description="حساب‌هایی که در قابل‌خرج باشند، عدد امروز را می‌سازند." />
       {accounts.length === 0 ? (
         <EmptyState
-          title="اولین حسابت را بساز"
-          description="موجودی نقد، کارت یا بانک را وارد کن تا جیب بداند چقدر پول داری."
+          title="هنوز حسابی اضافه نکردی"
+          description="با اضافه کردن اولین حسابت، جیب می‌تونه وضعیت پولت رو برات محاسبه کنه."
           action={
             access.canCreateAccount ? (
               <AccountForm />
@@ -33,7 +36,7 @@ export default async function AccountsPage() {
         <>
           <AccountList accounts={accounts} />
           {access.canCreateAccount ? (
-            <section className="rounded-3xl border border-border bg-surface p-5">
+            <section className="rounded-3xl border border-border bg-card p-5">
               <h2 className="mb-4 text-base font-semibold">حساب جدید</h2>
               <AccountForm />
             </section>

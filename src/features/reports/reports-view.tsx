@@ -22,7 +22,7 @@ export function ReportsView({ reports }: { reports: ReportsDto }) {
         <h1 className="text-2xl font-semibold tracking-tight">گزارش‌ها</h1>
         <EmptyState
           title="هنوز چیزی برای مرور نیست"
-          description="چند خرج یا درآمد ثبت کن تا گزارش هفته و ماه اینجا جمع شود."
+          description="چند خرج یا درآمد ثبت کن تا گزارش هفته و ماه اینجا جمع شود. بدون داده، جیب چیزی اختراع نمی‌کند."
         />
       </main>
     );
@@ -41,14 +41,14 @@ export function ReportsView({ reports }: { reports: ReportsDto }) {
       <MonthlyCard month={reports.month} />
 
       {reports.month.categories.length > 0 ? (
-        <section className="rounded-3xl border border-border bg-surface px-5 py-4">
+        <section className="rounded-3xl border border-border bg-card px-5 py-4">
           <h2 className="text-base font-semibold">خرج به تفکیک دسته</h2>
           <CategoryList categories={reports.month.categories} />
         </section>
       ) : null}
 
       {reports.budget.items.length > 0 || reports.budget.overallUsage ? (
-        <section className="rounded-3xl border border-border bg-surface px-5 py-4">
+        <section className="rounded-3xl border border-border bg-card px-5 py-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold">عملکرد بودجه</h2>
             <Link href="/budgets" className="text-sm text-primary">
@@ -79,7 +79,7 @@ export function ReportsView({ reports }: { reports: ReportsDto }) {
       ) : null}
 
       {reports.goals.length > 0 ? (
-        <section className="rounded-3xl border border-border bg-surface px-5 py-4">
+        <section className="rounded-3xl border border-border bg-card px-5 py-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold">پیشرفت اهداف</h2>
             <Link href="/goals" className="text-sm text-primary">
@@ -110,7 +110,7 @@ export function ReportsView({ reports }: { reports: ReportsDto }) {
 
 function WeeklyCard({ week }: { week: ReportsDto["week"] }) {
   return (
-    <section className="rounded-3xl border border-border bg-surface px-5 py-4">
+    <section className="rounded-3xl border border-border bg-card px-5 py-4">
       <p className="text-xs text-foreground/45">{week.rangeLabel}</p>
       <h2 className="mt-1 text-base font-semibold">{week.title}</h2>
       {week.expenses === 0n && week.income === 0n ? (
@@ -141,7 +141,7 @@ function WeeklyCard({ week }: { week: ReportsDto["week"] }) {
 
 function MonthlyCard({ month }: { month: ReportsDto["month"] }) {
   return (
-    <section className="rounded-3xl border border-border bg-surface px-5 py-4">
+    <section className="rounded-3xl border border-border bg-card px-5 py-4">
       <h2 className="text-base font-semibold">{month.title}</h2>
       <dl className="mt-4 space-y-3 text-sm">
         <Row label="درآمد" value={month.income} />

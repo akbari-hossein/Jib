@@ -19,7 +19,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="منوی اصلی"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
     >
       <ul className="mx-auto grid max-w-xl grid-cols-5">
         {items.map((item) => {

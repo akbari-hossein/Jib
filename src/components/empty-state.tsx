@@ -15,12 +15,12 @@ export function EmptyState({
   return (
     <section
       className={cn(
-        "flex flex-col items-start gap-3 rounded-3xl border border-border bg-surface px-5 py-6",
+        "flex flex-col items-start gap-3 rounded-3xl border border-dashed border-border bg-card px-5 py-7",
         className,
       )}
     >
       <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>
-      <p className="text-sm leading-7 text-foreground/65">{description}</p>
+      <p className="max-w-md text-sm leading-7 text-muted-foreground">{description}</p>
       {action}
     </section>
   );

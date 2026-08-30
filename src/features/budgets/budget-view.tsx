@@ -31,13 +31,13 @@ export function BudgetView({
     <main className="flex flex-col gap-6 px-5 pt-8">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">بودجه</h1>
-        <p className="mt-1 text-sm text-foreground/50">
+        <p className="mt-1 text-sm text-muted-foreground">
           {budget.monthName} {toPersianDigits(budget.year)}
         </p>
       </header>
 
       {budget.overallUsage ? (
-        <section className="rounded-3xl border border-border bg-surface px-5 py-4">
+        <section className="rounded-3xl border border-border bg-card px-5 py-4">
           <p className="text-xs text-foreground/45">سقف کل ماه</p>
           <p className="mt-1 text-lg font-semibold">
             <MoneyDisplay amount={budget.overallSpent} withUnit={false} />
@@ -58,12 +58,12 @@ export function BudgetView({
       {budget.items.length === 0 ? (
         <EmptyState
           title="هنوز بودجه‌ای نداری"
-          description="برای دسته‌های مهم مثل غذا سقف بگذار تا وسط ماه غافلگیر نشوی."
+          description="برای دسته‌های مهم مثل غذا سقف بگذار تا وسط ماه غافلگیر نشوی. لازم نیست همه دسته‌ها را پر کنی."
         />
       ) : (
         <ul className="flex flex-col gap-3">
           {budget.items.map((item) => (
-            <li key={item.id} className="rounded-3xl border border-border bg-surface px-4 py-4">
+            <li key={item.id} className="rounded-3xl border border-border bg-card px-4 py-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="flex size-9 items-center justify-center rounded-full bg-surface-muted">
@@ -95,7 +95,7 @@ export function BudgetView({
         </ul>
       )}
 
-      <section className="rounded-3xl border border-border bg-surface p-5">
+      <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">سقف دسته</h2>
         {access.canCreateBudgetCategory ? null : (
           <p className="mb-4 text-sm leading-7 text-foreground/55">
@@ -117,7 +117,7 @@ export function BudgetView({
       </section>
 
       {access.canSetOverallBudget ? (
-        <section className="rounded-3xl border border-border bg-surface p-5">
+        <section className="rounded-3xl border border-border bg-card p-5">
           <h2 className="mb-4 text-base font-semibold">سقف کل</h2>
           <OverallLimitForm
             overallLimit={budget.overallLimit == null ? "" : budget.overallLimit.toString()}

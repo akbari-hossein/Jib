@@ -13,7 +13,7 @@ export function GoalList({ goals }: { goals: GoalListItem[] }) {
   return (
     <ul className="flex flex-col gap-3">
       {goals.map((goal) => (
-        <li key={goal.id} className="rounded-3xl border border-border bg-surface px-4 py-4">
+        <li key={goal.id} className="rounded-3xl border border-border bg-card px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="font-medium">{goal.name}</p>

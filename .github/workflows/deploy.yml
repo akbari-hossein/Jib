@@ -1,0 +1,157 @@
+# Production deploy for a Node (`next start`) + Postgres host.
+#
+# No production host is wired yet. This workflow stays idle until you enable it.
+# Migrations run only on the server (npm run db:deploy), never on the GitHub runner.
+#
+# Enable automatic deploys:
+#   1. Create a GitHub Environment named "production".
+#   2. Set repository variable DEPLOY_ENABLED=true.
+#   3. Set the variables and secrets below.
+#   4. On the server: clone this repo, create .env (never commit it), install Node 20+,
+#      and run the app as a systemd service named "jib".
+#
+# Variables:
+#   DEPLOY_ENABLED  — must be the string "true" to run
+#   DEPLOY_PATH     — absolute app directory on the server (example: /opt/jib)
+#   DEPLOY_PORT     — SSH port, optional, defaults to 22
+#
+# Secrets (prefer the "production" environment):
+#   DEPLOY_HOST     — server hostname or IP
+#   DEPLOY_USER     — SSH user
+#   DEPLOY_SSH_KEY  — private key for that user
+#
+# Application secrets (DATABASE_URL, AUTH_SECRET, OAuth) stay in the server .env.
+name: Production deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify release
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/jib_ci
+      AUTH_SECRET: ci-only-auth-secret-do-not-use
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Validate Prisma schema
+        run: npx prisma validate
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run TypeScript check
+        run: npm run typecheck
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Build production bundle
+        run: npm run build
+
+  deploy:
+    name: Deploy to production
+    needs: verify
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+
+    steps:
+      - name: Deploy over SSH
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${DEPLOY_HOST}" ] || [ -z "${DEPLOY_USER}" ] || [ -z "${DEPLOY_SSH_KEY}" ]; then
+            echo "Missing required secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY" >&2
+            exit 1
+          fi
+
+          if [ -z "${DEPLOY_PATH}" ]; then
+            echo "Missing required variable: DEPLOY_PATH" >&2
+            exit 1
+          fi
+
+          case "${DEPLOY_PATH}" in
+            /*) ;;
+            *)
+              echo "DEPLOY_PATH must be an absolute path" >&2
+              exit 1
+              ;;
+          esac
+
+          key="$(mktemp)"
+          cleanup() { rm -f "${key}"; }
+          trap cleanup EXIT
+          umask 077
+          printf '%s\n' "${DEPLOY_SSH_KEY}" > "${key}"
+
+          remote_sha="$(printf '%q' "${GIT_SHA}")"
+          remote_path="$(printf '%q' "${DEPLOY_PATH}")"
+
+          # App secrets are read from the server .env — they are not sent from Actions.
+          ssh -i "${key}" \
+            -p "${DEPLOY_PORT}" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "export GIT_SHA=${remote_sha} DEPLOY_PATH=${remote_path}; bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd "${DEPLOY_PATH}"
+          git fetch --prune origin
+          git checkout --detach "${GIT_SHA}"
+          npm ci --no-audit --no-fund
+          npx prisma generate
+          npm run db:deploy
+          npm run build
+
+          if ! command -v systemctl >/dev/null 2>&1; then
+            echo "systemctl not found; start the app with: npm start" >&2
+            exit 1
+          fi
+
+          if systemctl --user is-enabled --quiet jib 2>/dev/null \
+            || systemctl --user is-active --quiet jib 2>/dev/null; then
+            systemctl --user restart jib
+          else
+            sudo -n systemctl restart jib
+          fi
+          REMOTE

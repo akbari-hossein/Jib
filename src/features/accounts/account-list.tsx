@@ -10,7 +10,7 @@ export function AccountList({ accounts }: { accounts: Account[] }) {
       {accounts.map((account) => (
         <li
           key={account.id}
-          className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-surface px-4 py-4"
+          className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-card px-4 py-4"
         >
           <div>
             <p className="font-medium">{account.name}</p>

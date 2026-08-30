@@ -13,7 +13,7 @@ export function UsageBar({
     <div className="h-1.5 overflow-hidden rounded-full bg-surface-muted">
       <div
         className={cn(
-          "h-full rounded-full",
+          "h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500 motion-safe:ease-out",
           tone === "warning" && "bg-warning",
           tone === "expense" && "bg-expense",
           tone === "savings" && "bg-savings",

@@ -5,7 +5,7 @@ import type { PlanAccess } from "@/server/queries/plan";
 
 export function PlanCard({ access }: { access: PlanAccess }) {
   return (
-    <section className="rounded-3xl border border-border bg-surface p-5">
+    <section className="rounded-3xl border border-border bg-card p-5">
       <h2 className="text-base font-semibold">نسخه</h2>
       <p className="mt-2 text-sm text-foreground/60">
         {access.isPro ? "نسخه حرفه‌ای فعال است." : "نسخه رایگان — برای شروع کافی است."}

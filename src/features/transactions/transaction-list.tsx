@@ -37,7 +37,7 @@ export function TransactionList({ transactions }: { transactions: Row[] }) {
             {group.items.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="flex size-9 items-center justify-center rounded-full bg-surface-muted">
