@@ -45,6 +45,9 @@ export default async function MorePage() {
         <Link href="/about" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           درباره جیب
         </Link>
+        <Link href="/home?tour=1" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          راهنمای جیب
+        </Link>
       </nav>
 
       <PlanCard access={access} />

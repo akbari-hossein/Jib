@@ -64,10 +64,11 @@ model User {
   plan                 Plan      @default(FREE)
   incomeDayOfMonth     Int?
   expectedIncomeAmount BigInt?
-  locale               String    @default("fa-IR")
-  currency             String    @default("TOMAN")
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  locale                 String    @default("fa-IR")
+  currency               String    @default("TOMAN")
+  onboardingCompletedAt  DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   sessions             Session[]
   accounts             Account[]

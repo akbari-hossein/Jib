@@ -205,6 +205,38 @@ body {
   animation-delay: 140ms;
 }
 
-.motion-rise-delay-3 {
-  animation-delay: 200ms;
+.motion-onboarding-fade {
+  animation: onboarding-fade var(--duration-normal) var(--ease-out) both;
+}
+
+.motion-onboarding-rise {
+  animation: onboarding-rise var(--duration-normal) var(--ease-out) both;
+}
+
+.motion-onboarding-delay-1 {
+  animation-delay: 90ms;
+}
+
+.motion-onboarding-delay-2 {
+  animation-delay: 160ms;
+}
+
+@keyframes onboarding-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes onboarding-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

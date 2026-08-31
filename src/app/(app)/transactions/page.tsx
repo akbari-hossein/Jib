@@ -22,6 +22,7 @@ export default async function TransactionsPage() {
     <main className="flex flex-col gap-6 px-5 pt-8">
         <PageHeader
           title="تراکنش‌ها"
+          dataTour="transactions-heading"
           action={
             transactions.length > 0 ? (
               access.canExport ? (

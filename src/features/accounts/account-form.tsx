@@ -1,46 +1,82 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { createAccount, type AccountActionState } from "@/server/actions/accounts";
+import { useRef, useState, useTransition } from "react";
+import { toast } from "sonner";
+import { AccountIconMark } from "@/features/accounts/account-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ACCOUNT_COLORS, ACCOUNT_ICONS, ACCOUNT_ICON_LABEL } from "@/lib/accounts/appearance";
 import { ACCOUNT_TYPE_LABEL } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { createAccount, updateAccount } from "@/server/actions/accounts";
+import type { AccountListItem } from "@/server/queries/accounts";
 
 const TYPES = ["CASH", "BANK", "CARD", "SAVINGS", "OTHER"] as const;
-const initial: AccountActionState = { ok: false };
 
-export function AccountForm({ onCreated }: { onCreated?: () => void }) {
-  const [state, action, pending] = useActionState(createAccount, initial);
+export function AccountForm({
+  account,
+  onSuccess,
+}: {
+  account?: AccountListItem;
+  onSuccess?: () => void;
+}) {
+  const isEdit = Boolean(account);
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [icon, setIcon] = useState(account?.icon ?? "");
+  const [color, setColor] = useState(account?.color ?? "");
+  const formRef = useRef<HTMLFormElement>(null);
 
-  useEffect(() => {
-    if (state.ok) {
-      onCreated?.();
-    }
-  }, [onCreated, state.ok]);
+  function handleSubmit(formData: FormData) {
+    setError(null);
+    startTransition(async () => {
+      const result = await (isEdit ? updateAccount : createAccount)(undefined, formData);
+      if (!result.ok) {
+        setError(result.error ?? "ذخیره حساب انجام نشد. دوباره تلاش کن.");
+        return;
+      }
+      toast.success(isEdit ? "حساب ذخیره شد." : "حساب اضافه شد.");
+      if (!isEdit) {
+        formRef.current?.reset();
+        setIcon("");
+        setColor("");
+      }
+      onSuccess?.();
+    });
+  }
 
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form ref={formRef} action={handleSubmit} className="flex flex-col gap-4">
+      {account ? <input type="hidden" name="id" value={account.id} /> : null}
+      <input type="hidden" name="icon" value={icon} />
+      <input type="hidden" name="color" value={color} />
+
       <div className="flex flex-col gap-2">
-        <Label htmlFor="account-name">نام حساب</Label>
-        <Input id="account-name" name="name" placeholder="مثلاً کارت ملت" required maxLength={60} />
+        <Label htmlFor={isEdit ? "edit-account-name" : "account-name"}>نام حساب</Label>
+        <Input
+          id={isEdit ? "edit-account-name" : "account-name"}
+          name="name"
+          placeholder="مثلاً کارت ملت"
+          required
+          maxLength={60}
+          defaultValue={account?.name}
+        />
       </div>
+
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium">نوع</legend>
         <div className="flex flex-wrap gap-2">
           {TYPES.map((type, index) => (
             <label
               key={type}
-              className={cn(
-                "cursor-pointer rounded-full bg-surface-muted px-3 py-2 text-sm has-[:checked]:bg-primary has-[:checked]:text-primary-foreground",
-              )}
+              className="cursor-pointer rounded-full bg-surface-muted px-3 py-2 text-sm has-[:checked]:bg-primary has-[:checked]:text-primary-foreground"
             >
               <input
                 type="radio"
                 name="type"
                 value={type}
-                defaultChecked={index === 2}
+                defaultChecked={account ? account.type === type : index === 2}
                 className="sr-only"
               />
               {ACCOUNT_TYPE_LABEL[type]}
@@ -48,24 +84,90 @@ export function AccountForm({ onCreated }: { onCreated?: () => void }) {
           ))}
         </div>
       </fieldset>
+
       <div className="flex flex-col gap-2">
-        <Label htmlFor="account-balance">موجودی فعلی</Label>
+        <Label htmlFor={isEdit ? "edit-account-balance" : "account-balance"}>موجودی فعلی</Label>
         <Input
-          id="account-balance"
+          id={isEdit ? "edit-account-balance" : "account-balance"}
           name="balance"
           inputMode="numeric"
           dir="ltr"
-          defaultValue="0"
+          defaultValue={account?.balance ?? "0"}
           className="text-left"
         />
+        {isEdit ? (
+          <p className="text-xs leading-6 text-foreground/45">
+            موجودی را دستی عوض کن؛ این کار تراکنش جدید نمی‌سازد.
+          </p>
+        ) : null}
       </div>
-      {state.error ? (
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-sm font-medium">آیکون</legend>
+        <div className="flex flex-wrap gap-2">
+          {ACCOUNT_ICONS.map((name) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => setIcon((current) => (current === name ? "" : name))}
+              className={cn(
+                "flex size-11 items-center justify-center rounded-full border transition-colors",
+                icon === name ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface-muted",
+              )}
+              aria-pressed={icon === name}
+              aria-label={ACCOUNT_ICON_LABEL[name]}
+            >
+              <AccountIconMark name={name} />
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-sm font-medium">رنگ</legend>
+        <div className="flex flex-wrap gap-2">
+          {ACCOUNT_COLORS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setColor((current) => (current === item.value ? "" : item.value))}
+              className={cn(
+                "size-8 rounded-full border-2 transition-transform",
+                color === item.value ? "scale-110 border-foreground" : "border-transparent",
+              )}
+              style={{ background: item.value }}
+              aria-pressed={color === item.value}
+              aria-label={item.id}
+            />
+          ))}
+        </div>
+      </fieldset>
+
+      {account ? (
+        <label className="flex items-start gap-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-6">
+          <input
+            type="checkbox"
+            name="includeInAvailable"
+            defaultChecked={account.includeInAvailable}
+            className="mt-1 size-4 accent-primary"
+          />
+          <span>
+            در قابل‌خرج خانه حساب شود
+            <span className="mt-1 block text-xs text-foreground/45">
+              حساب‌های پس‌انداز معمولاً خارج می‌مانند تا عدد امروز را شلوغ نکنند.
+            </span>
+          </span>
+        </label>
+      ) : null}
+
+      {error ? (
         <p role="alert" className="text-sm text-destructive">
-          {state.error}
+          {error}
         </p>
       ) : null}
+
       <Button type="submit" disabled={pending} className="w-full">
-        {pending ? "در حال ذخیره…" : "افزودن حساب"}
+        {pending ? "در حال ذخیره…" : isEdit ? "ذخیره تغییرات" : "افزودن حساب"}
       </Button>
     </form>
   );

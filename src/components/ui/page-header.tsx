@@ -6,14 +6,16 @@ export function PageHeader({
   description,
   action,
   className,
+  dataTour,
 }: {
   title: string;
   description?: string;
   action?: ReactNode;
   className?: string;
+  dataTour?: string;
 }) {
   return (
-    <header className={cn("flex items-start justify-between gap-4", className)}>
+    <header data-tour={dataTour} className={cn("flex items-start justify-between gap-4", className)}>
       <div className="min-w-0">
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {description ? (

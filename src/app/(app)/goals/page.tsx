@@ -24,6 +24,7 @@ export default async function GoalsPage() {
       <PageHeader
         title="اهداف"
         description="هدف بدون حساب از قابل‌خرج رزرو می‌شود. هدف وصل به حساب، موجودی همان حساب است."
+        dataTour="goals-heading"
       />
 
       {goals.length === 0 ? (

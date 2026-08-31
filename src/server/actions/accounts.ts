@@ -1,8 +1,14 @@
 "use server";
 
-import { AccountType } from "@prisma/client";
+import { AccountType, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import {
+  isAccountColor,
+  isAccountIcon,
+  parseOptionalAppearance,
+} from "@/lib/accounts/appearance";
+import { accountDeletionCopy, canPermanentlyDeleteAccount } from "@/lib/accounts/deletion";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { parseTomanInput } from "@/lib/validation/money";
@@ -12,12 +18,60 @@ import { assertCanCreate } from "@/server/services/plan";
 export type AccountActionState = {
   ok: boolean;
   error?: string;
+  blocked?: boolean;
+  dependents?: {
+    transactionCount: number;
+    recurringCount: number;
+    goalCount: number;
+  };
 };
 
 const accountTypeSchema = z.enum(["CASH", "BANK", "CARD", "SAVINGS", "OTHER"]);
 
 function includeInAvailableFor(type: AccountType): boolean {
   return type !== "SAVINGS";
+}
+
+function revalidateAccounts() {
+  revalidatePath("/accounts");
+  revalidatePath("/home");
+  revalidatePath("/transactions");
+  revalidatePath("/goals");
+  revalidatePath("/reports");
+  revalidatePath("/budgets");
+  revalidatePath("/recurring");
+}
+
+function parseAppearance(formData: FormData): { color: string | null; icon: string | null } | { error: string } {
+  const colorRaw = parseOptionalAppearance(String(formData.get("color") ?? ""));
+  const iconRaw = parseOptionalAppearance(String(formData.get("icon") ?? ""));
+
+  if (colorRaw && !isAccountColor(colorRaw)) {
+    return { error: "رنگ حساب معتبر نیست." };
+  }
+  if (iconRaw && !isAccountIcon(iconRaw)) {
+    return { error: "آیکون حساب معتبر نیست." };
+  }
+
+  return {
+    color: colorRaw ?? null,
+    icon: iconRaw ?? null,
+  };
+}
+
+async function countAccountDependents(accountId: string, userId: string) {
+  const [outgoing, incoming, recurringCount, goalCount] = await Promise.all([
+    prisma.transaction.count({ where: { userId, accountId } }),
+    prisma.transaction.count({ where: { userId, toAccountId: accountId } }),
+    prisma.recurringTransaction.count({ where: { userId, accountId } }),
+    prisma.goal.count({ where: { userId, accountId, isArchived: false } }),
+  ]);
+
+  return {
+    transactionCount: outgoing + incoming,
+    recurringCount,
+    goalCount,
+  };
 }
 
 export async function createAccount(
@@ -30,6 +84,7 @@ export async function createAccount(
   const balance = parseTomanInput(String(formData.get("balance") ?? "0"), {
     allowZero: true,
   });
+  const appearance = parseAppearance(formData);
 
   if (name.length < 1 || name.length > 60) {
     return { ok: false, error: "نام حساب را وارد کن." };
@@ -39,6 +94,9 @@ export async function createAccount(
   }
   if (balance === null) {
     return { ok: false, error: "موجودی معتبر نیست." };
+  }
+  if ("error" in appearance) {
+    return { ok: false, error: appearance.error };
   }
 
   try {
@@ -50,6 +108,8 @@ export async function createAccount(
         name,
         type: typeResult.data,
         balance,
+        color: appearance.color,
+        icon: appearance.icon,
         includeInAvailable: includeInAvailableFor(typeResult.data),
         sortOrder: count,
       },
@@ -58,9 +118,7 @@ export async function createAccount(
     return { ok: false, error: userFacingMutationError(error, "ذخیره حساب انجام نشد. دوباره تلاش کن.") };
   }
 
-  revalidatePath("/accounts");
-  revalidatePath("/home");
-  revalidatePath("/transactions");
+  revalidateAccounts();
   return { ok: true };
 }
 
@@ -73,6 +131,8 @@ export async function updateAccount(
   const name = String(formData.get("name") ?? "").trim();
   const typeResult = accountTypeSchema.safeParse(formData.get("type"));
   const includeRaw = formData.get("includeInAvailable");
+  const balanceRaw = formData.get("balance");
+  const appearance = parseAppearance(formData);
 
   if (!id) {
     return { ok: false, error: "حساب پیدا نشد." };
@@ -83,35 +143,153 @@ export async function updateAccount(
   if (!typeResult.success) {
     return { ok: false, error: "نوع حساب معتبر نیست." };
   }
+  if ("error" in appearance) {
+    return { ok: false, error: appearance.error };
+  }
+
+  let balance: bigint | undefined;
+  if (balanceRaw != null) {
+    const parsed = parseTomanInput(String(balanceRaw), { allowZero: true });
+    if (parsed === null) {
+      return { ok: false, error: "موجودی معتبر نیست." };
+    }
+    balance = parsed;
+  }
 
   try {
     await assertAccountOwned(user.id, id);
     await prisma.account.update({
-      where: { id },
+      where: { id, userId: user.id },
       data: {
         name,
         type: typeResult.data,
         includeInAvailable: includeRaw === "on" || includeRaw === "true",
+        color: appearance.color,
+        icon: appearance.icon,
+        ...(balance !== undefined ? { balance } : {}),
       },
     });
   } catch (error) {
     return { ok: false, error: userFacingMutationError(error, "ذخیره حساب انجام نشد. دوباره تلاش کن.") };
   }
 
-  revalidatePath("/accounts");
-  revalidatePath("/home");
+  revalidateAccounts();
   return { ok: true };
 }
 
-export async function archiveAccount(formData: FormData): Promise<void> {
+export async function archiveAccount(
+  _previous: AccountActionState | undefined,
+  formData: FormData,
+): Promise<AccountActionState> {
   const user = await requireUser();
   const id = String(formData.get("id") ?? "");
-  await assertAccountOwned(user.id, id);
-  await prisma.account.update({
-    where: { id },
-    data: { isActive: false, includeInAvailable: false },
-  });
-  revalidatePath("/accounts");
-  revalidatePath("/home");
-  revalidatePath("/transactions");
+  if (!id) {
+    return { ok: false, error: "حساب پیدا نشد." };
+  }
+
+  try {
+    await assertAccountOwned(user.id, id);
+    await prisma.account.update({
+      where: { id, userId: user.id },
+      data: { isActive: false, includeInAvailable: false },
+    });
+  } catch (error) {
+    return { ok: false, error: userFacingMutationError(error, "بایگانی حساب انجام نشد. دوباره تلاش کن.") };
+  }
+
+  revalidateAccounts();
+  return { ok: true };
+}
+
+export async function restoreAccount(
+  _previous: AccountActionState | undefined,
+  formData: FormData,
+): Promise<AccountActionState> {
+  const user = await requireUser();
+  const id = String(formData.get("id") ?? "");
+  if (!id) {
+    return { ok: false, error: "حساب پیدا نشد." };
+  }
+
+  try {
+    const account = await assertAccountOwned(user.id, id);
+    if (account.isActive) {
+      return { ok: true };
+    }
+    await assertCanCreate(user.id, user.plan, "accounts");
+    await prisma.account.update({
+      where: { id, userId: user.id },
+      data: {
+        isActive: true,
+        includeInAvailable: includeInAvailableFor(account.type),
+      },
+    });
+  } catch (error) {
+    return { ok: false, error: userFacingMutationError(error, "بازگردانی حساب انجام نشد. دوباره تلاش کن.") };
+  }
+
+  revalidateAccounts();
+  return { ok: true };
+}
+
+export async function deleteAccount(
+  _previous: AccountActionState | undefined,
+  formData: FormData,
+): Promise<AccountActionState> {
+  const user = await requireUser();
+  const id = String(formData.get("id") ?? "");
+  if (!id) {
+    return { ok: false, error: "حساب پیدا نشد." };
+  }
+
+  try {
+    await assertAccountOwned(user.id, id);
+    const dependents = await countAccountDependents(id, user.id);
+
+    if (!canPermanentlyDeleteAccount(dependents)) {
+      return {
+        ok: false,
+        blocked: true,
+        dependents,
+        error: accountDeletionCopy(dependents).description,
+      };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.transactionRule.updateMany({
+        where: { userId: user.id, accountId: id },
+        data: { accountId: null },
+      });
+      await tx.account.delete({
+        where: { id, userId: user.id },
+      });
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+      return {
+        ok: false,
+        blocked: true,
+        error: "این حساب به تراکنش یا مورد تکراری وصل است و حذف نمی‌شود.",
+      };
+    }
+    return { ok: false, error: userFacingMutationError(error, "حذف حساب انجام نشد. دوباره تلاش کن.") };
+  }
+
+  revalidateAccounts();
+  return { ok: true };
+}
+
+export async function getAccountDependents(accountId: string): Promise<AccountActionState> {
+  const user = await requireUser();
+  if (!accountId) {
+    return { ok: false, error: "حساب پیدا نشد." };
+  }
+
+  try {
+    await assertAccountOwned(user.id, accountId);
+    const dependents = await countAccountDependents(accountId, user.id);
+    return { ok: true, dependents };
+  } catch (error) {
+    return { ok: false, error: userFacingMutationError(error, "وضعیت حساب خوانده نشد.") };
+  }
 }

@@ -25,14 +25,16 @@ export function DashboardView({
     <main className="flex flex-col gap-6 px-5 pt-8">
       <header>
         <p className="text-sm text-muted-foreground">{title}</p>
-        <FinancialMetric
-          className="mt-4"
-          label={dashboard.isShortfall ? "کسری" : "قابل خرج"}
-          amount={dashboard.isShortfall ? -dashboard.availableMoney : dashboard.availableMoney}
-          empty={!dashboard.hasAccounts}
-          size="lg"
-          heading
-        />
+        <div data-tour="available-money">
+          <FinancialMetric
+            className="mt-4"
+            label={dashboard.isShortfall ? "کسری" : "قابل خرج"}
+            amount={dashboard.isShortfall ? -dashboard.availableMoney : dashboard.availableMoney}
+            empty={!dashboard.hasAccounts}
+            size="lg"
+            heading
+          />
+        </div>
       </header>
 
       {!dashboard.hasAccounts ? (

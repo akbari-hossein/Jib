@@ -1,5 +1,5 @@
 import { requireUser } from "@/lib/auth/session";
-import { listAccounts } from "@/server/queries/accounts";
+import { listAccounts, toAccountListItem } from "@/server/queries/accounts";
 import { getPlanAccess } from "@/server/queries/plan";
 import { AccountForm } from "@/features/accounts/account-form";
 import { AccountList } from "@/features/accounts/account-list";
@@ -16,17 +16,24 @@ export default async function AccountsPage() {
     listAccounts(user.id),
     getPlanAccess(user.id, user.plan),
   ]);
+  const items = accounts.map(toAccountListItem);
 
   return (
-    <main className="flex flex-col gap-6 px-5 pt-8">
-      <PageHeader title="حساب‌ها" description="حساب‌هایی که در قابل‌خرج باشند، عدد امروز را می‌سازند." />
+    <main data-tour="accounts-page" className="flex flex-col gap-6 px-5 pt-8">
+      <PageHeader
+        title="حساب‌ها"
+        description="حساب‌هایی که در قابل‌خرج باشند، عدد امروز را می‌سازند."
+        dataTour="accounts-heading"
+      />
       {accounts.length === 0 ? (
         <EmptyState
           title="هنوز حسابی اضافه نکردی"
           description="با اضافه کردن اولین حسابت، جیب می‌تونه وضعیت پولت رو برات محاسبه کنه."
           action={
             access.canCreateAccount ? (
-              <AccountForm />
+              <div data-tour="add-account">
+                <AccountForm />
+              </div>
             ) : (
               <UpgradeCallout title="سقف حساب رایگان" description={limitCopy("accounts")} />
             )
@@ -34,9 +41,9 @@ export default async function AccountsPage() {
         />
       ) : (
         <>
-          <AccountList accounts={accounts} />
+          <AccountList accounts={items} />
           {access.canCreateAccount ? (
-            <section className="rounded-3xl border border-border bg-card p-5">
+            <section data-tour="add-account" className="rounded-3xl border border-border bg-card p-5">
               <h2 className="mb-4 text-base font-semibold">حساب جدید</h2>
               <AccountForm />
             </section>

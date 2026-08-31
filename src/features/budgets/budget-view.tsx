@@ -29,7 +29,7 @@ export function BudgetView({
 }) {
   return (
     <main className="flex flex-col gap-6 px-5 pt-8">
-      <header>
+      <header data-tour="budgets-heading">
         <h1 className="text-2xl font-semibold tracking-tight">بودجه</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {budget.monthName} {toPersianDigits(budget.year)}
