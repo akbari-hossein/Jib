@@ -110,7 +110,7 @@ export function ReportsView({ reports }: { reports: ReportsDto }) {
 
 function WeeklyCard({ week }: { week: ReportsDto["week"] }) {
   return (
-    <section className="rounded-3xl border border-border bg-card px-5 py-4">
+    <section id="week" className="scroll-mt-4 rounded-3xl border border-border bg-card px-5 py-4">
       <p className="text-xs text-foreground/45">{week.rangeLabel}</p>
       <h2 className="mt-1 text-base font-semibold">{week.title}</h2>
       {week.expenses === 0n && week.income === 0n ? (

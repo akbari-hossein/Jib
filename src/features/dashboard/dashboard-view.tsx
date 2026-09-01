@@ -5,15 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TransactionList } from "@/features/transactions/transaction-list";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
+import { NotificationBell } from "@/features/notifications/notification-bell";
 import { JALALI_MONTHS, periodChangeCopy } from "@/lib/labels";
 import type { DashboardDto } from "@/server/queries/dashboard";
 
 export function DashboardView({
   dashboard,
   name,
+  unreadCount,
 }: {
   dashboard: DashboardDto;
   name: string | null;
+  unreadCount: number;
 }) {
   const title = name ? `${dashboard.greeting} ${name}` : dashboard.greeting;
   const remainingLabel = dashboard.hasKnownIncomeDate
@@ -23,18 +26,21 @@ export function DashboardView({
 
   return (
     <main className="flex flex-col gap-6 px-5 pt-8">
-      <header>
-        <p className="text-sm text-muted-foreground">{title}</p>
-        <div data-tour="available-money">
-          <FinancialMetric
-            className="mt-4"
-            label={dashboard.isShortfall ? "کسری" : "قابل خرج"}
-            amount={dashboard.isShortfall ? -dashboard.availableMoney : dashboard.availableMoney}
-            empty={!dashboard.hasAccounts}
-            size="lg"
-            heading
-          />
+      <header className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm text-muted-foreground">{title}</p>
+          <div data-tour="available-money">
+            <FinancialMetric
+              className="mt-4"
+              label={dashboard.isShortfall ? "کسری" : "قابل خرج"}
+              amount={dashboard.isShortfall ? -dashboard.availableMoney : dashboard.availableMoney}
+              empty={!dashboard.hasAccounts}
+              size="lg"
+              heading
+            />
+          </div>
         </div>
+        <NotificationBell unreadCount={unreadCount} />
       </header>
 
       {!dashboard.hasAccounts ? (

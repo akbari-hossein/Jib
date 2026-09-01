@@ -37,7 +37,7 @@ export function BudgetView({
       </header>
 
       {budget.overallUsage ? (
-        <section className="rounded-3xl border border-border bg-card px-5 py-4">
+        <section id="budget-overall" className="scroll-mt-4 rounded-3xl border border-border bg-card px-5 py-4">
           <p className="text-xs text-foreground/45">سقف کل ماه</p>
           <p className="mt-1 text-lg font-semibold">
             <MoneyDisplay amount={budget.overallSpent} withUnit={false} />
@@ -63,7 +63,7 @@ export function BudgetView({
       ) : (
         <ul className="flex flex-col gap-3">
           {budget.items.map((item) => (
-            <li key={item.id} className="rounded-3xl border border-border bg-card px-4 py-4">
+            <li key={item.id} id={`budget-${item.id}`} className="scroll-mt-4 rounded-3xl border border-border bg-card px-4 py-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="flex size-9 items-center justify-center rounded-full bg-surface-muted">

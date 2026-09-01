@@ -13,6 +13,16 @@ export type { MonthlyChange } from "@/lib/finance/monthly-change";
 export { assemblePeriodReview, rankCategorySpend } from "@/lib/finance/reports";
 export type { CategorySpend, PeriodReview, RankedCategory } from "@/lib/finance/reports";
 export { calculateRequiredSavings } from "@/lib/finance/required-savings";
+export {
+  checkBudgetThreshold,
+  checkDailyAllowanceStatus,
+  checkGoalMilestone,
+  checkNoTransactionToday,
+  checkSpendingPaceAnomaly,
+  checkUpcomingRecurringExpense,
+  collectNotifications,
+} from "@/lib/finance/notificationRules";
+export type { FinanceNotification } from "@/lib/finance/notificationRules";
 export { matchTransactionRule } from "@/lib/finance/rules";
 export type { RuleSnapshot } from "@/lib/finance/rules";
 export { calculateSavingsRate } from "@/lib/finance/savings-rate";

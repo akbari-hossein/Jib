@@ -55,6 +55,11 @@ enum RuleMatchType {
   CONTAINS
 }
 
+enum NotificationChannel {
+  PUSH
+  IN_APP
+}
+
 model User {
   id                   String    @id @default(cuid())
   email                String    @unique
@@ -77,8 +82,11 @@ model User {
   budgets              Budget[]
   goals                Goal[]
   recurring            RecurringTransaction[]
-  rules                TransactionRule[]
-  notificationPref     NotificationPreference?
+  rules                  TransactionRule[]
+  notificationPref       NotificationPreference?
+  notificationSettings   UserNotificationSetting[]
+  notificationLogs       NotificationLog[]
+  pushSubscriptions      PushSubscription[]
 }
 
 model Session {
@@ -252,11 +260,68 @@ model TransactionRule {
 }
 
 model NotificationPreference {
-  userId         String  @id
-  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  budgetAlert    Boolean @default(true)
-  weeklyReview   Boolean @default(true)
-  goalMilestone  Boolean @default(true)
-  recurringDue   Boolean @default(true)
-  incomeExpected Boolean @default(false)
+  userId             String  @id
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  muteAll            Boolean @default(false)
+  preferredHour      Int     @default(20)
+  quietHoursStart    Int?
+  quietHoursEnd      Int?
+  dailyAllowanceHour Int     @default(9)
+  eveningHour        Int     @default(20)
+  paceThresholdPct   Int     @default(25)
+  budgetAlert        Boolean @default(true)
+  weeklyReview       Boolean @default(true)
+  goalMilestone      Boolean @default(true)
+  recurringDue       Boolean @default(true)
+  incomeExpected     Boolean @default(false)
+}
+
+model NotificationRule {
+  id                String  @id @default(cuid())
+  key               String  @unique
+  title             String
+  isActiveByDefault Boolean @default(true)
+}
+
+model UserNotificationSetting {
+  id              String              @id @default(cuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ruleKey         String
+  enabled         Boolean             @default(true)
+  channel         NotificationChannel @default(PUSH)
+  quietHoursStart Int?
+  quietHoursEnd   Int?
+
+  @@unique([userId, ruleKey])
+  @@index([userId])
+}
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ruleKey   String
+  payload   Json
+  sentAt    DateTime @default(now())
+  dedupeKey String
+  readAt    DateTime?
+
+  @@unique([userId, ruleKey, dedupeKey])
+  @@index([userId, sentAt])
+  @@index([userId, readAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

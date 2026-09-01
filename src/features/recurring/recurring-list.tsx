@@ -16,7 +16,7 @@ export function RecurringList({ items }: { items: RecurringListItem[] }) {
   return (
     <ul className="flex flex-col gap-3">
       {items.map((item) => (
-        <li key={item.id} className="rounded-3xl border border-border bg-card px-4 py-4">
+        <li key={item.id} id={`recurring-${item.id}`} className="scroll-mt-4 rounded-3xl border border-border bg-card px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="font-medium">{item.name}</p>
