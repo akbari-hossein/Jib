@@ -8,7 +8,9 @@ export const SESSION_COOKIE = "jib_session";
 export const OAUTH_STATE_COOKIE = "jib_oauth_state";
 export const OAUTH_VERIFIER_COOKIE = "jib_oauth_verifier";
 
-export const SESSION_TTL_DAYS = 30;
+/** Sliding session lifetime: each visit extends both cookie and server session. */
+export const SESSION_TTL_DAYS = 180;
+export const SESSION_TTL_SECONDS = SESSION_TTL_DAYS * 24 * 60 * 60;
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 128;
 

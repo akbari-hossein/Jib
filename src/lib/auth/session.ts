@@ -16,6 +16,22 @@ export const cookieOptions = {
   path: "/",
 };
 
+export function sessionCookieOptions(expiresAt: Date) {
+  return {
+    ...cookieOptions,
+    expires: expiresAt,
+    maxAge: Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / 1000)),
+  };
+}
+
+export function clearedSessionCookieOptions() {
+  return {
+    ...cookieOptions,
+    expires: new Date(0),
+    maxAge: 0,
+  };
+}
+
 export async function readSessionToken(): Promise<string | null> {
   const store = await cookies();
   return store.get(SESSION_COOKIE)?.value ?? null;
@@ -33,6 +49,9 @@ export async function getCurrentUser() {
   });
 
   if (!session || session.expiresAt.getTime() <= Date.now()) {
+    if (session) {
+      await prisma.session.delete({ where: { id: session.id } }).catch(() => undefined);
+    }
     return null;
   }
 
@@ -49,15 +68,12 @@ export async function requireUser() {
 
 export async function setSessionCookie(token: string, expiresAt: Date) {
   const store = await cookies();
-  store.set(SESSION_COOKIE, token, {
-    ...cookieOptions,
-    expires: expiresAt,
-  });
+  store.set(SESSION_COOKIE, token, sessionCookieOptions(expiresAt));
 }
 
 export async function clearSessionCookie() {
   const store = await cookies();
-  store.delete(SESSION_COOKIE);
+  store.set(SESSION_COOKIE, "", clearedSessionCookieOptions());
 }
 
 export async function createSession(userId: string, headerList: Headers) {
@@ -78,6 +94,26 @@ export async function createSession(userId: string, headerList: Headers) {
 export async function issueSession(userId: string, headerList: Headers) {
   const { token, expiresAt } = await createSession(userId, headerList);
   await setSessionCookie(token, expiresAt);
+}
+
+export async function extendSession(token: string) {
+  const tokenHash = hashSecret(token);
+  const session = await prisma.session.findUnique({
+    where: { tokenHash },
+  });
+  if (!session || session.expiresAt.getTime() <= Date.now()) {
+    if (session) {
+      await prisma.session.delete({ where: { id: session.id } }).catch(() => undefined);
+    }
+    return null;
+  }
+
+  const expiresAt = sessionExpiry();
+  await prisma.session.update({
+    where: { id: session.id },
+    data: { expiresAt },
+  });
+  return expiresAt;
 }
 
 export async function readOAuthCookies(): Promise<{ state: string | null; verifier: string | null }> {

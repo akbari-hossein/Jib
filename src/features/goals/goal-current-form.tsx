@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { updateGoalCurrent, type GoalActionState } from "@/server/actions/goals";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/money/money-input";
 
 const initial: GoalActionState = { ok: false };
 
@@ -20,13 +20,11 @@ export function GoalCurrentForm({
     <form action={action} className="mt-4 flex flex-col gap-2">
       <input type="hidden" name="id" value={id} />
       <div className="flex gap-2">
-        <Input
+        <MoneyInput
           name="currentAmount"
-          inputMode="numeric"
-          dir="ltr"
           defaultValue={currentAmount}
-          className="text-left"
           aria-label="مبلغ فعلی"
+          className="min-w-0 flex-1"
         />
         <Button type="submit" variant="secondary" disabled={pending} className="shrink-0">
           {pending ? "…" : "به‌روز کن"}

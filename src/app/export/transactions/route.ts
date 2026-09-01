@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     orderBy: { occurredAt: "desc" },
   });
 
-  const header = ["تاریخ", "نوع", "مبلغ", "دسته", "حساب", "فروشنده", "یادداشت"];
+  const header = ["تاریخ", "نوع", "مبلغ (تومان)", "دسته", "حساب", "فروشنده", "یادداشت"];
   const lines = [
     header.join(","),
     ...rows.map((row) =>

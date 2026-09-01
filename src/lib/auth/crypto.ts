@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { SESSION_TTL_DAYS } from "@/lib/config/app";
+import { SESSION_TTL_SECONDS } from "@/lib/config/app";
 
 function secret(): string {
   const value = process.env.AUTH_SECRET ?? process.env.OTP_PEPPER;
@@ -19,5 +19,5 @@ export function generateSessionToken(): { token: string; tokenHash: string } {
 }
 
 export function sessionExpiry(from = new Date()): Date {
-  return new Date(from.getTime() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
+  return new Date(from.getTime() + SESSION_TTL_SECONDS * 1000);
 }

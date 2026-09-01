@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/layout/app-shell";
+import { SessionKeepAlive } from "@/features/auth/session-keep-alive";
 import { QuickAddHost } from "@/features/quick-add/quick-add-host";
 import { OnboardingHost } from "@/features/onboarding/onboarding-host";
 import { requireUser } from "@/lib/auth/session";
@@ -22,6 +23,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       {children}
       <QuickAddHost context={quickAdd} />
       <OnboardingHost initial={user.onboardingCompletedAt === null} />
+      <SessionKeepAlive />
     </AppShell>
   );
 }

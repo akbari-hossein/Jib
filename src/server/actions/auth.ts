@@ -12,9 +12,11 @@ import { RateLimitError, assertLoginAllowed, assertSignupAllowed } from "@/lib/a
 import { clientIp } from "@/lib/auth/request";
 import {
   clearSessionCookie,
+  extendSession,
   issueSession,
   readSessionToken,
   requireUser,
+  setSessionCookie,
 } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { createUserWithDefaults } from "@/server/services/users";
@@ -110,6 +112,22 @@ export async function signup(
   }
 
   redirect("/home");
+}
+
+export async function refreshSession(): Promise<{ ok: boolean }> {
+  const token = await readSessionToken();
+  if (!token) {
+    return { ok: false };
+  }
+
+  const expiresAt = await extendSession(token);
+  if (!expiresAt) {
+    await clearSessionCookie();
+    return { ok: false };
+  }
+
+  await setSessionCookie(token, expiresAt);
+  return { ok: true };
 }
 
 export async function logout() {

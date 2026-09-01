@@ -6,6 +6,7 @@ import { JalaliDateFields } from "@/components/jalali-date-fields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MoneyInput } from "@/components/money/money-input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { getTehranJalaliDate } from "@/lib/dates/tehran";
 import { FREQUENCY_LABEL, TRANSACTION_TYPE_LABEL } from "@/lib/labels";
@@ -67,7 +68,7 @@ export function RecurringForm({
       </fieldset>
       <div className="flex flex-col gap-2">
         <Label htmlFor="amount">مبلغ</Label>
-        <Input id="amount" name="amount" inputMode="numeric" dir="ltr" className="text-left" required />
+        <MoneyInput id="amount" name="amount" required />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="frequency">دوره</Label>

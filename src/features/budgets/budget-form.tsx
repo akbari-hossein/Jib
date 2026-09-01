@@ -7,8 +7,8 @@ import {
   type BudgetActionState,
 } from "@/server/actions/budgets";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MoneyInput } from "@/components/money/money-input";
 import { NativeSelect } from "@/components/ui/native-select";
 
 const initial: BudgetActionState = { ok: false };
@@ -39,7 +39,7 @@ export function BudgetCategoryForm({
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="limit">سقف این ماه</Label>
-        <Input id="limit" name="limit" inputMode="numeric" dir="ltr" className="text-left" required />
+        <MoneyInput id="limit" name="limit" required />
       </div>
       {state.error ? (
         <p role="alert" className="text-sm text-destructive">
@@ -60,12 +60,9 @@ export function OverallLimitForm({ overallLimit }: { overallLimit: string }) {
     <form action={action} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <Label htmlFor="overallLimit">سقف کل ماه</Label>
-        <Input
+        <MoneyInput
           id="overallLimit"
           name="overallLimit"
-          inputMode="numeric"
-          dir="ltr"
-          className="text-left"
           defaultValue={overallLimit}
           placeholder="خالی = بدون سقف کل"
         />

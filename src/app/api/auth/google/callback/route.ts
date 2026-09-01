@@ -7,7 +7,7 @@ import {
   type GoogleProfile,
 } from "@/lib/auth/google";
 import { requestOrigin } from "@/lib/auth/request";
-import { cookieOptions, createSession, readOAuthCookies } from "@/lib/auth/session";
+import { createSession, readOAuthCookies, sessionCookieOptions } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { createUserWithDefaults } from "@/server/services/users";
 import { OAUTH_STATE_COOKIE, OAUTH_VERIFIER_COOKIE, SESSION_COOKIE } from "@/lib/config/app";
@@ -95,7 +95,7 @@ export async function GET(request: Request) {
     const user = await findOrCreateGoogleUser(profile);
     const { token, expiresAt } = await createSession(user.id, request.headers);
     const response = NextResponse.redirect(new URL("/home", origin));
-    response.cookies.set(SESSION_COOKIE, token, { ...cookieOptions, expires: expiresAt });
+    response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions(expiresAt));
     response.cookies.delete(OAUTH_STATE_COOKIE);
     response.cookies.delete(OAUTH_VERIFIER_COOKIE);
     return response;

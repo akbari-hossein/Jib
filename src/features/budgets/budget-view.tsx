@@ -120,6 +120,7 @@ export function BudgetView({
         <section className="rounded-3xl border border-border bg-card p-5">
           <h2 className="mb-4 text-base font-semibold">سقف کل</h2>
           <OverallLimitForm
+            key={budget.overallLimit == null ? "empty" : budget.overallLimit.toString()}
             overallLimit={budget.overallLimit == null ? "" : budget.overallLimit.toString()}
           />
         </section>

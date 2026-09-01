@@ -1,11 +1,18 @@
+import { redirect } from "next/navigation";
 import { SignupForm } from "@/features/auth/signup-form";
 import { isGoogleAuthEnabled } from "@/lib/auth/google";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export const metadata = {
   title: "ثبت‌نام",
 };
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  const user = await getCurrentUser();
+  if (user) {
+    redirect("/home");
+  }
+
   return (
     <section className="flex flex-col gap-6">
       <div>

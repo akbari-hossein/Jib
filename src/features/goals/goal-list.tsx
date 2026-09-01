@@ -43,7 +43,7 @@ export function GoalList({ goals }: { goals: GoalListItem[] }) {
               : ""}
           </p>
           {goal.linked ? null : (
-            <GoalCurrentForm id={goal.id} currentAmount={goal.currentAmount.toString()} />
+            <GoalCurrentForm key={`${goal.id}-${goal.currentAmount.toString()}`} id={goal.id} currentAmount={goal.currentAmount.toString()} />
           )}
         </li>
       ))}

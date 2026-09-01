@@ -6,6 +6,7 @@ import { JalaliDateFields } from "@/components/jalali-date-fields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MoneyInput } from "@/components/money/money-input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { getTehranJalaliDate } from "@/lib/dates/tehran";
 
@@ -28,14 +29,7 @@ export function GoalForm({
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="targetAmount">مبلغ هدف</Label>
-        <Input
-          id="targetAmount"
-          name="targetAmount"
-          inputMode="numeric"
-          dir="ltr"
-          className="text-left"
-          required
-        />
+        <MoneyInput id="targetAmount" name="targetAmount" required />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="accountId">حساب پس‌انداز (اختیاری)</Label>
@@ -58,14 +52,7 @@ export function GoalForm({
       {linked ? null : (
         <div className="flex flex-col gap-2">
           <Label htmlFor="currentAmount">مبلغ فعلی</Label>
-          <Input
-            id="currentAmount"
-            name="currentAmount"
-            inputMode="numeric"
-            dir="ltr"
-            defaultValue="0"
-            className="text-left"
-          />
+          <MoneyInput id="currentAmount" name="currentAmount" defaultValue="0" />
         </div>
       )}
       <div className="flex flex-col gap-2">

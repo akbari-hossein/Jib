@@ -83,6 +83,7 @@ export async function createAccount(
   const typeResult = accountTypeSchema.safeParse(formData.get("type"));
   const balance = parseTomanInput(String(formData.get("balance") ?? "0"), {
     allowZero: true,
+    allowNegative: true,
   });
   const appearance = parseAppearance(formData);
 
@@ -149,7 +150,7 @@ export async function updateAccount(
 
   let balance: bigint | undefined;
   if (balanceRaw != null) {
-    const parsed = parseTomanInput(String(balanceRaw), { allowZero: true });
+    const parsed = parseTomanInput(String(balanceRaw), { allowZero: true, allowNegative: true });
     if (parsed === null) {
       return { ok: false, error: "موجودی معتبر نیست." };
     }

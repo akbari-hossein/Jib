@@ -6,6 +6,7 @@ import { AccountIconMark } from "@/features/accounts/account-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MoneyInput } from "@/components/money/money-input";
 import { ACCOUNT_COLORS, ACCOUNT_ICONS, ACCOUNT_ICON_LABEL } from "@/lib/accounts/appearance";
 import { ACCOUNT_TYPE_LABEL } from "@/lib/labels";
 import { cn } from "@/lib/utils";
@@ -87,13 +88,11 @@ export function AccountForm({
 
       <div className="flex flex-col gap-2">
         <Label htmlFor={isEdit ? "edit-account-balance" : "account-balance"}>موجودی فعلی</Label>
-        <Input
+        <MoneyInput
           id={isEdit ? "edit-account-balance" : "account-balance"}
           name="balance"
-          inputMode="numeric"
-          dir="ltr"
           defaultValue={account?.balance ?? "0"}
-          className="text-left"
+          allowNegative
         />
         {isEdit ? (
           <p className="text-xs leading-6 text-foreground/45">

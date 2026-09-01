@@ -58,7 +58,6 @@ export function TransactionList({ transactions }: { transactions: Row[] }) {
                 <div className="flex flex-col items-end gap-1">
                   <MoneyDisplay
                     amount={item.amount}
-                    withUnit={false}
                     className={cn(
                       "text-sm font-semibold",
                       item.type === "INCOME" && "text-income",

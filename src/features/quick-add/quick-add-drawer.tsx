@@ -304,7 +304,7 @@ function AccountList({
           >
             <span>{account.name}</span>
             <span className="numeric-display text-sm text-foreground/55">
-              {formatToman(BigInt(account.balance), { withUnit: false })}
+              {formatToman(BigInt(account.balance))}
             </span>
           </button>
         </li>
