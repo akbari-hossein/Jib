@@ -8,6 +8,11 @@ import {
   tehranMidnightUtc,
 } from "@/lib/dates/tehran";
 import { assemblePeriodReview, type CategorySpend } from "@/lib/finance/reports";
+import {
+  describeSavingsInReferenceAsset,
+  type ReferenceAssetType,
+} from "@/lib/finance/purchasing-power";
+import { getLatestRate } from "@/lib/finance/referenceRates";
 import { JALALI_MONTHS } from "@/lib/labels";
 import { getBudgetMonth } from "@/server/queries/budgets";
 import { listGoals } from "@/server/queries/goals";
@@ -74,7 +79,10 @@ async function periodTotals(userId: string, from: Date, to: Date, previousFrom: 
   });
 }
 
-export async function getReports(userId: string) {
+export async function getReports(
+  userId: string,
+  referenceAssetPreference: ReferenceAssetType | null = null,
+) {
   const today = getTehranJalaliDate();
   const weekStart = jalaliWeekStart(today);
   const weekEnd = addJalaliDays(weekStart, 6);
@@ -84,7 +92,7 @@ export async function getReports(userId: string) {
   const nextMonth = addJalaliMonths(monthStart, 1);
   const previousMonthStart = addJalaliMonths(monthStart, -1);
 
-  const [week, month, budget, goals] = await Promise.all([
+  const [week, month, budget, goals, referenceRate] = await Promise.all([
     periodTotals(
       userId,
       tehranMidnightUtc(weekStart),
@@ -101,15 +109,21 @@ export async function getReports(userId: string) {
     ),
     getBudgetMonth(userId),
     listGoals(userId),
+    referenceAssetPreference ? getLatestRate(referenceAssetPreference) : Promise.resolve(null),
   ]);
 
   const hasActivity = week.expenses > 0n || week.income > 0n || month.expenses > 0n || month.income > 0n;
+  const weekSavingsHint =
+    week.income > 0n ? describeSavingsInReferenceAsset(week.net, referenceRate, "week") : null;
+  const monthSavingsHint =
+    month.income > 0n ? describeSavingsInReferenceAsset(month.net, referenceRate, "month") : null;
 
   return {
     hasActivity,
     week: {
       title: "گزارش این هفته",
       rangeLabel: formatJalaliRange(weekStart, weekEnd),
+      savingsHint: weekSavingsHint,
       ...week,
     },
     month: {
@@ -117,6 +131,7 @@ export async function getReports(userId: string) {
       rangeLabel: `${JALALI_MONTHS[today.month - 1] ?? ""} ${today.year}`,
       year: today.year,
       month: today.month,
+      savingsHint: monthSavingsHint,
       ...month,
     },
     budget,

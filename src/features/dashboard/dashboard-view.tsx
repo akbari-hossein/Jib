@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { FinancialMetric } from "@/components/finance/financial-metric";
+import { PurchasingPowerHint, PurchasingPowerSentence } from "@/components/finance/purchasing-power-hint";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TransactionList } from "@/features/transactions/transaction-list";
@@ -33,6 +34,11 @@ export function DashboardView({
             empty={!dashboard.hasAccounts}
             size="lg"
             heading
+            secondary={
+              dashboard.hasAccounts && dashboard.availableEquivalent ? (
+                <PurchasingPowerHint hint={dashboard.availableEquivalent} />
+              ) : null
+            }
           />
         </div>
       </header>
@@ -97,6 +103,14 @@ export function DashboardView({
             <p className="mt-1 text-sm text-muted-foreground">
               {periodChangeCopy(dashboard.monthlyChange, "month")}
             </p>
+            {dashboard.monthlySavingsHint ? (
+              <div className="mt-3">
+                <PurchasingPowerSentence
+                  sentence={dashboard.monthlySavingsHint.sentence}
+                  rateDateLabel={dashboard.monthlySavingsHint.rateDateLabel}
+                />
+              </div>
+            ) : null}
             <Link href="/reports" className="mt-3 inline-block text-sm text-primary">
               گزارش کامل
             </Link>

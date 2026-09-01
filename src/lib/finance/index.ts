@@ -12,6 +12,23 @@ export { calculateMonthlyChange } from "@/lib/finance/monthly-change";
 export type { MonthlyChange } from "@/lib/finance/monthly-change";
 export { assemblePeriodReview, rankCategorySpend } from "@/lib/finance/reports";
 export type { CategorySpend, PeriodReview, RankedCategory } from "@/lib/finance/reports";
+export {
+  calculatePurchasingPowerEquivalent,
+  calculateSavingsInReferenceAsset,
+  describePurchasingPower,
+  describeSavingsInReferenceAsset,
+  formatEquivalentAmount,
+  isReferenceAssetType,
+  REFERENCE_ASSET_OPTION_LABEL,
+  REFERENCE_ASSET_TYPES,
+  REFERENCE_ASSET_UNIT_LABEL,
+  REFERENCE_EQUIVALENT_SCALE,
+} from "@/lib/finance/purchasing-power";
+export type {
+  PurchasingPowerHint,
+  ReferenceAssetType,
+  ReferenceRateSnapshot,
+} from "@/lib/finance/purchasing-power";
 export { calculateRequiredSavings } from "@/lib/finance/required-savings";
 export { matchTransactionRule } from "@/lib/finance/rules";
 export type { RuleSnapshot } from "@/lib/finance/rules";

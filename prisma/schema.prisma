@@ -55,20 +55,28 @@ enum RuleMatchType {
   CONTAINS
 }
 
+enum ReferenceAssetType {
+  USD
+  GOLD_COIN
+  GOLD_GRAM
+}
+
 model User {
-  id                   String    @id @default(cuid())
-  email                String    @unique
-  passwordHash         String?
-  googleId             String?   @unique
-  name                 String?
-  plan                 Plan      @default(FREE)
-  incomeDayOfMonth     Int?
-  expectedIncomeAmount BigInt?
-  locale                 String    @default("fa-IR")
-  currency               String    @default("TOMAN")
-  onboardingCompletedAt  DateTime?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+  id                         String              @id @default(cuid())
+  email                      String              @unique
+  passwordHash               String?
+  googleId                   String?             @unique
+  name                       String?
+  plan                       Plan                @default(FREE)
+  incomeDayOfMonth           Int?
+  expectedIncomeAmount       BigInt?
+  locale                     String              @default("fa-IR")
+  currency                   String              @default("TOMAN")
+  onboardingCompletedAt      DateTime?
+  /// Null means the purchasing-power reference line is off.
+  referenceAssetPreference   ReferenceAssetType?
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @updatedAt
 
   sessions             Session[]
   accounts             Account[]
@@ -259,4 +267,18 @@ model NotificationPreference {
   goalMilestone  Boolean @default(true)
   recurringDue   Boolean @default(true)
   incomeExpected Boolean @default(false)
+}
+
+/// One toman price for a unit of a reference asset, as of `effectiveAt`.
+/// `rateToToman` is whole toman (no floats). A cron or REST provider should
+/// insert rows through `recordRate`; calculation never fetches the provider.
+model ReferenceRate {
+  id          String             @id @default(cuid())
+  assetType   ReferenceAssetType
+  rateToToman BigInt
+  source      String
+  effectiveAt DateTime
+  createdAt   DateTime           @default(now())
+
+  @@index([assetType, effectiveAt])
 }

@@ -6,7 +6,11 @@ export const metadata = { title: "خانه" };
 
 export default async function HomePage() {
   const user = await requireUser();
-  const dashboard = await getDashboard(user.id, user.incomeDayOfMonth);
+  const dashboard = await getDashboard(
+    user.id,
+    user.incomeDayOfMonth,
+    user.referenceAssetPreference,
+  );
 
   return <DashboardView dashboard={dashboard} name={user.name} />;
 }

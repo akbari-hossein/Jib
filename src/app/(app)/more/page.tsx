@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth/session";
 import { PaydayForm } from "@/features/settings/payday-form";
 import { PlanCard } from "@/features/settings/plan-card";
 import { ProfileForm } from "@/features/settings/profile-form";
+import { ReferenceAssetForm } from "@/features/settings/reference-asset-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { getPlanAccess } from "@/server/queries/plan";
@@ -55,6 +56,11 @@ export default async function MorePage() {
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">روز درآمد</h2>
         <PaydayForm incomeDayOfMonth={user.incomeDayOfMonth} />
+      </section>
+
+      <section className="rounded-3xl border border-border bg-card p-5">
+        <h2 className="mb-4 text-base font-semibold">معادل ارزش</h2>
+        <ReferenceAssetForm preference={user.referenceAssetPreference} />
       </section>
 
       <section className="rounded-3xl border border-border bg-card p-5">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CategoryIcon } from "@/components/category-icon";
 import { EmptyState } from "@/components/empty-state";
+import { PurchasingPowerSentence } from "@/components/finance/purchasing-power-hint";
 import { MoneyDisplay } from "@/components/money/money-display";
 import { UsageBar } from "@/components/usage-bar";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
@@ -133,6 +134,14 @@ function WeeklyCard({ week }: { week: ReportsDto["week"] }) {
               کمترین هزینه: {week.lowestCategory.name} — {formatCompactToman(week.lowestCategory.amount)}
             </p>
           ) : null}
+          {week.savingsHint ? (
+            <div className="mt-3">
+              <PurchasingPowerSentence
+                sentence={week.savingsHint.sentence}
+                rateDateLabel={week.savingsHint.rateDateLabel}
+              />
+            </div>
+          ) : null}
         </>
       )}
     </section>
@@ -158,6 +167,14 @@ function MonthlyCard({ month }: { month: ReportsDto["month"] }) {
       ) : (
         <p className="mt-4 text-sm text-foreground/45">برای نرخ پس‌انداز، درآمد این ماه را ثبت کن.</p>
       )}
+      {month.savingsHint ? (
+        <div className="mt-3">
+          <PurchasingPowerSentence
+            sentence={month.savingsHint.sentence}
+            rateDateLabel={month.savingsHint.rateDateLabel}
+          />
+        </div>
+      ) : null}
       <p className="mt-2 text-sm text-foreground/55">
         {periodChangeCopy(month.expenseChange, "month")}
       </p>
