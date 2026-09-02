@@ -6,17 +6,21 @@ import { Card } from "@/components/ui/card";
 import { TransactionList } from "@/features/transactions/transaction-list";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
 import { NotificationBell } from "@/features/notifications/notification-bell";
+import { MonthlyRecapPrompt } from "@/features/reports/monthly-recap-prompt";
 import { JALALI_MONTHS, periodChangeCopy } from "@/lib/labels";
+import type { MonthlyRecapDto } from "@/lib/finance/monthly-recap-data";
 import type { DashboardDto } from "@/server/queries/dashboard";
 
 export function DashboardView({
   dashboard,
   name,
   unreadCount,
+  previousRecap,
 }: {
   dashboard: DashboardDto;
   name: string | null;
   unreadCount: number;
+  previousRecap?: MonthlyRecapDto | null;
 }) {
   const title = name ? `${dashboard.greeting} ${name}` : dashboard.greeting;
   const remainingLabel = dashboard.hasKnownIncomeDate
@@ -42,6 +46,8 @@ export function DashboardView({
         </div>
         <NotificationBell unreadCount={unreadCount} />
       </header>
+
+      {previousRecap ? <MonthlyRecapPrompt recap={previousRecap} /> : null}
 
       {!dashboard.hasAccounts ? (
         <EmptyState

@@ -3,6 +3,8 @@ import { CategoryIcon } from "@/components/category-icon";
 import { EmptyState } from "@/components/empty-state";
 import { MoneyDisplay } from "@/components/money/money-display";
 import { UsageBar } from "@/components/usage-bar";
+import { MonthlyRecapPrompt } from "@/features/reports/monthly-recap-prompt";
+import { MonthlyRecapShare } from "@/features/reports/monthly-recap-share";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
 import { budgetUsageCopy, periodChangeCopy } from "@/lib/labels";
 import type { RankedCategory } from "@/lib/finance/reports";
@@ -20,6 +22,7 @@ export function ReportsView({ reports }: { reports: ReportsDto }) {
     return (
       <main className="flex flex-col gap-6 px-5 pt-8">
         <h1 className="text-2xl font-semibold tracking-tight">گزارش‌ها</h1>
+        {reports.previousRecap ? <MonthlyRecapPrompt recap={reports.previousRecap} /> : null}
         <EmptyState
           title="هنوز چیزی برای مرور نیست"
           description="چند خرج یا درآمد ثبت کن تا گزارش هفته و ماه اینجا جمع شود. بدون داده، جیب چیزی اختراع نمی‌کند."
@@ -37,8 +40,10 @@ export function ReportsView({ reports }: { reports: ReportsDto }) {
         </p>
       </header>
 
+      {reports.previousRecap ? <MonthlyRecapPrompt recap={reports.previousRecap} /> : null}
+
       <WeeklyCard week={reports.week} />
-      <MonthlyCard month={reports.month} />
+      <MonthlyCard month={reports.month} recap={reports.recap} />
 
       {reports.month.categories.length > 0 ? (
         <section className="rounded-3xl border border-border bg-card px-5 py-4">
@@ -139,10 +144,19 @@ function WeeklyCard({ week }: { week: ReportsDto["week"] }) {
   );
 }
 
-function MonthlyCard({ month }: { month: ReportsDto["month"] }) {
+function MonthlyCard({
+  month,
+  recap,
+}: {
+  month: ReportsDto["month"];
+  recap: ReportsDto["recap"];
+}) {
   return (
     <section className="rounded-3xl border border-border bg-card px-5 py-4">
-      <h2 className="text-base font-semibold">{month.title}</h2>
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="text-base font-semibold">{month.title}</h2>
+        {recap ? <MonthlyRecapShare recap={recap} /> : null}
+      </div>
       <dl className="mt-4 space-y-3 text-sm">
         <Row label="درآمد" value={month.income} />
         <Row label="هزینه" value={month.expenses} />

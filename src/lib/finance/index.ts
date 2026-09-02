@@ -10,6 +10,21 @@ export { calculateDailyAllowance } from "@/lib/finance/daily-allowance";
 export { calculateGoalProgress } from "@/lib/finance/goal-progress";
 export { calculateMonthlyChange } from "@/lib/finance/monthly-change";
 export type { MonthlyChange } from "@/lib/finance/monthly-change";
+export {
+  assembleMonthlyRecap,
+  availableRecapFields,
+  budgetDiscipline,
+  defaultRecapSelection,
+  pickMovedGoal,
+  serializeMonthlyRecap,
+  summarizeLoggedDays,
+} from "@/lib/finance/monthly-recap-data";
+export type {
+  MonthlyRecapData,
+  MonthlyRecapDto,
+  RecapFieldId,
+  RecapSelection,
+} from "@/lib/finance/monthly-recap-data";
 export { assemblePeriodReview, rankCategorySpend } from "@/lib/finance/reports";
 export type { CategorySpend, PeriodReview, RankedCategory } from "@/lib/finance/reports";
 export { calculateRequiredSavings } from "@/lib/finance/required-savings";

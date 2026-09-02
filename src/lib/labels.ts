@@ -65,6 +65,18 @@ export function budgetUsageCopy(name: string, pct: number, status: BudgetStatus)
   return `${pct}٪ از سقف ${name}`;
 }
 
+export const RECAP_FIELD_LABEL = {
+  income: "درآمد",
+  expenses: "هزینه",
+  saved: "پس‌انداز",
+  savingsRate: "نرخ پس‌انداز",
+  topCategory: "بزرگ‌ترین دسته",
+  vsPreviousMonth: "مقایسه با ماه قبل",
+  goalProgress: "پیشرفت هدف",
+  daysLogged: "روزهای ثبت",
+  budgetsUnder: "بودجه زیر سقف",
+} as const;
+
 export const JALALI_MONTHS = [
   "فروردین",
   "اردیبهشت",

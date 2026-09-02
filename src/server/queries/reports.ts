@@ -4,13 +4,23 @@ import {
   addJalaliMonths,
   formatJalaliRange,
   getTehranJalaliDate,
+  jalaliMonthLength,
   jalaliWeekStart,
   tehranMidnightUtc,
 } from "@/lib/dates/tehran";
-import { assemblePeriodReview, type CategorySpend } from "@/lib/finance/reports";
+import {
+  assembleMonthlyRecap,
+  budgetDiscipline,
+  NEW_MONTH_RECAP_PROMPT_DAYS,
+  pickMovedGoal,
+  serializeMonthlyRecap,
+  summarizeLoggedDays,
+  type MonthlyRecapDto,
+} from "@/lib/finance/monthly-recap-data";
+import { assemblePeriodReview, type CategorySpend, type PeriodReview } from "@/lib/finance/reports";
 import { JALALI_MONTHS } from "@/lib/labels";
-import { getBudgetMonth } from "@/server/queries/budgets";
-import { listGoals } from "@/server/queries/goals";
+import { getBudgetMonth, type BudgetMonthDto } from "@/server/queries/budgets";
+import { listGoals, type GoalListItem } from "@/server/queries/goals";
 
 async function sumByType(
   userId: string,
@@ -74,6 +84,120 @@ async function periodTotals(userId: string, from: Date, to: Date, previousFrom: 
   });
 }
 
+async function recapExtras(userId: string, from: Date, to: Date) {
+  const [occurredAtRows, inflows] = await Promise.all([
+    prisma.transaction.findMany({
+      where: { userId, occurredAt: { gte: from, lt: to } },
+      select: { occurredAt: true },
+    }),
+    prisma.transaction.groupBy({
+      by: ["toAccountId"],
+      where: {
+        userId,
+        type: "TRANSFER",
+        toAccountId: { not: null },
+        occurredAt: { gte: from, lt: to },
+      },
+      _sum: { amount: true },
+    }),
+  ]);
+
+  const inflowsByAccountId = new Map<string, bigint>();
+  for (const row of inflows) {
+    if (!row.toAccountId) {
+      continue;
+    }
+    inflowsByAccountId.set(row.toAccountId, row._sum.amount ?? 0n);
+  }
+
+  return {
+    occurredAt: occurredAtRows.map((row) => row.occurredAt),
+    inflowsByAccountId,
+  };
+}
+
+function composeRecap(input: {
+  year: number;
+  month: number;
+  review: PeriodReview;
+  extras: Awaited<ReturnType<typeof recapExtras>>;
+  budget: BudgetMonthDto;
+  goals: GoalListItem[];
+  includeGoalPct: boolean;
+}): MonthlyRecapDto | null {
+  if (input.review.income === 0n && input.review.expenses === 0n) {
+    return null;
+  }
+
+  const today = getTehranJalaliDate();
+  const isCurrentMonth = today.year === input.year && today.month === input.month;
+  const daysInPeriod = isCurrentMonth ? today.day : jalaliMonthLength(input.year, input.month);
+  const logged = summarizeLoggedDays(input.extras.occurredAt);
+
+  const recap = assembleMonthlyRecap({
+    year: input.year,
+    month: input.month,
+    review: input.review,
+    daysLogged: logged.daysLogged,
+    daysInPeriod,
+    goal: pickMovedGoal({
+      goals: input.goals.map((goal) => ({
+        name: goal.name,
+        accountId: goal.accountId,
+        progressPct: goal.progress.pct,
+      })),
+      inflowsByAccountId: input.extras.inflowsByAccountId,
+      includePct: input.includeGoalPct,
+    }),
+    budgetsUnder: budgetDiscipline({
+      items: input.budget.items.map((item) => ({ status: item.usage.status })),
+      overallStatus: input.budget.overallUsage?.status ?? null,
+    }),
+  });
+
+  return serializeMonthlyRecap(recap);
+}
+
+export async function getMonthlyRecap(
+  userId: string,
+  year: number,
+  month: number,
+): Promise<MonthlyRecapDto | null> {
+  const monthStart = { year, month, day: 1 };
+  const nextMonth = addJalaliMonths(monthStart, 1);
+  const previousMonthStart = addJalaliMonths(monthStart, -1);
+  const from = tehranMidnightUtc(monthStart);
+  const to = tehranMidnightUtc(nextMonth);
+  const today = getTehranJalaliDate();
+  const includeGoalPct = today.year === year && today.month === month;
+
+  const [review, extras, budget, goals] = await Promise.all([
+    periodTotals(userId, from, to, tehranMidnightUtc(previousMonthStart), from),
+    recapExtras(userId, from, to),
+    getBudgetMonth(userId, { year, month }),
+    listGoals(userId),
+  ]);
+
+  return composeRecap({
+    year,
+    month,
+    review,
+    extras,
+    budget,
+    goals,
+    includeGoalPct,
+  });
+}
+
+export async function getPreviousMonthRecapPrompt(userId: string): Promise<MonthlyRecapDto | null> {
+  const today = getTehranJalaliDate();
+  if (today.day > NEW_MONTH_RECAP_PROMPT_DAYS) {
+    return null;
+  }
+  const previous = addJalaliMonths({ year: today.year, month: today.month, day: 1 }, -1);
+  return getMonthlyRecap(userId, previous.year, previous.month);
+}
+
 export async function getReports(userId: string) {
   const today = getTehranJalaliDate();
   const weekStart = jalaliWeekStart(today);
@@ -83,8 +207,11 @@ export async function getReports(userId: string) {
   const monthStart = { year: today.year, month: today.month, day: 1 };
   const nextMonth = addJalaliMonths(monthStart, 1);
   const previousMonthStart = addJalaliMonths(monthStart, -1);
+  const monthFrom = tehranMidnightUtc(monthStart);
+  const monthTo = tehranMidnightUtc(nextMonth);
+  const includePreviousPrompt = today.day <= NEW_MONTH_RECAP_PROMPT_DAYS;
 
-  const [week, month, budget, goals] = await Promise.all([
+  const [week, month, budget, goals, extras, previousRecap] = await Promise.all([
     periodTotals(
       userId,
       tehranMidnightUtc(weekStart),
@@ -94,16 +221,29 @@ export async function getReports(userId: string) {
     ),
     periodTotals(
       userId,
-      tehranMidnightUtc(monthStart),
-      tehranMidnightUtc(nextMonth),
+      monthFrom,
+      monthTo,
       tehranMidnightUtc(previousMonthStart),
-      tehranMidnightUtc(monthStart),
+      monthFrom,
     ),
     getBudgetMonth(userId),
     listGoals(userId),
+    recapExtras(userId, monthFrom, monthTo),
+    includePreviousPrompt
+      ? getMonthlyRecap(userId, previousMonthStart.year, previousMonthStart.month)
+      : Promise.resolve(null),
   ]);
 
   const hasActivity = week.expenses > 0n || week.income > 0n || month.expenses > 0n || month.income > 0n;
+  const recap = composeRecap({
+    year: today.year,
+    month: today.month,
+    review: month,
+    extras,
+    budget,
+    goals,
+    includeGoalPct: true,
+  });
 
   return {
     hasActivity,
@@ -119,6 +259,8 @@ export async function getReports(userId: string) {
       month: today.month,
       ...month,
     },
+    recap,
+    previousRecap,
     budget,
     goals,
   };
