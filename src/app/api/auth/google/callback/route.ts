@@ -93,6 +93,9 @@ export async function GET(request: Request) {
       verifier: stored.verifier,
     });
     const user = await findOrCreateGoogleUser(profile);
+    if (user.status === "DISABLED") {
+      return loginError(origin, "disabled");
+    }
     const { token, expiresAt } = await createSession(user.id, request.headers);
     const response = NextResponse.redirect(new URL("/home", origin));
     response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions(expiresAt));

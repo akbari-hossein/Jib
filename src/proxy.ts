@@ -15,6 +15,7 @@ const protectedPrefixes = [
   "/reports",
   "/export",
   "/notifications",
+  "/admin",
 ];
 
 export function proxy(request: NextRequest) {
@@ -50,6 +51,8 @@ export const config = {
     "/notifications/:path*",
     "/export",
     "/export/:path*",
+    "/admin",
+    "/admin/:path*",
     "/login",
     "/signup",
   ],

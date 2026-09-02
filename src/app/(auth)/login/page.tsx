@@ -13,6 +13,7 @@ const OAUTH_ERRORS: Record<string, string> = {
   google_unverified: "ایمیل گوگل هنوز تأیید نشده.",
   google_email: "گوگل ایمیل این حساب را نداد.",
   google_config: "ورود با گوگل روی این سرور فعال نیست.",
+  disabled: "امکان ورود به این حساب وجود ندارد.",
 };
 
 export default async function LoginPage({

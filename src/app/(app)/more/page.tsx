@@ -54,6 +54,11 @@ export default async function MorePage() {
         <Link href="/home?tour=1" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           راهنمای جیب
         </Link>
+        {user.role === "ADMIN" ? (
+          <Link href="/admin" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+            پنل مدیریت
+          </Link>
+        ) : null}
       </nav>
 
       <PlanCard access={access} />

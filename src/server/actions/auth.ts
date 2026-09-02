@@ -62,6 +62,9 @@ export async function login(
     if (!user || !matches) {
       return { ok: false, error: "ایمیل یا رمز عبور اشتباه است." };
     }
+    if (user.status === "DISABLED") {
+      return { ok: false, error: "امکان ورود به این حساب وجود ندارد." };
+    }
 
     await issueSession(user.id, headerList);
   } catch {
