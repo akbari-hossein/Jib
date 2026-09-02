@@ -11,7 +11,6 @@ import {
   assertGoalOwned,
   userFacingMutationError,
 } from "@/server/services/ownership";
-import { assertCanCreate } from "@/server/services/plan";
 
 export type GoalActionState = {
   ok: boolean;
@@ -51,7 +50,6 @@ export async function createGoal(
   }
 
   try {
-    await assertCanCreate(user.id, user.plan, "goals");
     let opening = currentAmount;
     if (accountId) {
       const account = await assertAccountOwned(user.id, accountId);

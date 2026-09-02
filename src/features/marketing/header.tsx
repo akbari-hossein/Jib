@@ -3,7 +3,6 @@ import { APP_NAME } from "@/lib/config/app";
 
 const NAV = [
   { href: "/features", label: "امکانات" },
-  { href: "/pricing", label: "قیمت" },
   { href: "/faq", label: "سؤال‌ها" },
   { href: "/about", label: "درباره" },
 ] as const;
@@ -35,7 +34,7 @@ export function MarketingHeader() {
             href="/signup"
             className="inline-flex h-10 items-center rounded-2xl bg-primary px-4 text-sm font-medium text-primary-foreground transition-transform active:scale-[0.98]"
           >
-            شروع رایگان
+            شروع کن
           </Link>
         </nav>
       </div>

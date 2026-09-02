@@ -2,17 +2,14 @@ import Link from "next/link";
 import { logout } from "@/server/actions/auth";
 import { requireUser } from "@/lib/auth/session";
 import { PaydayForm } from "@/features/settings/payday-form";
-import { PlanCard } from "@/features/settings/plan-card";
 import { ProfileForm } from "@/features/settings/profile-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { getPlanAccess } from "@/server/queries/plan";
 
 export const metadata = { title: "بیشتر" };
 
 export default async function MorePage() {
   const user = await requireUser();
-  const access = await getPlanAccess(user.id, user.plan);
 
   return (
     <main className="flex flex-col gap-8 px-5 pt-8">
@@ -60,8 +57,6 @@ export default async function MorePage() {
           </Link>
         ) : null}
       </nav>
-
-      <PlanCard access={access} />
 
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">روز درآمد</h2>

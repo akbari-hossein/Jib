@@ -3,7 +3,6 @@ import { APP_NAME, APP_NAME_EN } from "@/lib/config/app";
 
 const PRODUCT = [
   { href: "/features", label: "امکانات" },
-  { href: "/pricing", label: "قیمت" },
   { href: "/faq", label: "سؤال‌های رایج" },
 ] as const;
 

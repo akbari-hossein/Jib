@@ -7,11 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Plan {
-  FREE
-  PRO
-}
-
 enum UserRole {
   USER
   ADMIN
@@ -84,7 +79,6 @@ model User {
   passwordHash         String?
   googleId             String?    @unique
   name                 String?
-  plan                 Plan       @default(FREE)
   role                 UserRole   @default(USER)
   status               UserStatus @default(ACTIVE)
   incomeDayOfMonth     Int?

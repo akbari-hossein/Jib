@@ -1,4 +1,4 @@
-import type { AdminAuditAction, Plan, UserRole, UserStatus } from "@prisma/client";
+import type { AdminAuditAction, UserRole, UserStatus } from "@prisma/client";
 
 export const USER_ROLE_LABEL: Record<UserRole, string> = {
   USER: "کاربر",
@@ -8,11 +8,6 @@ export const USER_ROLE_LABEL: Record<UserRole, string> = {
 export const USER_STATUS_LABEL: Record<UserStatus, string> = {
   ACTIVE: "فعال",
   DISABLED: "غیرفعال",
-};
-
-export const PLAN_LABEL: Record<Plan, string> = {
-  FREE: "رایگان",
-  PRO: "حرفه‌ای",
 };
 
 export const ADMIN_AUDIT_LABEL: Record<AdminAuditAction, string> = {

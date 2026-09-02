@@ -4,7 +4,7 @@
 
 Jib is a Persian, RTL personal-finance PWA. It answers one question on the home screen: how much you can spend today — after liquid balances, upcoming bills, and savings goals.
 
-The product is designed for Iran: Jalali calendar, Tehran timezone, and amounts in تومان.
+The product is designed for Iran: Jalali calendar, Tehran timezone, and amounts in تومان. Jib is fully featured and free — there is no paid plan.
 
 ---
 
@@ -21,8 +21,6 @@ The product is designed for Iran: Jalali calendar, Tehran timezone, and amounts 
 - **Notifications** — deterministic, explainable nudges (budget thresholds, recurring due, goal milestones) via Web Push and an in-app center
 - **PWA** — installable, standalone, with an offline fallback page
 - **Auth** — email and password, optional Google sign-in, cookie sessions
-
-The free plan is the current product. A `PRO` plan exists in the schema but is not billed yet.
 
 ---
 
@@ -174,7 +172,7 @@ Create an account at `/signup` with email and password (at least 8 characters). 
 | Path | Who | What |
 | --- | --- | --- |
 | `/` | Public | Landing |
-| `/features`, `/pricing` | Public | Marketing |
+| `/features` | Public | Marketing |
 | `/login`, `/signup` | Auth | Email/password and optional Google |
 | `/home` | Signed in | Spendable today + recent activity |
 | `/transactions` | Signed in | Ledger |

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
-import { hasFeature } from "@/lib/billing/plan";
 import { jalaliFromInstant } from "@/lib/dates/tehran";
 import { prisma } from "@/lib/db/prisma";
 import { TRANSACTION_TYPE_LABEL } from "@/lib/labels";
@@ -23,9 +22,6 @@ export async function GET(request: Request) {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.redirect(new URL("/login", origin));
-  }
-  if (!hasFeature(user.plan, "export")) {
-    return NextResponse.redirect(new URL("/pricing", origin));
   }
 
   const rows = await prisma.transaction.findMany({

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { AdminUserIdentity } from "@/features/admin/user-identity";
 import { formatCount, formatRelativeOrDate } from "@/lib/admin/format";
-import { PLAN_LABEL, USER_STATUS_LABEL } from "@/lib/admin/labels";
+import { USER_STATUS_LABEL } from "@/lib/admin/labels";
 import { buildPageHref, type SortDir, type UserSort } from "@/lib/admin/params";
 import type { AdminUserListItem } from "@/server/queries/admin/users";
 
@@ -86,7 +86,6 @@ export function AdminUserTable({
                     <Badge tone={user.status === "ACTIVE" ? "income" : "warning"}>
                       {USER_STATUS_LABEL[user.status]}
                     </Badge>
-                    <Badge tone={user.plan === "PRO" ? "primary" : "muted"}>{PLAN_LABEL[user.plan]}</Badge>
                   </div>
                 </td>
                 <td className="px-4 py-3">

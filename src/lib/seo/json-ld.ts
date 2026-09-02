@@ -40,7 +40,7 @@ export function softwareApplicationJsonLd() {
       "@type": "Offer",
       price: "0",
       priceCurrency: "IRR",
-      description: "شروع رایگان. نسخه حرفه‌ای به‌زودی.",
+      description: "بدون اشتراک؛ همه امکانات در دسترس است.",
     },
   };
 }

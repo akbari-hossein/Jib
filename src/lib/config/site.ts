@@ -36,7 +36,6 @@ export const SITE = {
 export const PUBLIC_PATHS = [
   "/",
   "/features",
-  "/pricing",
   "/about",
   "/faq",
   "/privacy",

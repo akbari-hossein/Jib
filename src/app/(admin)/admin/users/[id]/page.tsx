@@ -6,7 +6,7 @@ import { MoneyDisplay } from "@/components/money/money-display";
 import { AdminBreadcrumbs } from "@/features/admin/admin-breadcrumbs";
 import { AdminUserActions } from "@/features/admin/user-actions";
 import { formatCount, formatJalaliAbsolute, formatJalaliDateTime, formatRelativeOrDate } from "@/lib/admin/format";
-import { PLAN_LABEL, USER_ROLE_LABEL, USER_STATUS_LABEL } from "@/lib/admin/labels";
+import { USER_ROLE_LABEL, USER_STATUS_LABEL } from "@/lib/admin/labels";
 import { requireAdmin } from "@/lib/auth/admin";
 import { TRANSACTION_TYPE_LABEL } from "@/lib/labels";
 import { getAdminUserDetail } from "@/server/queries/admin/users";
@@ -40,7 +40,10 @@ export default async function AdminUserDetailPage({
         <InfoCard label="شناسه" value={user.id} dir="ltr" />
         <InfoCard label="نقش" value={USER_ROLE_LABEL[user.role]} />
         <InfoCard label="وضعیت" value={USER_STATUS_LABEL[user.status]} />
-        <InfoCard label="طرح" value={PLAN_LABEL[user.plan]} />
+        <InfoCard
+          label="روز درآمد"
+          value={user.incomeDayOfMonth != null ? formatCount(user.incomeDayOfMonth) : "—"}
+        />
         <InfoCard label="عضویت" value={formatJalaliAbsolute(user.createdAt)} />
         <InfoCard
           label="آخرین فعالیت"
