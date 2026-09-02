@@ -12,7 +12,7 @@ type QuickAddState = {
   accountId: string | null;
   toAccountId: string | null;
   merchant: string;
-  openDrawer: () => void;
+  openDrawer: (seed?: { digits?: string; categoryId?: string | null; type?: QuickAddType }) => void;
   closeDrawer: () => void;
   setType: (type: QuickAddType) => void;
   setDigits: (digits: string) => void;
@@ -40,7 +40,17 @@ const initial = {
 
 export const useQuickAddStore = create<QuickAddState>((set) => ({
   ...initial,
-  openDrawer: () => set({ open: true, step: "amount" }),
+  openDrawer: (seed) =>
+    set({
+      open: true,
+      step: "amount",
+      type: seed?.type ?? "EXPENSE",
+      digits: seed?.digits ?? "",
+      categoryId: seed?.categoryId ?? null,
+      accountId: null,
+      toAccountId: null,
+      merchant: "",
+    }),
   closeDrawer: () => set({ open: false }),
   setType: (type) => set({ type, categoryId: null, toAccountId: null }),
   setDigits: (digits) => set({ digits }),

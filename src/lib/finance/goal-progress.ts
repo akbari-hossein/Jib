@@ -1,33 +1,22 @@
 import type { JalaliDate } from "@/lib/dates/tehran";
 import { jalaliFromUtc, monthsRemainingForGoal } from "@/lib/dates/tehran";
+import { ceilDiv } from "@/lib/finance/math";
+import type { GoalProgressInput } from "@/lib/finance/types";
 
-function ceilDiv(numerator: bigint, denominator: bigint): bigint {
-  if (denominator <= 0n) {
-    return 0n;
-  }
-  return (numerator + denominator - 1n) / denominator;
-}
-
-export function calculateGoalProgress(input: {
-  currentAmount: bigint;
-  targetAmount: bigint;
-  targetDate: Date | null;
-  today: Date;
-}): {
+export function calculateGoalProgress(input: GoalProgressInput): {
   pct: number;
   remaining: bigint;
   monthsLeft: number | null;
   monthlyNeed: bigint | null;
 } {
+  const currentAmount = input.currentAmount + (input.simulatedDelta ?? 0n);
   const remaining =
-    input.targetAmount > input.currentAmount
-      ? input.targetAmount - input.currentAmount
-      : 0n;
+    input.targetAmount > currentAmount ? input.targetAmount - currentAmount : 0n;
 
   const pct =
     input.targetAmount <= 0n
       ? 0
-      : Math.min(100, Number((input.currentAmount * 100n) / input.targetAmount));
+      : Math.min(100, Number((currentAmount * 100n) / input.targetAmount));
 
   if (input.targetDate == null) {
     return { pct, remaining, monthsLeft: null, monthlyNeed: null };

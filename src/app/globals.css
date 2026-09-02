@@ -129,6 +129,46 @@ body {
   letter-spacing: -0.035em;
 }
 
+.what-if-slider {
+  appearance: none;
+  height: 1.5rem;
+  background: transparent;
+  accent-color: var(--primary);
+}
+
+.what-if-slider::-webkit-slider-runnable-track {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+}
+
+.what-if-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: -0.4rem;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.what-if-slider::-moz-range-track {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+}
+
+.what-if-slider::-moz-range-thumb {
+  width: 1.15rem;
+  height: 1.15rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.what-if-slider:disabled {
+  opacity: 0.4;
+}
+
 .prose-fa {
   font-size: 1.05rem;
   line-height: 1.95;

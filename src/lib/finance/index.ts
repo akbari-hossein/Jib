@@ -10,6 +10,14 @@ export { calculateDailyAllowance } from "@/lib/finance/daily-allowance";
 export { calculateGoalProgress } from "@/lib/finance/goal-progress";
 export { calculateMonthlyChange } from "@/lib/finance/monthly-change";
 export type { MonthlyChange } from "@/lib/finance/monthly-change";
+export { ceilDiv } from "@/lib/finance/math";
+export { simulateGoalCompletion, simulateHypotheticalExpense } from "@/lib/finance/whatIf";
+export type {
+  GoalCompletionSimulation,
+  GoalWhatIfInput,
+  HypotheticalExpenseInput,
+  HypotheticalExpenseResult,
+} from "@/lib/finance/whatIf";
 export {
   assembleMonthlyRecap,
   availableRecapFields,
@@ -43,7 +51,11 @@ export type { RuleSnapshot } from "@/lib/finance/rules";
 export { calculateSavingsRate } from "@/lib/finance/savings-rate";
 export type {
   AccountSnapshot,
+  AvailableMoneyInput,
+  BudgetSnapshot,
   BudgetStatus,
+  DailyAllowanceInput,
+  GoalProgressInput,
   GoalSnapshot,
   PlannedExpenseSnapshot,
 } from "@/lib/finance/types";

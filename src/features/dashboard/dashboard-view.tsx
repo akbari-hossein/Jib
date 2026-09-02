@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { FinancialMetric } from "@/components/finance/financial-metric";
+import { FormulaRow, WhyThisNumber } from "@/components/finance/why-this-number";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TransactionList } from "@/features/transactions/transaction-list";
+import {
+  AffordabilitySheet,
+  type AffordabilitySnapshot,
+} from "@/features/what-if/affordability-sheet";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
 import { NotificationBell } from "@/features/notifications/notification-bell";
 import { MonthlyRecapPrompt } from "@/features/reports/monthly-recap-prompt";
@@ -16,11 +21,13 @@ export function DashboardView({
   name,
   unreadCount,
   previousRecap,
+  affordability,
 }: {
   dashboard: DashboardDto;
   name: string | null;
   unreadCount: number;
   previousRecap?: MonthlyRecapDto | null;
+  affordability: AffordabilitySnapshot;
 }) {
   const title = name ? `${dashboard.greeting} ${name}` : dashboard.greeting;
   const remainingLabel = dashboard.hasKnownIncomeDate
@@ -68,37 +75,37 @@ export function DashboardView({
                 : `امروز می‌تونی تا ${formatCompactToman(dashboard.remainingToday)} خرج کنی.`}
             </p>
             <p className="mt-2 text-xs text-muted-foreground">{remainingLabel}</p>
-            <details className="mt-4">
-              <summary className="cursor-pointer list-none text-sm text-muted-foreground [&::-webkit-details-marker]:hidden">
-                چرا این عدد؟
-              </summary>
-              <dl className="mt-3 space-y-2 text-sm text-foreground/70">
-                <BreakdownRow label="موجودی نقد" value={dashboard.liquidBalance} />
-                <BreakdownRow label="هدف بدون حساب" value={dashboard.reservedForGoals} prefix="− " />
-                <BreakdownRow label="خرج‌های نزدیک" value={dashboard.plannedExpenses} prefix="− " />
-                <BreakdownRow label="پس‌انداز این دوره" value={dashboard.requiredSavings} prefix="− " />
-                <BreakdownRow
+            <WhyThisNumber className="mt-4">
+              <dl className="space-y-2">
+                <FormulaRow label="موجودی نقد" value={formatToman(dashboard.liquidBalance)} />
+                <FormulaRow label="هدف بدون حساب" value={formatToman(dashboard.reservedForGoals)} prefix="− " />
+                <FormulaRow label="خرج‌های نزدیک" value={formatToman(dashboard.plannedExpenses)} prefix="− " />
+                <FormulaRow label="پس‌انداز این دوره" value={formatToman(dashboard.requiredSavings)} prefix="− " />
+                <FormulaRow
                   label={dashboard.isShortfall ? "کسری" : "قابل خرج"}
-                  value={dashboard.isShortfall ? -dashboard.availableMoney : dashboard.availableMoney}
+                  value={formatToman(
+                    dashboard.isShortfall ? -dashboard.availableMoney : dashboard.availableMoney,
+                  )}
                 />
-                <div className="pt-2 text-xs leading-6 text-muted-foreground">
-                  {remainingLabel}
-                  <br />
-                  سهم هر روز ≈ {formatCompactToman(dashboard.dailyShare)}
-                  <br />
-                  خرج امروز {formatToman(dashboard.spentToday)}
-                </div>
-                {!dashboard.hasKnownIncomeDate ? (
-                  <p className="pt-1 text-xs text-muted-foreground">
-                    روز درآمد را از{" "}
-                    <Link href="/more" className="text-primary">
-                      بیشتر
-                    </Link>{" "}
-                    تنظیم کن تا عدد دقیق‌تر شود.
-                  </p>
-                ) : null}
               </dl>
-            </details>
+              <div className="pt-2 text-xs leading-6 text-muted-foreground">
+                {remainingLabel}
+                <br />
+                سهم هر روز ≈ {formatCompactToman(dashboard.dailyShare)}
+                <br />
+                خرج امروز {formatToman(dashboard.spentToday)}
+              </div>
+              {!dashboard.hasKnownIncomeDate ? (
+                <p className="pt-1 text-xs text-muted-foreground">
+                  روز درآمد را از{" "}
+                  <Link href="/more" className="text-primary">
+                    بیشتر
+                  </Link>{" "}
+                  تنظیم کن تا عدد دقیق‌تر شود.
+                </p>
+              ) : null}
+            </WhyThisNumber>
+            <AffordabilitySheet snapshot={affordability} />
           </Card>
 
           <Card className="px-5 py-4">
@@ -133,26 +140,6 @@ export function DashboardView({
         </>
       )}
     </main>
-  );
-}
-
-function BreakdownRow({
-  label,
-  value,
-  prefix = "",
-}: {
-  label: string;
-  value: bigint;
-  prefix?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <dt>{label}</dt>
-      <dd className="numeric-display">
-        {prefix}
-        {formatToman(value)}
-      </dd>
-    </div>
   );
 }
 
