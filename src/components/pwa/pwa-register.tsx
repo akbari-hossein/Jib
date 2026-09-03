@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { bindInstallPromptListeners } from "@/lib/pwa/deferred-prompt";
 
 export function registerJibServiceWorker(): Promise<ServiceWorkerRegistration | undefined> {
   if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
@@ -11,6 +12,7 @@ export function registerJibServiceWorker(): Promise<ServiceWorkerRegistration | 
 
 export function PwaRegister() {
   useEffect(() => {
+    bindInstallPromptListeners();
     if (process.env.NODE_ENV === "development") {
       return;
     }

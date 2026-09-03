@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/layout/app-shell";
+import { PwaInstallInvite } from "@/components/pwa/pwa-install-invite";
 import { SessionKeepAlive } from "@/features/auth/session-keep-alive";
 import { QuickAddHost } from "@/features/quick-add/quick-add-host";
 import { OnboardingHost } from "@/features/onboarding/onboarding-host";
@@ -23,6 +24,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       {children}
       <QuickAddHost context={quickAdd} />
       <OnboardingHost initial={user.onboardingCompletedAt === null} />
+      <PwaInstallInvite onboardingPending={user.onboardingCompletedAt === null} />
       <SessionKeepAlive />
     </AppShell>
   );
