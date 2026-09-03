@@ -4,7 +4,8 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Drawer } from "vaul";
-import { Menu, Shield } from "lucide-react";
+import { Menu } from "lucide-react";
+import { LogoMark } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { ADMIN_NAV } from "@/lib/admin/labels";
@@ -62,7 +63,7 @@ export function AdminShell({
         <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-e border-border bg-card px-4 py-6 lg:flex">
           <Link href="/admin" className="mb-8 flex items-center gap-2 px-2">
             <span className="flex size-9 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Shield className="size-4" />
+              <LogoMark className="h-4 w-auto" />
             </span>
             <span>
               <span className="block text-sm font-semibold tracking-tight">پنل مدیریت</span>
@@ -114,7 +115,10 @@ export function AdminShell({
               </Drawer.Root>
               <div className="min-w-0 lg:hidden">
                 <p className="text-sm font-semibold tracking-tight">پنل مدیریت</p>
-                <p className="truncate text-[11px] text-muted-foreground">جیب · دسترسی ویژه</p>
+                <p className="flex items-center gap-1.5 truncate text-[11px] text-muted-foreground">
+                  <LogoMark className="h-3 w-auto" title={undefined} />
+                  جیب · دسترسی ویژه
+                </p>
               </div>
               <p className="hidden text-sm text-muted-foreground lg:block">دسترسی ویژه · داده‌های کاربران محرمانه است</p>
             </div>

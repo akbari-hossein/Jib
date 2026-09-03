@@ -21,6 +21,7 @@ export function organizationJsonLd() {
     name: SITE.brand,
     alternateName: [APP_NAME, APP_NAME_EN],
     url: absoluteUrl("/"),
+    logo: absoluteUrl("/icons/icon-512.png"),
     description: APP_DESCRIPTION,
   };
 }
@@ -36,6 +37,7 @@ export function softwareApplicationJsonLd() {
     inLanguage: "fa-IR",
     description: APP_DESCRIPTION,
     url: absoluteUrl("/"),
+    image: absoluteUrl("/icons/icon-512.png"),
     offers: {
       "@type": "Offer",
       price: "0",

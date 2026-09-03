@@ -213,7 +213,13 @@ function AppMark() {
   return (
     <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-[0.9rem] border border-border bg-surface-muted">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/icons/icon-192.png" alt="" width={48} height={48} className="size-12" />
+      <img
+        src="/icons/icon-192.png"
+        alt=""
+        width={48}
+        height={48}
+        className="size-12 object-contain"
+      />
     </span>
   );
 }

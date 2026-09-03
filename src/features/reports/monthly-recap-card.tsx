@@ -1,6 +1,7 @@
 import { formatToman, toPersianDigits } from "@/lib/currency/format";
 import type { MonthlyRecapDto, RecapFieldId, RecapSelection } from "@/lib/finance/monthly-recap-data";
 import { periodChangeCopy } from "@/lib/labels";
+import { LogoMark } from "@/components/brand/logo";
 import { APP_NAME } from "@/lib/config/app";
 import { cn } from "@/lib/utils";
 
@@ -218,7 +219,8 @@ export function MonthlyRecapCard({
       }}
     >
       <header className="flex items-start justify-between gap-4">
-        <p className="text-[0.7rem] font-medium" style={{ color: PALETTE.faint }}>
+        <p className="flex items-center gap-1.5 text-[0.7rem] font-medium" style={{ color: PALETTE.faint }}>
+          <LogoMark className="h-3 w-auto" />
           {APP_NAME}
         </p>
         <p className="text-[0.7rem]" style={{ color: PALETTE.faint }}>
@@ -278,7 +280,8 @@ export function MonthlyRecapCard({
       </div>
 
       <footer className="mt-8">
-        <p className="text-[0.68rem]" style={{ color: PALETTE.faint }}>
+        <p className="flex items-center gap-1.5 text-[0.68rem]" style={{ color: PALETTE.faint }}>
+          <LogoMark className="h-3 w-auto" />
           {APP_NAME}
         </p>
       </footer>

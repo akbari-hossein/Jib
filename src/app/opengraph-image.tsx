@@ -35,7 +35,35 @@ export default async function OpenGraphImage() {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ fontSize: 36, fontWeight: 600 }}>{APP_NAME}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                width: 28,
+                height: 36,
+              }}
+            >
+              <div
+                style={{
+                  height: 7,
+                  background: "#080D16",
+                  borderTopLeftRadius: 6,
+                  borderTopRightRadius: 6,
+                }}
+              />
+              <div
+                style={{
+                  height: 26,
+                  background: "#080D16",
+                  borderBottomLeftRadius: 14,
+                  borderBottomRightRadius: 14,
+                }}
+              />
+            </div>
+            <div style={{ fontSize: 36, fontWeight: 600 }}>{APP_NAME}</div>
+          </div>
           <div style={{ fontSize: 28, opacity: 0.45 }}>{APP_NAME_EN}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { House, List, Target, Wallet } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { ONBOARDING_STEPS, type OnboardingStep } from "@/features/onboarding/steps";
 import { cn } from "@/lib/utils";
@@ -173,7 +174,7 @@ function WelcomePanel({
 
         <div className="flex flex-1 flex-col justify-center gap-8 py-8">
           <div className="motion-onboarding-rise">
-            <p className="text-sm text-muted-foreground">جیب</p>
+            <Logo size="sm" />
             <h1 id={titleId} className="mt-3 max-w-sm text-3xl font-semibold leading-snug tracking-tight">
               {step.title}
             </h1>

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { APP_NAME, APP_NAME_EN } from "@/lib/config/app";
+import { Logo } from "@/components/brand/logo";
+import { APP_NAME_EN } from "@/lib/config/app";
 
 const PRODUCT = [
   { href: "/features", label: "امکانات" },
@@ -23,7 +24,7 @@ export function MarketingFooter() {
     <footer className="border-t border-border bg-background">
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="text-lg font-semibold tracking-tight">{APP_NAME}</p>
+          <Logo href="/" />
           <p className="mt-2 text-sm text-muted-foreground">{APP_NAME_EN}</p>
           <p className="mt-4 max-w-xs text-sm leading-7 text-muted-foreground">
             مدیریت پول شخصی برای ایران. بدون حسابداری، بدون هوش مصنوعی.

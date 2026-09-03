@@ -1,17 +1,19 @@
 import Link from "next/link";
+import { LogoMark } from "@/components/brand/logo";
 import { EmptyState } from "@/components/empty-state";
 import { FinancialMetric } from "@/components/finance/financial-metric";
 import { FormulaRow, WhyThisNumber } from "@/components/finance/why-this-number";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { NotificationBell } from "@/features/notifications/notification-bell";
+import { MonthlyRecapPrompt } from "@/features/reports/monthly-recap-prompt";
 import { TransactionList } from "@/features/transactions/transaction-list";
 import {
   AffordabilitySheet,
   type AffordabilitySnapshot,
 } from "@/features/what-if/affordability-sheet";
+import { APP_NAME } from "@/lib/config/app";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
-import { NotificationBell } from "@/features/notifications/notification-bell";
-import { MonthlyRecapPrompt } from "@/features/reports/monthly-recap-prompt";
 import { JALALI_MONTHS, periodChangeCopy } from "@/lib/labels";
 import type { MonthlyRecapDto } from "@/lib/finance/monthly-recap-data";
 import type { DashboardDto } from "@/server/queries/dashboard";
@@ -39,7 +41,10 @@ export function DashboardView({
     <main className="flex flex-col gap-6 px-5 pt-8">
       <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">{title}</p>
+          <div className="flex items-center gap-2">
+            <LogoMark className="h-4 w-auto text-foreground" title={APP_NAME} />
+            <p className="text-sm text-muted-foreground">{title}</p>
+          </div>
           <div data-tour="available-money">
             <FinancialMetric
               className="mt-4"
