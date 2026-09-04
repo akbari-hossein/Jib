@@ -121,7 +121,7 @@ describe("isReferenceAssetType", () => {
     expect(isReferenceAssetType("USD")).toBe(true);
     expect(isReferenceAssetType("EUR")).toBe(true);
     expect(isReferenceAssetType("GOLD_COIN_BAHAR")).toBe(true);
-    expect(isReferenceAssetType("SILVER")).toBe(true);
+    expect(isReferenceAssetType("SILVER")).toBe(false);
     expect(isReferenceAssetType("BTC")).toBe(false);
   });
 });

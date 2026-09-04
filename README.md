@@ -115,6 +115,8 @@ cp .env.example .env
 | `RATE_PROVIDER_API_KEY` | Optional. Server-only provider key. Never expose to the client. |
 | `RATE_PROVIDER_BASE_URL` | Optional. Provider origin, e.g. `https://api.navasan.tech`. |
 | `RATE_PROVIDER_POLL_INTERVAL_MINUTES` | Optional. Minimum minutes between live fetches. |
+| `RATE_STALE_AFTER_HOURS` | Optional. UI staleness threshold for stored rates (default 6). |
+| `RATE_ALERT_AFTER_HOURS` | Optional. Log an alert if ingest has not succeeded (default 24). |
 
 Example `.env`:
 
@@ -178,7 +180,8 @@ Create an account at `/signup` with email and password (at least 8 characters). 
 | `/transactions` | Signed in | Ledger |
 | `/budgets` | Signed in | This Jalali month |
 | `/goals` | Signed in | Savings goals |
-| `/accounts` | Signed in | Wallets and balances |
+| `/accounts` | Signed in | Wallets, balances, and physical holdings |
+| `/rates` | Signed in | Latest stored market rates |
 | `/recurring` | Signed in | Repeating income/expense |
 | `/rules` | Signed in | Auto-categorization |
 | `/reports` | Signed in | Week / month review |
@@ -192,12 +195,12 @@ Create an account at `/signup` with email and password (at least 8 characters). 
 Prisma lives in `prisma/schema.prisma`. The main entities:
 
 - **User** — email, optional password hash, optional Google id, optional name, payday, locale `fa-IR`, currency `TOMAN`, optional `referenceAssetPreference`
-- **ReferenceRate** — USD / euro / gold coin / gold gram / silver price in toman as of `effectiveAt` (live provider or manual ingest; see `src/lib/finance/README.md`)
-- **Account** — type, balance, `includeInAvailable`
+- **ReferenceRate** — USD / euro / gold price in toman as of `effectiveAt` (append-only; live provider or manual ingest; see `src/lib/finance/README.md`)
+- **Account** — type (including `ASSET_HOLDING`), toman `balance` or physical `quantity` + `assetType`
 - **Category** — system defaults seeded on first login (essential / living / lifestyle / financial)
-- **Transaction** — expense, income, or transfer; Jalali-aware `occurredAt`
+- **Transaction** — expense, income, transfer, or asset add/remove (quantity + rate snapshot)
 - **Budget** + **BudgetCategory** — unique per user + Jalali year/month
-- **Goal** — target, current amount, optional account
+- **Goal** — target, current amount, optional funding accounts (`GoalFunding`)
 - **RecurringTransaction** — frequency, `nextRunAt`, day-of-month
 - **TransactionRule** — match merchant/note → category
 - **Session** — hashed tokens and expiry
@@ -222,6 +225,7 @@ When you change spendable-today, budgets, goals, or reports, add or update tests
 
 - Set a strong unique `AUTH_SECRET`. Rotating it invalidates existing sessions.
 - Point `DATABASE_URL` at a managed Postgres and run `npm run db:deploy` on release.
+- Live rates: set `RATE_PROVIDER_*` and a Bearer secret, then schedule `GET /api/cron/reference-rates` (see `src/lib/finance/rateProviders/README.md`).
 - For Google sign-in, set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and add the callback URL in Google Cloud (`https://your-domain/api/auth/google/callback`).
 - Sessions last 30 days. Login and signup rate limits live in `src/lib/auth/rate-limit.ts`.
 - The service worker caches `/offline` only. Treat the PWA as an installable shell, not a full offline ledger.

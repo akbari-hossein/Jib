@@ -19,6 +19,7 @@ export function GoalList({ goals }: { goals: GoalListItem[] }) {
               <p className="font-medium">{goal.name}</p>
               <p className="mt-1 text-xs text-foreground/45">
                 {goal.linked ? `حساب ${goal.accountName}` : "رزرو از قابل‌خرج"}
+                {goal.usesLiveAssetRate ? " · با نرخ امروز" : ""}
                 {goal.targetDate ? ` · ${formatJalaliDay(jalaliFromUtc(goal.targetDate), today)}` : ""}
               </p>
             </div>
@@ -42,6 +43,11 @@ export function GoalList({ goals }: { goals: GoalListItem[] }) {
               ? ` · هر ماه حدود ${formatCompactToman(goal.progress.monthlyNeed)}`
               : ""}
           </p>
+          {goal.usesLiveAssetRate ? (
+            <p className="mt-2 text-xs leading-6 text-foreground/50">
+              پیشرفت این هدف از ارزش فعلی دارایی‌های وصل‌شده است و با تغییر نرخ طلا یا ارز بالا و پایین می‌رود.
+            </p>
+          ) : null}
           {goal.linked ? null : (
             <GoalCurrentForm key={`${goal.id}-${goal.currentAmount.toString()}`} id={goal.id} currentAmount={goal.currentAmount.toString()} />
           )}

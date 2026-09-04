@@ -57,7 +57,7 @@ describe("readRateProviderConfig", () => {
     vi.stubEnv("RATE_PROVIDER_BASE_URL", "https://api.navasan.tech/");
     vi.stubEnv("RATE_PROVIDER_POLL_INTERVAL_MINUTES", "90");
     vi.stubEnv("RATE_PROVIDER_TOMAN_SCALE", "10");
-    vi.stubEnv("RATE_PROVIDER_ITEM_MAP", "USD:usd,SILVER:,NOT_AN_ASSET:x");
+    vi.stubEnv("RATE_PROVIDER_ITEM_MAP", "USD:usd,GOLD_GRAM:,NOT_AN_ASSET:x");
 
     expect(readRateProviderConfig()).toEqual({
       name: "navasan",
@@ -65,7 +65,7 @@ describe("readRateProviderConfig", () => {
       baseUrl: "https://api.navasan.tech",
       pollIntervalMs: 90 * 60_000,
       tomanScale: 10,
-      itemMap: { USD: "usd", SILVER: "" },
+      itemMap: { USD: "usd", GOLD_GRAM: "" },
     });
   });
 });
@@ -106,7 +106,6 @@ describe("NavasanProvider", () => {
     expect(byAsset.GOLD_COIN?.priceInToman).toBe(85_000_000);
     expect(byAsset.GOLD_COIN_BAHAR?.priceInToman).toBe(79_000_000);
     expect(byAsset.GOLD_GRAM?.priceInToman).toBe(6_500_000);
-    expect(byAsset.SILVER).toBeUndefined();
     expect(byAsset.USD?.fetchedAt.toISOString()).toBe("2023-11-14T22:13:20.000Z");
     expect(rates.some((rate) => rate.assetType === "GOLD_COIN" && rate.priceInToman === 40_000_000)).toBe(
       false,
@@ -156,10 +155,17 @@ describe("NavasanProvider", () => {
     expect(rates).toEqual([expect.objectContaining({ assetType: "USD", priceInToman: 111_000 })]);
   });
 
-  it("throws on a non-OK HTTP response so last stored rates remain", async () => {
-    const fetchImpl = vi.fn(async () => jsonResponse({ message: "unauthorized" }, 401));
+  it("throws when the payload has no usable mapped quotes", async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ nim: { value: "1", timestamp: 1_700_000_000 } }));
     await expect(new NavasanProvider(providerConfig(), fetchImpl).fetchRates()).rejects.toThrow(
-      /HTTP 401/,
+      /no usable quotes/,
+    );
+  });
+
+  it("throws on malformed JSON so ingest keeps the last stored row", async () => {
+    const fetchImpl = vi.fn(async () => new Response("not-json", { status: 200 }));
+    await expect(new NavasanProvider(providerConfig(), fetchImpl).fetchRates()).rejects.toThrow(
+      /invalid JSON/,
     );
   });
 });
@@ -213,7 +219,6 @@ describe("createRateProvider", () => {
       GOLD_COIN: "sekkeh",
       GOLD_COIN_BAHAR: "bahar",
       GOLD_GRAM: "18ayar",
-      SILVER: "silver",
     });
   });
 });

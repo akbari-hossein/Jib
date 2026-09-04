@@ -13,6 +13,7 @@ const protectedPrefixes = [
   "/rules",
   "/recurring",
   "/reports",
+  "/rates",
   "/export",
 ];
 
@@ -45,6 +46,8 @@ export const config = {
     "/recurring/:path*",
     "/reports",
     "/reports/:path*",
+    "/rates",
+    "/rates/:path*",
     "/export",
     "/export/:path*",
     "/login",

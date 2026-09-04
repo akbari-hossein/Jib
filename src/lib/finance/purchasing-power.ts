@@ -7,7 +7,6 @@ export const REFERENCE_ASSET_TYPES = [
   "GOLD_COIN",
   "GOLD_COIN_BAHAR",
   "GOLD_GRAM",
-  "SILVER",
 ] as const;
 
 export type ReferenceAssetType = (typeof REFERENCE_ASSET_TYPES)[number];
@@ -32,7 +31,6 @@ export const REFERENCE_ASSET_UNIT_LABEL: Record<ReferenceAssetType, string> = {
   GOLD_COIN: "سکه",
   GOLD_COIN_BAHAR: "سکه بهار",
   GOLD_GRAM: "گرم طلا",
-  SILVER: "گرم نقره",
 };
 
 export const REFERENCE_ASSET_OPTION_LABEL: Record<ReferenceAssetType, string> = {
@@ -41,7 +39,6 @@ export const REFERENCE_ASSET_OPTION_LABEL: Record<ReferenceAssetType, string> = 
   GOLD_COIN: "سکه امامی",
   GOLD_COIN_BAHAR: "سکه بهار آزادی",
   GOLD_GRAM: "گرم طلای ۱۸ عیار",
-  SILVER: "نقره",
 };
 
 export type PurchasingPowerHint = {

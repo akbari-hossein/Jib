@@ -11,9 +11,13 @@ import {
 import { accountDeletionCopy, canPermanentlyDeleteAccount } from "@/lib/accounts/deletion";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
+import { isReferenceAssetType, type ReferenceAssetType } from "@/lib/finance/purchasing-power";
+import { decimalStringFromScaled, parseQuantityToScaled } from "@/lib/finance/quantity";
 import { parseTomanInput } from "@/lib/validation/money";
 import { assertAccountOwned, userFacingMutationError } from "@/server/services/ownership";
 import { assertCanCreate } from "@/server/services/plan";
+import { persistTransaction } from "@/server/services/transactions";
+import { getLatestRate } from "@/lib/finance/referenceRates";
 
 export type AccountActionState = {
   ok: boolean;
@@ -26,10 +30,10 @@ export type AccountActionState = {
   };
 };
 
-const accountTypeSchema = z.enum(["CASH", "BANK", "CARD", "SAVINGS", "OTHER"]);
+const accountTypeSchema = z.enum(["CASH", "BANK", "CARD", "SAVINGS", "ASSET_HOLDING", "OTHER"]);
 
 function includeInAvailableFor(type: AccountType): boolean {
-  return type !== "SAVINGS";
+  return type !== "SAVINGS" && type !== "ASSET_HOLDING";
 }
 
 function revalidateAccounts() {
@@ -60,17 +64,18 @@ function parseAppearance(formData: FormData): { color: string | null; icon: stri
 }
 
 async function countAccountDependents(accountId: string, userId: string) {
-  const [outgoing, incoming, recurringCount, goalCount] = await Promise.all([
+  const [outgoing, incoming, recurringCount, goalCount, fundingCount] = await Promise.all([
     prisma.transaction.count({ where: { userId, accountId } }),
     prisma.transaction.count({ where: { userId, toAccountId: accountId } }),
     prisma.recurringTransaction.count({ where: { userId, accountId } }),
     prisma.goal.count({ where: { userId, accountId, isArchived: false } }),
+    prisma.goalFunding.count({ where: { accountId } }),
   ]);
 
   return {
     transactionCount: outgoing + incoming,
     recurringCount,
-    goalCount,
+    goalCount: goalCount + fundingCount,
   };
 }
 
@@ -81,10 +86,15 @@ export async function createAccount(
   const user = await requireUser();
   const name = String(formData.get("name") ?? "").trim();
   const typeResult = accountTypeSchema.safeParse(formData.get("type"));
-  const balance = parseTomanInput(String(formData.get("balance") ?? "0"), {
-    allowZero: true,
-    allowNegative: true,
-  });
+  const isAsset = typeResult.success && typeResult.data === "ASSET_HOLDING";
+  const assetRaw = String(formData.get("assetType") ?? "");
+  const quantityScaled = parseQuantityToScaled(String(formData.get("quantity") ?? "0"));
+  const balance = isAsset
+    ? 0n
+    : parseTomanInput(String(formData.get("balance") ?? "0"), {
+        allowZero: true,
+        allowNegative: true,
+      });
   const appearance = parseAppearance(formData);
 
   if (name.length < 1 || name.length > 60) {
@@ -93,7 +103,13 @@ export async function createAccount(
   if (!typeResult.success) {
     return { ok: false, error: "نوع حساب معتبر نیست." };
   }
-  if (balance === null) {
+  if (isAsset && !isReferenceAssetType(assetRaw)) {
+    return { ok: false, error: "نوع دارایی را انتخاب کن." };
+  }
+  if (isAsset && quantityScaled == null) {
+    return { ok: false, error: "مقدار دارایی معتبر نیست." };
+  }
+  if (!isAsset && balance === null) {
     return { ok: false, error: "موجودی معتبر نیست." };
   }
   if ("error" in appearance) {
@@ -103,18 +119,34 @@ export async function createAccount(
   try {
     await assertCanCreate(user.id, user.plan, "accounts");
     const count = await prisma.account.count({ where: { userId: user.id } });
-    await prisma.account.create({
+    const created = await prisma.account.create({
       data: {
         userId: user.id,
         name,
         type: typeResult.data,
-        balance,
+        balance: isAsset ? 0n : (balance ?? 0n),
+        quantity: new Prisma.Decimal("0"),
+        assetType: isAsset && isReferenceAssetType(assetRaw) ? assetRaw : null,
         color: appearance.color,
         icon: appearance.icon,
         includeInAvailable: includeInAvailableFor(typeResult.data),
         sortOrder: count,
       },
     });
+    if (isAsset && isReferenceAssetType(assetRaw) && quantityScaled && quantityScaled > 0n) {
+      const rate = await getLatestRate(assetRaw);
+      await prisma.$transaction(async (db) => {
+        await persistTransaction(db, {
+          userId: user.id,
+          type: "ASSET_ADD",
+          amount: 0n,
+          accountId: created.id,
+          occurredAt: new Date(),
+          quantityDelta: quantityScaled,
+          rateToTomanSnapshot: rate?.rateToToman ?? null,
+        });
+      });
+    }
   } catch (error) {
     return { ok: false, error: userFacingMutationError(error, "ذخیره حساب انجام نشد. دوباره تلاش کن.") };
   }
@@ -133,6 +165,8 @@ export async function updateAccount(
   const typeResult = accountTypeSchema.safeParse(formData.get("type"));
   const includeRaw = formData.get("includeInAvailable");
   const balanceRaw = formData.get("balance");
+  const quantityRaw = formData.get("quantity");
+  const assetRaw = String(formData.get("assetType") ?? "");
   const appearance = parseAppearance(formData);
 
   if (!id) {
@@ -149,12 +183,29 @@ export async function updateAccount(
   }
 
   let balance: bigint | undefined;
-  if (balanceRaw != null) {
+  let quantity: Prisma.Decimal | undefined;
+  let assetType: ReferenceAssetType | null | undefined;
+  const isAsset = typeResult.success && typeResult.data === "ASSET_HOLDING";
+  if (isAsset) {
+    if (!isReferenceAssetType(assetRaw)) {
+      return { ok: false, error: "نوع دارایی را انتخاب کن." };
+    }
+    assetType = assetRaw;
+    balance = 0n;
+    if (quantityRaw != null) {
+      const parsed = parseQuantityToScaled(String(quantityRaw));
+      if (parsed == null) {
+        return { ok: false, error: "مقدار دارایی معتبر نیست." };
+      }
+      quantity = new Prisma.Decimal(decimalStringFromScaled(parsed));
+    }
+  } else if (balanceRaw != null) {
     const parsed = parseTomanInput(String(balanceRaw), { allowZero: true, allowNegative: true });
     if (parsed === null) {
       return { ok: false, error: "موجودی معتبر نیست." };
     }
     balance = parsed;
+    assetType = null;
   }
 
   try {
@@ -168,6 +219,8 @@ export async function updateAccount(
         color: appearance.color,
         icon: appearance.icon,
         ...(balance !== undefined ? { balance } : {}),
+        ...(quantity !== undefined ? { quantity } : {}),
+        ...(assetType !== undefined ? { assetType } : {}),
       },
     });
   } catch (error) {

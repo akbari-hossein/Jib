@@ -2,9 +2,11 @@ import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { FinancialMetric } from "@/components/finance/financial-metric";
 import { PurchasingPowerHint, PurchasingPowerSentence } from "@/components/finance/purchasing-power-hint";
+import { MoneyDisplay } from "@/components/money/money-display";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TransactionList } from "@/features/transactions/transaction-list";
+import { HoldingExplain } from "@/components/finance/holding-explain";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
 import { JALALI_MONTHS, periodChangeCopy } from "@/lib/labels";
 import type { DashboardDto } from "@/server/queries/dashboard";
@@ -35,8 +37,15 @@ export function DashboardView({
             size="lg"
             heading
             secondary={
-              dashboard.hasAccounts && dashboard.availableEquivalent ? (
-                <PurchasingPowerHint hint={dashboard.availableEquivalent} />
+              dashboard.hasAccounts ? (
+                <div className="flex flex-col gap-1">
+                  {dashboard.availableEquivalent ? (
+                    <PurchasingPowerHint hint={dashboard.availableEquivalent} />
+                  ) : null}
+                  {dashboard.assetTotal > 0n ? (
+                    <AssetBreakdownLine total={dashboard.assetTotal} group={dashboard.assetGroup} />
+                  ) : null}
+                </div>
               ) : null
             }
           />
@@ -95,9 +104,89 @@ export function DashboardView({
             </details>
           </Card>
 
+          {dashboard.holdings.length > 0 ? (
+            <Card className="px-5 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-sm text-muted-foreground">دارایی‌ها</h2>
+                <Link href="/accounts" className="text-sm text-primary">
+                  حساب‌ها
+                </Link>
+              </div>
+              <p className="mt-2 text-lg font-semibold">{formatCompactToman(dashboard.assetTotal)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                ارزش کل حدود {formatCompactToman(dashboard.netWorth)} — دارایی‌ها پس‌انداز هستند، نه سفته‌بازی.
+              </p>
+              <ul className="mt-4 flex flex-col gap-3">
+                {dashboard.holdings.map((holding) => (
+                  <li key={holding.id} className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">{holding.name}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {holding.holdingText ?? holding.name}
+                        {holding.staleLabel ? ` · ${holding.staleLabel}` : ""}
+                      </p>
+                      {holding.dayMove && holding.dayMove.direction !== "flat" && holding.dayMove.pct > 0 ? (
+                        <p className="mt-1 text-[11px] text-muted-foreground">
+                          نسبت به دیروز {holding.dayMove.direction === "up" ? "بالاتر" : "پایین‌تر"} ·{" "}
+                          {toPersianDigits(holding.dayMove.pct)}٪
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {holding.valueUnavailable ? (
+                        <span className="text-xs text-muted-foreground">نرخ موجود نیست</span>
+                      ) : (
+                        <MoneyDisplay amount={holding.balance} className="text-sm font-semibold" />
+                      )}
+                      {holding.holdingDetail ? <HoldingExplain detail={holding.holdingDetail} /> : null}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
+
+          {dashboard.rates.length > 0 ? (
+            <Card className="px-5 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-sm text-muted-foreground">نرخ‌ها</h2>
+                <Link href="/rates" className="text-sm text-primary">
+                  همه نرخ‌ها
+                </Link>
+              </div>
+              <ul className="mt-3 flex flex-col gap-2">
+                {dashboard.rates.map((rate) => (
+                  <li key={rate.rateId} className="flex items-start justify-between gap-3 text-sm">
+                    <div>
+                      <p>{rate.label}</p>
+                      {rate.stale ? (
+                        <p className="mt-1 text-[11px] text-muted-foreground">{rate.rateDateLabel}</p>
+                      ) : null}
+                    </div>
+                    <span className="numeric-display text-foreground/70">
+                      {formatToman(BigInt(rate.rateToToman), { withUnit: false })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
+
           <Card className="px-5 py-4">
             <p className="text-xs text-muted-foreground">این ماه · {monthName}</p>
-            <p className="mt-1 text-lg font-semibold">
+            <FinancialMetric
+              className="mt-2"
+              label="پس‌انداز"
+              amount={dashboard.monthlySavings}
+              tone="savings"
+              size="sm"
+              secondary={
+                dashboard.assetTotal > 0n ? (
+                  <AssetBreakdownLine total={dashboard.assetTotal} group={dashboard.assetGroup} />
+                ) : null
+              }
+            />
+            <p className="mt-4 text-lg font-semibold">
               {formatCompactToman(dashboard.monthlySpent)} خرج کردی
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -135,6 +224,14 @@ export function DashboardView({
         </>
       )}
     </main>
+  );
+}
+
+function AssetBreakdownLine({ total, group }: { total: bigint; group: string }) {
+  return (
+    <p className="text-xs text-muted-foreground">
+      شامل {formatCompactToman(total)} دارایی ({group})
+    </p>
   );
 }
 

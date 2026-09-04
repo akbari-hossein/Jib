@@ -64,11 +64,15 @@ async function categorySpend(userId: string, from: Date, to: Date): Promise<Cate
 }
 
 async function periodTotals(userId: string, from: Date, to: Date, previousFrom: Date, previousTo: Date) {
-  const [income, expenses, previousExpenses, categories] = await Promise.all([
+  const [income, expenses, previousExpenses, categories, extraSavings] = await Promise.all([
     sumByType(userId, "INCOME", from, to),
     sumByType(userId, "EXPENSE", from, to),
     sumByType(userId, "EXPENSE", previousFrom, previousTo),
     categorySpend(userId, from, to),
+    prisma.transaction.aggregate({
+      where: { userId, type: "ASSET_ADD", occurredAt: { gte: from, lt: to } },
+      _sum: { amount: true },
+    }).then((result) => result._sum.amount ?? 0n),
   ]);
 
   return assemblePeriodReview({
@@ -76,6 +80,7 @@ async function periodTotals(userId: string, from: Date, to: Date, previousFrom: 
     expenses,
     previousExpenses,
     categories,
+    extraSavings,
   });
 }
 

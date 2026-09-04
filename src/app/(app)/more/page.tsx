@@ -34,6 +34,9 @@ export default async function MorePage() {
         <Link href="/accounts" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           حساب‌ها
         </Link>
+        <Link href="/rates" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          نرخ‌ها
+        </Link>
         <Link href="/rules" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           قوانین دسته‌بندی
         </Link>

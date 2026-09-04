@@ -11,6 +11,7 @@ export {
   RATE_PROVIDER_ENV,
 } from "@/lib/finance/rateProviders/config";
 export { NavasanProvider, NAVASAN_DEFAULT_ITEM_MAP } from "@/lib/finance/rateProviders/navasan";
+export { logRateEvent } from "@/lib/finance/rateProviders/log";
 
 /**
  * Build a provider from config. Adding a new vendor is a new class plus one

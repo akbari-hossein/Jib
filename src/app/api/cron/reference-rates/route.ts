@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { ingestLiveRates } from "@/lib/finance/referenceRates";
 import { requestMatchesAnyBearerSecret } from "@/lib/http/bearer-secret";
 
@@ -24,6 +25,13 @@ async function runIngest() {
   if (!result.ok) {
     const status = result.error === "Live rate provider is not configured." ? 503 : 502;
     return NextResponse.json({ error: result.error, skipped: result.skipped }, { status });
+  }
+
+  if (!result.skipped && result.recorded.length > 0) {
+    revalidatePath("/home");
+    revalidatePath("/rates");
+    revalidatePath("/accounts");
+    revalidatePath("/goals");
   }
 
   return NextResponse.json({

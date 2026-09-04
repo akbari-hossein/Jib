@@ -1,5 +1,5 @@
 import { requireUser } from "@/lib/auth/session";
-import { listAccounts, toAccountListItem } from "@/server/queries/accounts";
+import { listAccountItems } from "@/server/queries/accounts";
 import { getPlanAccess } from "@/server/queries/plan";
 import { AccountForm } from "@/features/accounts/account-form";
 import { AccountList } from "@/features/accounts/account-list";
@@ -13,16 +13,16 @@ export const metadata = { title: "حساب‌ها" };
 export default async function AccountsPage() {
   const user = await requireUser();
   const [accounts, access] = await Promise.all([
-    listAccounts(user.id),
+    listAccountItems(user.id),
     getPlanAccess(user.id, user.plan),
   ]);
-  const items = accounts.map(toAccountListItem);
+  const items = accounts;
 
   return (
     <main data-tour="accounts-page" className="flex flex-col gap-6 px-5 pt-8">
       <PageHeader
         title="حساب‌ها"
-        description="حساب‌هایی که در قابل‌خرج باشند، عدد امروز را می‌سازند."
+        description="حساب‌های تومان و دارایی‌های فیزیکی. دارایی‌ها به‌طور پیش‌فرض از قابل‌خرج جدا هستند."
         dataTour="accounts-heading"
       />
       {accounts.length === 0 ? (

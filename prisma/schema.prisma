@@ -17,6 +17,7 @@ enum AccountType {
   BANK
   CARD
   SAVINGS
+  ASSET_HOLDING
   OTHER
 }
 
@@ -24,6 +25,8 @@ enum TransactionType {
   EXPENSE
   INCOME
   TRANSFER
+  ASSET_ADD
+  ASSET_REMOVE
 }
 
 enum CategoryGroup {
@@ -61,7 +64,6 @@ enum ReferenceAssetType {
   GOLD_COIN
   GOLD_COIN_BAHAR
   GOLD_GRAM
-  SILVER
 }
 
 model User {
@@ -107,25 +109,29 @@ model Session {
 }
 
 model Account {
-  id                 String      @id @default(cuid())
+  id                 String              @id @default(cuid())
   userId             String
-  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   name               String
   type               AccountType
-  balance            BigInt      @default(0)
-  currency           String      @default("TOMAN")
+  balance            BigInt              @default(0)
+  /// Physical quantity for ASSET_HOLDING. Ignored for toman accounts.
+  quantity           Decimal             @default(0) @db.Decimal(18, 6)
+  assetType          ReferenceAssetType?
+  currency           String              @default("TOMAN")
   color              String?
   icon               String?
-  isActive           Boolean     @default(true)
-  includeInAvailable Boolean     @default(true)
-  sortOrder          Int         @default(0)
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  isActive           Boolean             @default(true)
+  includeInAvailable Boolean             @default(true)
+  sortOrder          Int                 @default(0)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
   outgoingTransactions Transaction[]          @relation("AccountFrom")
   incomingTransfers    Transaction[]          @relation("AccountTo")
   recurring            RecurringTransaction[]
   goals                Goal[]
+  goalFundings         GoalFunding[]
 
   @@index([userId, isActive])
 }
@@ -165,6 +171,13 @@ model Transaction {
   occurredAt             DateTime
   merchant               String?
   note                   String?
+  /// Signed quantity change for ASSET_ADD / ASSET_REMOVE. Null for toman txs.
+  quantityDelta          Decimal?        @db.Decimal(18, 6)
+  /// Whole toman per unit at the time of the asset movement. Never recomputed.
+  rateToTomanSnapshot    BigInt?
+  linkedCashTransactionId String?        @unique
+  linkedCashTransaction  Transaction?    @relation("AssetCashLink", fields: [linkedCashTransactionId], references: [id], onDelete: SetNull)
+  cashLinkedFrom         Transaction?    @relation("AssetCashLink")
   recurringTransactionId String?
   recurringTransaction   RecurringTransaction? @relation(fields: [recurringTransactionId], references: [id], onDelete: SetNull)
   createdAt              DateTime        @default(now())
@@ -216,7 +229,19 @@ model Goal {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  fundings      GoalFunding[]
+
   @@index([userId, isArchived])
+}
+
+model GoalFunding {
+  goalId    String
+  accountId String
+  goal      Goal    @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@id([goalId, accountId])
+  @@index([accountId])
 }
 
 model RecurringTransaction {

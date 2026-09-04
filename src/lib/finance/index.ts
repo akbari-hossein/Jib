@@ -7,6 +7,14 @@ export {
 export { calculateBudgetUsage } from "@/lib/finance/budget-usage";
 export { assembleDashboard } from "@/lib/finance/dashboard";
 export { calculateDailyAllowance } from "@/lib/finance/daily-allowance";
+export {
+  calculateAssetHoldingValue,
+  calculateNetWorth,
+  describeHoldingValue,
+  formatHoldingLine,
+  sumAssetHoldingValue,
+  toAccountSnapshot,
+} from "@/lib/finance/assetHoldings";
 export { calculateGoalProgress } from "@/lib/finance/goal-progress";
 export { calculateMonthlyChange } from "@/lib/finance/monthly-change";
 export type { MonthlyChange } from "@/lib/finance/monthly-change";
@@ -37,6 +45,7 @@ export type { RuleSnapshot } from "@/lib/finance/rules";
 export { calculateSavingsRate } from "@/lib/finance/savings-rate";
 export type {
   AccountSnapshot,
+  AssetHolding,
   BudgetStatus,
   GoalSnapshot,
   PlannedExpenseSnapshot,

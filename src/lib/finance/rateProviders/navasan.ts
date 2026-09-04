@@ -1,22 +1,29 @@
+import { z } from "zod";
 import type { ReferenceAssetType } from "@/lib/finance/purchasing-power";
 import type { RateProvider, RateProviderConfig, RawRate } from "@/lib/finance/rateProviders/types";
 
-/** Documented Navasan symbols (https://www.navasan.tech/webserviceguide/). */
+/**
+ * Documented Navasan symbols only (https://www.navasan.tech/webserviceguide/).
+ * Silver is not a published Navasan item — it is not fetched or faked.
+ */
 export const NAVASAN_DEFAULT_ITEM_MAP: Record<ReferenceAssetType, string> = {
   USD: "usd_sell",
   EUR: "eur",
   GOLD_COIN: "sekkeh",
   GOLD_COIN_BAHAR: "bahar",
   GOLD_GRAM: "18ayar",
-  SILVER: "silver",
 };
+
+const navasanQuoteSchema = z
+  .object({
+    value: z.union([z.string(), z.number()]),
+    timestamp: z.union([z.number(), z.string()]).optional(),
+  })
+  .passthrough();
+
+const navasanPayloadSchema = z.record(z.string(), z.unknown());
 
 type FetchLike = typeof fetch;
-
-type NavasanQuote = {
-  value: unknown;
-  timestamp?: unknown;
-};
 
 function resolveItemMap(overlay: RateProviderConfig["itemMap"]): Map<string, ReferenceAssetType> {
   const merged: Record<ReferenceAssetType, string> = { ...NAVASAN_DEFAULT_ITEM_MAP };
@@ -63,13 +70,6 @@ function quoteFetchedAt(timestamp: unknown, fallback: Date): Date {
   return fallback;
 }
 
-function asQuote(value: unknown): NavasanQuote | null {
-  if (value == null || typeof value !== "object" || Array.isArray(value)) {
-    return null;
-  }
-  return value as NavasanQuote;
-}
-
 function scaleToToman(price: number, tomanScale: number): number | null {
   if (!Number.isFinite(tomanScale) || tomanScale <= 0) {
     return null;
@@ -111,8 +111,9 @@ export class NavasanProvider implements RateProvider {
       throw new Error("Navasan returned invalid JSON.");
     }
 
-    if (payload == null || typeof payload !== "object" || Array.isArray(payload)) {
-      throw new Error("Navasan returned an unexpected payload.");
+    const parsed = navasanPayloadSchema.safeParse(payload);
+    if (!parsed.success) {
+      throw new Error("Navasan payload failed schema validation.");
     }
 
     const now = new Date();
@@ -120,16 +121,16 @@ export class NavasanProvider implements RateProvider {
     const rates: RawRate[] = [];
     const seen = new Set<ReferenceAssetType>();
 
-    for (const [symbol, rawQuote] of Object.entries(payload as Record<string, unknown>)) {
+    for (const [symbol, rawQuote] of Object.entries(parsed.data)) {
       const assetType = bySymbol.get(symbol);
       if (!assetType || seen.has(assetType)) {
         continue;
       }
-      const quote = asQuote(rawQuote);
-      if (!quote) {
+      const quote = navasanQuoteSchema.safeParse(rawQuote);
+      if (!quote.success) {
         continue;
       }
-      const providerPrice = parsePositiveDecimal(quote.value);
+      const providerPrice = parsePositiveDecimal(quote.data.value);
       if (providerPrice == null) {
         continue;
       }
@@ -141,8 +142,12 @@ export class NavasanProvider implements RateProvider {
       rates.push({
         assetType,
         priceInToman,
-        fetchedAt: quoteFetchedAt(quote.timestamp, now),
+        fetchedAt: quoteFetchedAt(quote.data.timestamp, now),
       });
+    }
+
+    if (rates.length === 0) {
+      throw new Error("Navasan returned no usable quotes for mapped assets.");
     }
 
     return rates;
