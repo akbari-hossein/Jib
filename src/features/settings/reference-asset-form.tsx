@@ -31,10 +31,10 @@ export function ReferenceAssetForm({
           className="mt-1 size-4 accent-primary"
         />
         <span>
-          <span className="text-sm font-medium">نمایش معادل ارزش (دلار/سکه/گرم طلا)</span>
+          <span className="text-sm font-medium">نمایش معادل ارزش (دلار، سکه، طلا، نقره)</span>
           <span className="mt-1 block text-xs leading-6 text-muted-foreground">
-            کنار مبلغ تومان، ارزش معادل یک دارایی مرجع را نشان می‌دهد. اگر نرخی ثبت نشده باشد، خط
-            دوم نمایش داده نمی‌شود.
+            کنار مبلغ تومان، ارزش معادل یک دارایی مرجع را نشان می‌دهد. نرخ‌ها از بازار خوانده
+            می‌شوند؛ اگر نرخی موجود نباشد، خط دوم نمایش داده نمی‌شود.
           </span>
         </span>
       </label>

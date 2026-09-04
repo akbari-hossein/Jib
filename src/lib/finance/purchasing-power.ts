@@ -1,9 +1,18 @@
 import { formatCompactToman, groupThousands, toPersianDigits } from "@/lib/currency/format";
 import { formatJalaliAbsolute, jalaliFromInstant } from "@/lib/dates/tehran";
 
-export const REFERENCE_ASSET_TYPES = ["USD", "GOLD_COIN", "GOLD_GRAM"] as const;
+export const REFERENCE_ASSET_TYPES = [
+  "USD",
+  "EUR",
+  "GOLD_COIN",
+  "GOLD_COIN_BAHAR",
+  "GOLD_GRAM",
+  "SILVER",
+] as const;
 
 export type ReferenceAssetType = (typeof REFERENCE_ASSET_TYPES)[number];
+/** Alias used by live rate providers; same set as `ReferenceAssetType`. */
+export type AssetType = ReferenceAssetType;
 
 /** Hundredths of one reference-asset unit (0.98 سکه → 98). */
 export const REFERENCE_EQUIVALENT_SCALE = 100n;
@@ -19,14 +28,20 @@ export type ReferenceRateSnapshot = {
 
 export const REFERENCE_ASSET_UNIT_LABEL: Record<ReferenceAssetType, string> = {
   USD: "دلار",
+  EUR: "یورو",
   GOLD_COIN: "سکه",
+  GOLD_COIN_BAHAR: "سکه بهار",
   GOLD_GRAM: "گرم طلا",
+  SILVER: "گرم نقره",
 };
 
 export const REFERENCE_ASSET_OPTION_LABEL: Record<ReferenceAssetType, string> = {
   USD: "دلار آمریکا",
-  GOLD_COIN: "سکه طلا",
-  GOLD_GRAM: "گرم طلا",
+  EUR: "یورو",
+  GOLD_COIN: "سکه امامی",
+  GOLD_COIN_BAHAR: "سکه بهار آزادی",
+  GOLD_GRAM: "گرم طلای ۱۸ عیار",
+  SILVER: "نقره",
 };
 
 export type PurchasingPowerHint = {
@@ -128,3 +143,5 @@ export function describeSavingsInReferenceAsset(
 export function isReferenceAssetType(value: string): value is ReferenceAssetType {
   return (REFERENCE_ASSET_TYPES as readonly string[]).includes(value);
 }
+
+export const isAssetType = isReferenceAssetType;

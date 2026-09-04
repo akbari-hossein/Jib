@@ -5,6 +5,7 @@ import {
   describePurchasingPower,
   describeSavingsInReferenceAsset,
   formatEquivalentAmount,
+  isReferenceAssetType,
   type ReferenceRateSnapshot,
 } from "@/lib/finance/purchasing-power";
 
@@ -112,5 +113,15 @@ describe("describeSavingsInReferenceAsset", () => {
     expect(
       describeSavingsInReferenceAsset(-1_000_000n, rate({ rateToToman: 7_500_000n }), "week"),
     ).toBeNull();
+  });
+});
+
+describe("isReferenceAssetType", () => {
+  it("accepts the live-rate asset set", () => {
+    expect(isReferenceAssetType("USD")).toBe(true);
+    expect(isReferenceAssetType("EUR")).toBe(true);
+    expect(isReferenceAssetType("GOLD_COIN_BAHAR")).toBe(true);
+    expect(isReferenceAssetType("SILVER")).toBe(true);
+    expect(isReferenceAssetType("BTC")).toBe(false);
   });
 });

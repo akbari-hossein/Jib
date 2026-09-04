@@ -19,6 +19,7 @@ export {
   describeSavingsInReferenceAsset,
   formatEquivalentAmount,
   isReferenceAssetType,
+  isAssetType,
   REFERENCE_ASSET_OPTION_LABEL,
   REFERENCE_ASSET_TYPES,
   REFERENCE_ASSET_UNIT_LABEL,
@@ -27,6 +28,7 @@ export {
 export type {
   PurchasingPowerHint,
   ReferenceAssetType,
+  AssetType,
   ReferenceRateSnapshot,
 } from "@/lib/finance/purchasing-power";
 export { calculateRequiredSavings } from "@/lib/finance/required-savings";

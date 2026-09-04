@@ -1,12 +1,13 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { REFERENCE_ASSET_TYPES } from "@/lib/finance/purchasing-power";
 import { recordRate } from "@/lib/finance/referenceRates";
+import { requestMatchesBearerSecret } from "@/lib/http/bearer-secret";
 
 export const dynamic = "force-dynamic";
 
 const ingestSchema = z.object({
-  assetType: z.enum(["USD", "GOLD_COIN", "GOLD_GRAM"]),
+  assetType: z.enum(REFERENCE_ASSET_TYPES),
   rateToToman: z
     .union([z.number(), z.string()])
     .transform((value, ctx) => {
@@ -25,24 +26,7 @@ const ingestSchema = z.object({
 });
 
 function ingestAuthorized(request: Request): boolean {
-  const secret = process.env.REFERENCE_RATE_INGEST_SECRET?.trim();
-  if (!secret) {
-    return false;
-  }
-
-  const header = request.headers.get("authorization");
-  if (!header?.startsWith("Bearer ")) {
-    return false;
-  }
-
-  const token = header.slice("Bearer ".length);
-  const expected = Buffer.from(secret);
-  const actual = Buffer.from(token);
-  if (expected.length !== actual.length) {
-    return false;
-  }
-
-  return timingSafeEqual(expected, actual);
+  return requestMatchesBearerSecret(request, process.env.REFERENCE_RATE_INGEST_SECRET);
 }
 
 export async function POST(request: Request) {

@@ -57,8 +57,11 @@ enum RuleMatchType {
 
 enum ReferenceAssetType {
   USD
+  EUR
   GOLD_COIN
+  GOLD_COIN_BAHAR
   GOLD_GRAM
+  SILVER
 }
 
 model User {
@@ -270,8 +273,8 @@ model NotificationPreference {
 }
 
 /// One toman price for a unit of a reference asset, as of `effectiveAt`.
-/// `rateToToman` is whole toman (no floats). A cron or REST provider should
-/// insert rows through `recordRate`; calculation never fetches the provider.
+/// `rateToToman` is whole toman (no floats). Live providers and manual ingest
+/// insert rows through `recordRate`; calculation never fetches a provider.
 model ReferenceRate {
   id          String             @id @default(cuid())
   assetType   ReferenceAssetType

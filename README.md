@@ -18,7 +18,7 @@ The product is designed for Iran: Jalali calendar, Tehran timezone, and amounts 
 - **Recurring** — weekly, monthly, or yearly income and expenses
 - **Category rules** — auto-categorize by merchant or note (exact / contains)
 - **Reports** — calm weekly and monthly reviews, category spend, budget performance
-- **Purchasing power** — optional USD / gold-coin / gold-gram equivalent next to toman amounts
+- **Purchasing power** — optional USD / euro / gold-coin / gold-gram / silver equivalent next to toman amounts, from stored live market rates
 - **PWA** — installable, standalone, with an offline fallback page
 - **Auth** — email and password, optional Google sign-in, cookie sessions
 
@@ -110,6 +110,11 @@ cp .env.example .env
 | `GOOGLE_CLIENT_SECRET` | Optional. Google OAuth client secret. |
 | `GOOGLE_REDIRECT_URI` | Optional. Defaults to `{origin}/api/auth/google/callback`. |
 | `REFERENCE_RATE_INGEST_SECRET` | Optional. Bearer token for `POST /api/internal/reference-rates`. |
+| `CRON_SECRET` | Optional. Bearer token for `GET /api/cron/reference-rates`. |
+| `RATE_PROVIDER_NAME` | Optional. Live rate adapter (`navasan`). |
+| `RATE_PROVIDER_API_KEY` | Optional. Server-only provider key. Never expose to the client. |
+| `RATE_PROVIDER_BASE_URL` | Optional. Provider origin, e.g. `https://api.navasan.tech`. |
+| `RATE_PROVIDER_POLL_INTERVAL_MINUTES` | Optional. Minimum minutes between live fetches. |
 
 Example `.env`:
 
@@ -187,7 +192,7 @@ Create an account at `/signup` with email and password (at least 8 characters). 
 Prisma lives in `prisma/schema.prisma`. The main entities:
 
 - **User** — email, optional password hash, optional Google id, optional name, payday, locale `fa-IR`, currency `TOMAN`, optional `referenceAssetPreference`
-- **ReferenceRate** — USD / gold coin / gold gram price in toman as of `effectiveAt` (manual ingest; see `src/lib/finance/README.md`)
+- **ReferenceRate** — USD / euro / gold coin / gold gram / silver price in toman as of `effectiveAt` (live provider or manual ingest; see `src/lib/finance/README.md`)
 - **Account** — type, balance, `includeInAvailable`
 - **Category** — system defaults seeded on first login (essential / living / lifestyle / financial)
 - **Transaction** — expense, income, or transfer; Jalali-aware `occurredAt`
