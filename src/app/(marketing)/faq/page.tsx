@@ -35,7 +35,7 @@ export default function FaqPage() {
           </article>
         ))}
       </div>
-      <PrimaryCta className="mt-10">رایگان شروع کن</PrimaryCta>
+      <PrimaryCta className="mt-10" />
     </main>
   );
 }

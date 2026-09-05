@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { APP_NAME } from "@/lib/config/app";
+import { Logo } from "@/components/brand/logo";
 
 const NAV = [
   { href: "/features", label: "امکانات" },
-  { href: "/pricing", label: "قیمت" },
   { href: "/faq", label: "سؤال‌ها" },
   { href: "/about", label: "درباره" },
 ] as const;
@@ -12,9 +11,7 @@ export function MarketingHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
-          {APP_NAME}
-        </Link>
+        <Logo href="/" />
         <nav aria-label="صفحات عمومی" className="flex items-center gap-1 sm:gap-4">
           {NAV.map((item) => (
             <Link
@@ -35,7 +32,7 @@ export function MarketingHeader() {
             href="/signup"
             className="inline-flex h-10 items-center rounded-2xl bg-primary px-4 text-sm font-medium text-primary-foreground transition-transform active:scale-[0.98]"
           >
-            شروع رایگان
+            شروع کن
           </Link>
         </nav>
       </div>

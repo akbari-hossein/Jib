@@ -7,9 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Plan {
-  FREE
-  PRO
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum AdminAuditAction {
+  USER_DISABLED
+  USER_REACTIVATED
+  USER_ROLE_CHANGED
+  USER_ONBOARDING_RESET
+  USER_DELETED
 }
 
 enum AccountType {
@@ -58,6 +71,11 @@ enum RuleMatchType {
   CONTAINS
 }
 
+enum NotificationChannel {
+  PUSH
+  IN_APP
+}
+
 enum ReferenceAssetType {
   USD
   EUR
@@ -72,12 +90,14 @@ model User {
   passwordHash               String?
   googleId                   String?             @unique
   name                       String?
-  plan                       Plan                @default(FREE)
+  role                       UserRole            @default(USER)
+  status                     UserStatus          @default(ACTIVE)
   incomeDayOfMonth           Int?
   expectedIncomeAmount       BigInt?
   locale                     String              @default("fa-IR")
   currency                   String              @default("TOMAN")
   onboardingCompletedAt      DateTime?
+  lastActiveAt               DateTime?
   /// Null means the purchasing-power reference line is off.
   referenceAssetPreference   ReferenceAssetType?
   createdAt                  DateTime            @default(now())
@@ -90,8 +110,17 @@ model User {
   budgets              Budget[]
   goals                Goal[]
   recurring            RecurringTransaction[]
-  rules                TransactionRule[]
-  notificationPref     NotificationPreference?
+  rules                  TransactionRule[]
+  notificationPref       NotificationPreference?
+  notificationSettings   UserNotificationSetting[]
+  notificationLogs       NotificationLog[]
+  pushSubscriptions      PushSubscription[]
+  adminAuditLogs         AdminAuditLog[]           @relation("AdminActor")
+
+  @@index([role, status])
+  @@index([createdAt])
+  @@index([lastActiveAt])
+  @@index([onboardingCompletedAt])
 }
 
 model Session {
@@ -186,6 +215,8 @@ model Transaction {
   @@index([userId, occurredAt])
   @@index([userId, accountId])
   @@index([userId, categoryId])
+  @@index([occurredAt])
+  @@index([type, occurredAt])
 }
 
 model Budget {
@@ -201,6 +232,8 @@ model Budget {
   categories BudgetCategory[]
 
   @@unique([userId, jalaliYear, jalaliMonth])
+  @@index([jalaliYear, jalaliMonth])
+  @@index([createdAt])
 }
 
 model BudgetCategory {
@@ -232,6 +265,7 @@ model Goal {
   fundings      GoalFunding[]
 
   @@index([userId, isArchived])
+  @@index([createdAt])
 }
 
 model GoalFunding {
@@ -288,13 +322,87 @@ model TransactionRule {
 }
 
 model NotificationPreference {
-  userId         String  @id
-  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  budgetAlert    Boolean @default(true)
-  weeklyReview   Boolean @default(true)
-  goalMilestone  Boolean @default(true)
-  recurringDue   Boolean @default(true)
-  incomeExpected Boolean @default(false)
+  userId             String  @id
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  muteAll            Boolean @default(false)
+  preferredHour      Int     @default(20)
+  quietHoursStart    Int?
+  quietHoursEnd      Int?
+  dailyAllowanceHour Int     @default(9)
+  eveningHour        Int     @default(20)
+  paceThresholdPct   Int     @default(25)
+  budgetAlert        Boolean @default(true)
+  weeklyReview       Boolean @default(true)
+  goalMilestone      Boolean @default(true)
+  recurringDue       Boolean @default(true)
+  incomeExpected     Boolean @default(false)
+}
+
+model NotificationRule {
+  id                String  @id @default(cuid())
+  key               String  @unique
+  title             String
+  isActiveByDefault Boolean @default(true)
+}
+
+model UserNotificationSetting {
+  id              String              @id @default(cuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ruleKey         String
+  enabled         Boolean             @default(true)
+  channel         NotificationChannel @default(PUSH)
+  quietHoursStart Int?
+  quietHoursEnd   Int?
+
+  @@unique([userId, ruleKey])
+  @@index([userId])
+}
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ruleKey   String
+  payload   Json
+  sentAt    DateTime @default(now())
+  dedupeKey String
+  readAt    DateTime?
+
+  @@unique([userId, ruleKey, dedupeKey])
+  @@index([userId, sentAt])
+  @@index([userId, readAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model AdminAuditLog {
+  id         String           @id @default(cuid())
+  adminId    String?
+  admin      User?            @relation("AdminActor", fields: [adminId], references: [id], onDelete: SetNull)
+  adminEmail String
+  action     AdminAuditAction
+  targetType String
+  targetId   String
+  metadata   Json?
+  createdAt  DateTime         @default(now())
+
+  @@index([createdAt])
+  @@index([adminId, createdAt])
+  @@index([targetType, targetId])
+  @@index([action, createdAt])
 }
 
 /// One toman price for a unit of a reference asset, as of `effectiveAt`.

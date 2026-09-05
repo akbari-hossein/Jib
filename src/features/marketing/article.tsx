@@ -23,9 +23,9 @@ export function MarketingArticle({
       <div className="mt-12 rounded-3xl border border-border bg-card px-5 py-6">
         <p className="font-medium">می‌خواهی روی پول خودت امتحان کنی؟</p>
         <p className="mt-2 text-sm leading-7 text-muted-foreground">
-          رایگان شروع کن. لازم نیست از اول کامل باشی.
+          حساب بساز. لازم نیست از اول کامل باشی.
         </p>
-        <PrimaryCta className="mt-5">رایگان شروع کن</PrimaryCta>
+        <PrimaryCta className="mt-5" />
       </div>
     </main>
   );

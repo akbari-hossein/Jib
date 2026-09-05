@@ -3,6 +3,7 @@ import { UsageBar } from "@/components/usage-bar";
 import { Button } from "@/components/ui/button";
 import { MoneyDisplay } from "@/components/money/money-display";
 import { GoalCurrentForm } from "@/features/goals/goal-current-form";
+import { GoalWhatIf } from "@/features/what-if/goal-what-if";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
 import { formatJalaliDay, getTehranJalaliDate, jalaliFromUtc } from "@/lib/dates/tehran";
 import type { GoalListItem } from "@/server/queries/goals";
@@ -13,7 +14,7 @@ export function GoalList({ goals }: { goals: GoalListItem[] }) {
   return (
     <ul className="flex flex-col gap-3">
       {goals.map((goal) => (
-        <li key={goal.id} className="rounded-3xl border border-border bg-card px-4 py-4">
+        <li key={goal.id} id={`goal-${goal.id}`} className="scroll-mt-4 rounded-3xl border border-border bg-card px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="font-medium">{goal.name}</p>
@@ -51,6 +52,14 @@ export function GoalList({ goals }: { goals: GoalListItem[] }) {
           {goal.linked ? null : (
             <GoalCurrentForm key={`${goal.id}-${goal.currentAmount.toString()}`} id={goal.id} currentAmount={goal.currentAmount.toString()} />
           )}
+          <GoalWhatIf
+            key={`${goal.id}-${goal.currentAmount.toString()}`}
+            currentAmount={goal.currentAmount.toString()}
+            targetAmount={goal.targetAmount.toString()}
+            remaining={goal.progress.remaining.toString()}
+            monthlyNeed={goal.progress.monthlyNeed == null ? null : goal.progress.monthlyNeed.toString()}
+            today={today}
+          />
         </li>
       ))}
     </ul>

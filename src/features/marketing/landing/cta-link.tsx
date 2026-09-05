@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 export function PrimaryCta({
   href = "/signup",
-  children = "شروع رایگان",
+  children = "شروع کن",
   className,
 }: {
   href?: string;

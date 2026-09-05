@@ -21,7 +21,7 @@ export function HeroSection() {
           لازم نیست حسابدار خودت باشی.
         </p>
         <div className="flex flex-wrap items-center gap-3">
-          <PrimaryCta>رایگان شروع کن</PrimaryCta>
+          <PrimaryCta />
           <SecondaryCta href="#how-it-works">چطور کار می‌کنه؟</SecondaryCta>
         </div>
       </div>
@@ -141,8 +141,8 @@ export function BudgetsSection() {
         <p className="text-sm text-muted-foreground">بودجه</p>
         <h2 className="mt-2 text-3xl font-semibold tracking-tight">سقف ساده، بدون سرزنش.</h2>
         <p className="mt-4 text-base leading-8 text-muted-foreground">
-          برای دسته‌های مهم مثل غذا سقف ماهانه می‌گذاری. اگر نزدیک شدی، جیب خبر می‌دهد. اگر رد شدی،
-          هنوز می‌توانی سقف را عوض کنی.
+          برای دسته‌های مهم مثل غذا سقف ماهانه می‌گذاری. اگر بخواهی، سقف کل ماه هم می‌گذاری. اگر نزدیک
+          شدی، جیب خبر می‌دهد. اگر رد شدی، هنوز می‌توانی سقف را عوض کنی.
         </p>
       </div>
       <Card className="p-6">
@@ -310,9 +310,10 @@ export function FinalCtaSection() {
       <Card className="flex flex-col items-start gap-5 px-6 py-10 md:px-10">
         <h2 className="max-w-xl text-3xl font-semibold tracking-tight">کنترل پولت را پس بگیر.</h2>
         <p className="max-w-lg text-base leading-8 text-muted-foreground">
-          رایگان شروع کن. حساب بساز، موجودی را بگذار، و همان روز ببین امروز چقدر می‌توانی خرج کنی.
+          حساب بساز، موجودی را بگذار، و همان روز ببین امروز چقدر می‌توانی خرج کنی. جیب کامل است و هزینه‌ای
+          ندارد.
         </p>
-        <PrimaryCta>رایگان شروع کن</PrimaryCta>
+        <PrimaryCta />
       </Card>
     </section>
   );

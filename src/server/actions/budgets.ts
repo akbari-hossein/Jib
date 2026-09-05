@@ -10,7 +10,6 @@ import {
   assertCategoryOwned,
   userFacingMutationError,
 } from "@/server/services/ownership";
-import { assertCanCreate, assertHasFeature } from "@/server/services/plan";
 
 export type BudgetActionState = {
   ok: boolean;
@@ -64,12 +63,6 @@ export async function upsertBudgetCategory(
       return { ok: false, error: "برای درآمد نمی‌شود سقف گذاشت." };
     }
     const budgetId = await currentBudgetId(user.id);
-    const existing = await prisma.budgetCategory.findUnique({
-      where: { budgetId_categoryId: { budgetId, categoryId } },
-    });
-    if (!existing) {
-      await assertCanCreate(user.id, user.plan, "budgetCategories");
-    }
     await prisma.budgetCategory.upsert({
       where: { budgetId_categoryId: { budgetId, categoryId } },
       update: { limit },
@@ -96,7 +89,6 @@ export async function updateOverallLimit(
   }
 
   try {
-    assertHasFeature(user.plan, "overallBudget");
     const budgetId = await currentBudgetId(user.id);
     await prisma.budget.update({
       where: { id: budgetId },

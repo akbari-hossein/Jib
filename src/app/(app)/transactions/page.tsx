@@ -1,7 +1,6 @@
 import { requireUser } from "@/lib/auth/session";
 import { listRecentTransactions } from "@/server/queries/transactions";
 import { listAccounts } from "@/server/queries/accounts";
-import { getPlanAccess } from "@/server/queries/plan";
 import { TransactionList } from "@/features/transactions/transaction-list";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
@@ -12,10 +11,9 @@ export const metadata = { title: "تراکنش‌ها" };
 
 export default async function TransactionsPage() {
   const user = await requireUser();
-  const [transactions, accounts, access] = await Promise.all([
+  const [transactions, accounts] = await Promise.all([
     listRecentTransactions(user.id),
     listAccounts(user.id, { activeOnly: true }),
-    getPlanAccess(user.id, user.plan),
   ]);
 
   return (
@@ -25,15 +23,9 @@ export default async function TransactionsPage() {
           dataTour="transactions-heading"
           action={
             transactions.length > 0 ? (
-              access.canExport ? (
-                <a href="/export/transactions" className="text-sm text-primary">
-                  خروجی
-                </a>
-              ) : (
-                <Link href="/pricing" className="text-sm text-muted-foreground">
-                  خروجی
-                </Link>
-              )
+              <a href="/export/transactions" className="text-sm text-primary">
+                خروجی
+              </a>
             ) : undefined
           }
         />

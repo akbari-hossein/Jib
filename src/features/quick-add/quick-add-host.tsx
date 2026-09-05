@@ -15,7 +15,7 @@ export function QuickAddHost({ context }: { context: QuickAddContext }) {
       {hasAccounts ? (
         <button
           type="button"
-          onClick={openDrawer}
+          onClick={() => openDrawer()}
           className="fixed bottom-24 end-5 z-20 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-150 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label="ثبت سریع"
         >

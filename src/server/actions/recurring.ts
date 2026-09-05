@@ -22,7 +22,6 @@ import {
   assertRecurringOwned,
   userFacingMutationError,
 } from "@/server/services/ownership";
-import { assertHasFeature } from "@/server/services/plan";
 import { persistTransaction } from "@/server/services/transactions";
 
 export type RecurringActionState = {
@@ -95,7 +94,6 @@ export async function createRecurring(
   const nextDate = firstOccurrenceOnOrAfter(startDate, today, frequency, 1, dayOfMonth);
 
   try {
-    assertHasFeature(user.plan, "recurring");
     const account = await assertAccountOwned(user.id, accountId);
     if (!account.isActive) {
       return { ok: false, error: "این حساب فعال نیست." };

@@ -1,13 +1,7 @@
 import type { JalaliDate } from "@/lib/dates/tehran";
 import { jalaliFromUtc, monthsRemainingForGoal } from "@/lib/dates/tehran";
+import { ceilDiv } from "@/lib/finance/math";
 import type { GoalSnapshot } from "@/lib/finance/types";
-
-function ceilDiv(numerator: bigint, denominator: bigint): bigint {
-  if (denominator <= 0n) {
-    return 0n;
-  }
-  return (numerator + denominator - 1n) / denominator;
-}
 
 export function calculateRequiredSavings(input: {
   goals: GoalSnapshot[];

@@ -1,11 +1,21 @@
 import { prisma } from "@/lib/db/prisma";
-import { addJalaliMonths, getTehranJalaliDate, tehranMidnightUtc } from "@/lib/dates/tehran";
+import {
+  addJalaliMonths,
+  getTehranJalaliDate,
+  tehranMidnightUtc,
+  type JalaliDate,
+} from "@/lib/dates/tehran";
 import { calculateBudgetUsage } from "@/lib/finance/budget-usage";
 import { JALALI_MONTHS } from "@/lib/labels";
 
-export async function getBudgetMonth(userId: string) {
+export async function getBudgetMonth(
+  userId: string,
+  jalali?: Pick<JalaliDate, "year" | "month">,
+) {
   const today = getTehranJalaliDate();
-  const monthStart = { year: today.year, month: today.month, day: 1 };
+  const year = jalali?.year ?? today.year;
+  const month = jalali?.month ?? today.month;
+  const monthStart = { year, month, day: 1 };
   const nextMonth = addJalaliMonths(monthStart, 1);
   const from = tehranMidnightUtc(monthStart);
   const to = tehranMidnightUtc(nextMonth);
@@ -15,8 +25,8 @@ export async function getBudgetMonth(userId: string) {
       where: {
         userId_jalaliYear_jalaliMonth: {
           userId,
-          jalaliYear: today.year,
-          jalaliMonth: today.month,
+          jalaliYear: year,
+          jalaliMonth: month,
         },
       },
       include: {
@@ -56,9 +66,9 @@ export async function getBudgetMonth(userId: string) {
   const totalSpent = overallSpent._sum.amount ?? 0n;
 
   return {
-    year: today.year,
-    month: today.month,
-    monthName: JALALI_MONTHS[today.month - 1] ?? "",
+    year,
+    month,
+    monthName: JALALI_MONTHS[month - 1] ?? "",
     overallLimit: budget?.overallLimit ?? null,
     overallSpent: totalSpent,
     overallUsage: budget?.overallLimit

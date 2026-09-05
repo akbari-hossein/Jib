@@ -1,4 +1,9 @@
-import type { AccountSnapshot, GoalSnapshot, PlannedExpenseSnapshot } from "@/lib/finance/types";
+import type {
+  AccountSnapshot,
+  AvailableMoneyInput,
+  GoalSnapshot,
+  PlannedExpenseSnapshot,
+} from "@/lib/finance/types";
 
 export function sumLiquidBalance(accounts: AccountSnapshot[]): bigint {
   return accounts
@@ -25,16 +30,13 @@ export function sumPlannedExpenses(
     .reduce((sum, expense) => sum + expense.amount, 0n);
 }
 
-export function calculateAvailableMoney(input: {
-  liquidBalance: bigint;
-  reservedForGoals: bigint;
-  plannedExpenses: bigint;
-  requiredSavings: bigint;
-}): bigint {
+export function calculateAvailableMoney(input: AvailableMoneyInput): bigint {
+  const simulatedDelta = input.simulatedDelta ?? 0n;
   return (
     input.liquidBalance -
     input.reservedForGoals -
     input.plannedExpenses -
-    input.requiredSavings
+    input.requiredSavings -
+    simulatedDelta
   );
 }

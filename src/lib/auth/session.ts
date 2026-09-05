@@ -55,7 +55,27 @@ export async function getCurrentUser() {
     return null;
   }
 
+  if (session.user.status === "DISABLED") {
+    await prisma.session.deleteMany({ where: { userId: session.user.id } }).catch(() => undefined);
+    return null;
+  }
+
+  await touchLastActive(session.user.id, session.user.lastActiveAt);
   return session.user;
+}
+
+const LAST_ACTIVE_THROTTLE_MS = 5 * 60 * 1000;
+
+async function touchLastActive(userId: string, lastActiveAt: Date | null) {
+  if (lastActiveAt && Date.now() - lastActiveAt.getTime() < LAST_ACTIVE_THROTTLE_MS) {
+    return;
+  }
+  await prisma.user
+    .update({
+      where: { id: userId },
+      data: { lastActiveAt: new Date() },
+    })
+    .catch(() => undefined);
 }
 
 export async function requireUser() {
@@ -79,15 +99,21 @@ export async function clearSessionCookie() {
 export async function createSession(userId: string, headerList: Headers) {
   const { token, tokenHash } = generateSessionToken();
   const expiresAt = sessionExpiry();
-  await prisma.session.create({
-    data: {
-      userId,
-      tokenHash,
-      expiresAt,
-      ip: clientIp(headerList),
-      userAgent: headerList.get("user-agent")?.slice(0, 180),
-    },
-  });
+  await prisma.$transaction([
+    prisma.session.create({
+      data: {
+        userId,
+        tokenHash,
+        expiresAt,
+        ip: clientIp(headerList),
+        userAgent: headerList.get("user-agent")?.slice(0, 180),
+      },
+    }),
+    prisma.user.update({
+      where: { id: userId },
+      data: { lastActiveAt: new Date() },
+    }),
+  ]);
   return { token, expiresAt };
 }
 

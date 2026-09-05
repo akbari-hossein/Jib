@@ -14,10 +14,9 @@ import { prisma } from "@/lib/db/prisma";
 import { isReferenceAssetType, type ReferenceAssetType } from "@/lib/finance/purchasing-power";
 import { decimalStringFromScaled, parseQuantityToScaled } from "@/lib/finance/quantity";
 import { parseTomanInput } from "@/lib/validation/money";
-import { assertAccountOwned, userFacingMutationError } from "@/server/services/ownership";
-import { assertCanCreate } from "@/server/services/plan";
-import { persistTransaction } from "@/server/services/transactions";
 import { getLatestRate } from "@/lib/finance/referenceRates";
+import { assertAccountOwned, userFacingMutationError } from "@/server/services/ownership";
+import { persistTransaction } from "@/server/services/transactions";
 
 export type AccountActionState = {
   ok: boolean;
@@ -117,7 +116,6 @@ export async function createAccount(
   }
 
   try {
-    await assertCanCreate(user.id, user.plan, "accounts");
     const count = await prisma.account.count({ where: { userId: user.id } });
     const created = await prisma.account.create({
       data: {
@@ -270,7 +268,6 @@ export async function restoreAccount(
     if (account.isActive) {
       return { ok: true };
     }
-    await assertCanCreate(user.id, user.plan, "accounts");
     await prisma.account.update({
       where: { id, userId: user.id },
       data: {

@@ -63,6 +63,10 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
     apple: "/icons/apple-touch-icon.png",
   },
 };

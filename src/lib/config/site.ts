@@ -36,7 +36,6 @@ export const SITE = {
 export const PUBLIC_PATHS = [
   "/",
   "/features",
-  "/pricing",
   "/about",
   "/faq",
   "/privacy",
@@ -58,7 +57,9 @@ export const PRIVATE_PATH_PREFIXES = [
   "/recurring",
   "/reports",
   "/rates",
+  "/notifications",
   "/export",
+  "/admin",
   "/login",
   "/signup",
   "/offline",
