@@ -6,12 +6,12 @@
  * (created with the account) and would be reclassified as OPENING so they stop
  * counting toward this month's Savings figure.
  *
- *   node scripts/repair-asset-savings.cjs
- *   node scripts/repair-asset-savings.cjs --apply
+ *   npm run repair:asset-savings
+ *   node scripts/repair-asset-savings.mjs --apply
  *
  * Never deletes transactions. Reclassify only.
  */
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
 
 const APPLY = process.argv.includes("--apply");
 const OPENING_WINDOW_MS = 2 * 60 * 1000;
@@ -92,9 +92,9 @@ async function main() {
         {
           mode: APPLY ? "apply" : "dry-run",
           accountsInspected: accounts.length,
-          accountsAffected: report.filter((row) => row.reclassify.length > 0 || row.quantityDrift).length,
           openingRowsToReclassify: report.reduce((n, row) => n + row.reclassify.length, 0),
           tomanThatWouldLeavePeriodSavings: tomanToRemove.toString(),
+          accountsAffected: report.filter((row) => row.reclassify.length > 0 || row.quantityDrift).length,
           rows: report,
         },
         null,
