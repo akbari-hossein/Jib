@@ -18,6 +18,7 @@ import {
   Utensils,
   Wallet,
   Zap,
+  Coins,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,7 @@ const ICONS: Record<string, LucideIcon> = {
   briefcase: Briefcase,
   gift: Gift,
   "plus-circle": PlusCircle,
+  coins: Coins,
 };
 
 export function CategoryIcon({

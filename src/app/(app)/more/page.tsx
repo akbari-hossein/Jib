@@ -3,6 +3,7 @@ import { logout } from "@/server/actions/auth";
 import { requireUser } from "@/lib/auth/session";
 import { PaydayForm } from "@/features/settings/payday-form";
 import { ProfileForm } from "@/features/settings/profile-form";
+import { ReferenceAssetForm } from "@/features/settings/reference-asset-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 
@@ -36,6 +37,9 @@ export default async function MorePage() {
         <Link href="/accounts" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           حساب‌ها
         </Link>
+        <Link href="/rates" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          نرخ‌ها
+        </Link>
         <Link href="/rules" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           قوانین دسته‌بندی
         </Link>
@@ -61,6 +65,11 @@ export default async function MorePage() {
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">روز درآمد</h2>
         <PaydayForm incomeDayOfMonth={user.incomeDayOfMonth} />
+      </section>
+
+      <section className="rounded-3xl border border-border bg-card p-5">
+        <h2 className="mb-4 text-base font-semibold">معادل ارزش</h2>
+        <ReferenceAssetForm preference={user.referenceAssetPreference} />
       </section>
 
       <section className="rounded-3xl border border-border bg-card p-5">

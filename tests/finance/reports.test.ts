@@ -40,6 +40,18 @@ describe("assemblePeriodReview", () => {
     expect(review.lowestCategory?.name).toBe("سرگرمی");
   });
 
+  it("counts asset-add snapshot toman as extra savings", () => {
+    const review = assemblePeriodReview({
+      income: 30_000_000n,
+      expenses: 21_000_000n,
+      previousExpenses: 21_000_000n,
+      extraSavings: 3_000_000n,
+      categories: [],
+    });
+    expect(review.net).toBe(12_000_000n);
+    expect(review.savingsRate).toBe(40);
+  });
+
   it("hides lowest when only one category spent", () => {
     const review = assemblePeriodReview({
       income: 0n,

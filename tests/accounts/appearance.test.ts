@@ -16,6 +16,7 @@ describe("account appearance", () => {
   it("falls back to a sensible icon per type", () => {
     expect(accountFallbackIcon("CARD")).toBe("credit-card");
     expect(accountFallbackIcon("SAVINGS")).toBe("piggy-bank");
+    expect(accountFallbackIcon("ASSET_HOLDING")).toBe("coins");
     expect(accountFallbackIcon("BANK")).toBe("landmark");
   });
 });

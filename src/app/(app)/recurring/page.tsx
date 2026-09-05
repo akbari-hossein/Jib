@@ -36,7 +36,9 @@ export default async function RecurringPage() {
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">مورد جدید</h2>
         <RecurringForm
-          accounts={accounts.map((account) => ({ id: account.id, name: account.name }))}
+          accounts={accounts
+            .filter((account) => account.type !== "ASSET_HOLDING")
+            .map((account) => ({ id: account.id, name: account.name }))}
           categories={categories.map((category) => ({
             id: category.id,
             name: category.name,

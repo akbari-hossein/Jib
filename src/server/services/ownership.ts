@@ -81,5 +81,14 @@ export function userFacingMutationError(error: unknown, fallback: string): strin
   if (error instanceof OwnershipError) {
     return "این مورد در دسترس نیست.";
   }
+  if (error instanceof Error && error.message === "INSUFFICIENT_QUANTITY") {
+    return "مقدار دارایی برای این کار کافی نیست.";
+  }
+  if (error instanceof Error && error.message === "INVALID_QUANTITY") {
+    return "مقدار دارایی معتبر نیست.";
+  }
+  if (error instanceof Error && error.message === "INVALID_ACCOUNT") {
+    return "این حساب برای این نوع تراکنش مناسب نیست.";
+  }
   return fallback;
 }

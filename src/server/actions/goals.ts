@@ -33,7 +33,12 @@ export async function createGoal(
   const currentAmount = parseTomanInput(String(formData.get("currentAmount") ?? "0"), {
     allowZero: true,
   });
+  const accountIds = formData
+    .getAll("fundingAccountId")
+    .map((value) => String(value).trim())
+    .filter(Boolean);
   const accountId = String(formData.get("accountId") ?? "").trim();
+  const fundingIds = accountIds.length > 0 ? accountIds : accountId ? [accountId] : [];
   const target = parseJalaliForm(formData, "target");
 
   if (name.length < 1 || name.length > 60) {
@@ -50,20 +55,22 @@ export async function createGoal(
   }
 
   try {
-    let opening = currentAmount;
-    if (accountId) {
-      const account = await assertAccountOwned(user.id, accountId);
-      opening = account.balance;
+    for (const fundingId of fundingIds) {
+      await assertAccountOwned(user.id, fundingId);
     }
+    const primaryAccountId = fundingIds[0] ?? null;
 
     await prisma.goal.create({
       data: {
         userId: user.id,
         name,
         targetAmount,
-        currentAmount: opening,
+        currentAmount: primaryAccountId ? 0n : currentAmount,
         targetDate: target.value ? gregorianUtcFromJalali(target.value) : null,
-        accountId: accountId || null,
+        accountId: primaryAccountId,
+        fundings: primaryAccountId
+          ? { create: fundingIds.map((id) => ({ accountId: id })) }
+          : undefined,
       },
     });
   } catch (error) {
@@ -93,7 +100,8 @@ export async function updateGoalCurrent(
 
   try {
     const goal = await assertGoalOwned(user.id, id);
-    if (goal.accountId) {
+    const fundingCount = await prisma.goalFunding.count({ where: { goalId: id } });
+    if (goal.accountId || fundingCount > 0) {
       return { ok: false, error: "مبلغ این هدف از حساب وصل‌شده می‌آید." };
     }
     await prisma.goal.update({

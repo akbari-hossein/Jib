@@ -13,6 +13,7 @@ export const ACCOUNT_TYPE_LABEL: Record<AccountType, string> = {
   BANK: "حساب بانکی",
   CARD: "کارت",
   SAVINGS: "پس‌انداز",
+  ASSET_HOLDING: "دارایی",
   OTHER: "سایر",
 };
 
@@ -27,6 +28,8 @@ export const TRANSACTION_TYPE_LABEL: Record<TransactionType, string> = {
   EXPENSE: "هزینه",
   INCOME: "درآمد",
   TRANSFER: "جابه‌جایی",
+  ASSET_ADD: "افزایش دارایی",
+  ASSET_REMOVE: "کاهش دارایی",
 };
 
 export const FREQUENCY_LABEL: Record<RecurringFrequency, string> = {
