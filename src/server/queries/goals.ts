@@ -28,14 +28,19 @@ export async function listGoals(userId: string) {
           ? [goal.account]
           : [];
     const usesLiveAssetRate = fundedAccounts.some((account) => account.type === "ASSET_HOLDING");
+    let excludedUnpriced = 0;
     const currentAmount =
       fundedAccounts.length > 0
         ? fundedAccounts.reduce((sum, account) => {
             if (account.type === "ASSET_HOLDING" && account.assetType && isReferenceAssetType(account.assetType)) {
               const value = calculateAssetHoldingValue(
                 parseQuantityToScaled(account.quantity.toString()) ?? 0n,
-                rates.get(account.assetType) ?? null,
+                rates.get(account.assetType)?.rate ?? null,
               );
+              if (value == null && (parseQuantityToScaled(account.quantity.toString()) ?? 0n) > 0n) {
+                excludedUnpriced += 1;
+                return sum;
+              }
               return sum + (value ?? 0n);
             }
             return sum + account.balance;
@@ -52,6 +57,7 @@ export async function listGoals(userId: string) {
       accountName: fundedAccounts.map((account) => account.name).join("، ") || null,
       linked: fundedAccounts.length > 0,
       usesLiveAssetRate,
+      figurePartial: excludedUnpriced > 0,
       progress: calculateGoalProgress({
         currentAmount,
         targetAmount: goal.targetAmount,

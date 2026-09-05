@@ -17,6 +17,7 @@ import {
   summarizeLoggedDays,
   type MonthlyRecapDto,
 } from "@/lib/finance/monthly-recap-data";
+import { extraSavingsFromMovements } from "@/lib/finance/asset-savings";
 import {
   describeSavingsInReferenceAsset,
   type ReferenceAssetType,
@@ -79,10 +80,14 @@ async function periodTotals(userId: string, from: Date, to: Date, previousFrom: 
     sumByType(userId, "EXPENSE", from, to),
     sumByType(userId, "EXPENSE", previousFrom, previousTo),
     categorySpend(userId, from, to),
-    prisma.transaction.aggregate({
-      where: { userId, type: "ASSET_ADD", occurredAt: { gte: from, lt: to } },
-      _sum: { amount: true },
-    }).then((result) => result._sum.amount ?? 0n),
+    prisma.transaction.findMany({
+      where: {
+        userId,
+        type: { in: ["ASSET_ADD", "ASSET_REMOVE"] },
+        occurredAt: { gte: from, lt: to },
+      },
+      select: { type: true, amount: true, movementReason: true },
+    }).then((rows) => extraSavingsFromMovements(rows)),
   ]);
 
   return assemblePeriodReview({
@@ -135,7 +140,7 @@ function composeRecap(input: {
   goals: GoalListItem[];
   includeGoalPct: boolean;
 }): MonthlyRecapDto | null {
-  if (input.review.income === 0n && input.review.expenses === 0n) {
+  if (input.review.income === 0n && input.review.expenses === 0n && input.review.net === 0n) {
     return null;
   }
 
@@ -224,7 +229,7 @@ export async function getReports(
   const monthTo = tehranMidnightUtc(nextMonth);
   const includePreviousPrompt = today.day <= NEW_MONTH_RECAP_PROMPT_DAYS;
 
-  const [week, month, budget, goals, extras, previousRecap, referenceRate] = await Promise.all([
+  const [week, month, budget, goals, extras, previousRecap, referenceLookup] = await Promise.all([
     periodTotals(
       userId,
       tehranMidnightUtc(weekStart),
@@ -248,7 +253,14 @@ export async function getReports(
     referenceAssetPreference ? getLatestRate(referenceAssetPreference) : Promise.resolve(null),
   ]);
 
-  const hasActivity = week.expenses > 0n || week.income > 0n || month.expenses > 0n || month.income > 0n;
+  const hasActivity =
+    week.expenses > 0n ||
+    week.income > 0n ||
+    month.expenses > 0n ||
+    month.income > 0n ||
+    week.net !== 0n ||
+    month.net !== 0n;
+  const referenceRate = referenceLookup?.rate ?? null;
   const weekSavingsHint =
     week.income > 0n ? describeSavingsInReferenceAsset(week.net, referenceRate, "week") : null;
   const monthSavingsHint =

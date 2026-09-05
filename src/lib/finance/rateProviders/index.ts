@@ -12,6 +12,8 @@ export {
 } from "@/lib/finance/rateProviders/config";
 export { NavasanProvider, NAVASAN_DEFAULT_ITEM_MAP } from "@/lib/finance/rateProviders/navasan";
 export { logRateEvent } from "@/lib/finance/rateProviders/log";
+export { withRetry, readFetchAttempts } from "@/lib/finance/rateProviders/retry";
+export { isImplausibleJump, readImplausibleJumpRatio } from "@/lib/finance/rateProviders/guard";
 
 /**
  * Build a provider from config. Adding a new vendor is a new class plus one

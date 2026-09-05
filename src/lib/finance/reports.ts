@@ -16,6 +16,7 @@ export type PeriodReview = {
   income: bigint;
   expenses: bigint;
   net: bigint;
+  extraSavings: bigint;
   savingsRate: number | null;
   expenseChange: MonthlyChange;
   categories: RankedCategory[];
@@ -55,6 +56,7 @@ export function assemblePeriodReview(input: {
     income: input.income,
     expenses: input.expenses,
     net,
+    extraSavings,
     savingsRate: calculateSavingsRate(input.income, input.expenses, extraSavings),
     expenseChange: calculateMonthlyChange(input.expenses, input.previousExpenses),
     categories,

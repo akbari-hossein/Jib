@@ -5,6 +5,7 @@ import { MoneyDisplay } from "@/components/money/money-display";
 import { GoalCurrentForm } from "@/features/goals/goal-current-form";
 import { GoalWhatIf } from "@/features/what-if/goal-what-if";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
+import { PARTIAL_FIGURE_COPY } from "@/lib/finance/asset-savings";
 import { formatJalaliDay, getTehranJalaliDate, jalaliFromUtc } from "@/lib/dates/tehran";
 import type { GoalListItem } from "@/server/queries/goals";
 
@@ -48,6 +49,9 @@ export function GoalList({ goals }: { goals: GoalListItem[] }) {
             <p className="mt-2 text-xs leading-6 text-foreground/50">
               پیشرفت این هدف از ارزش فعلی دارایی‌های وصل‌شده است و با تغییر نرخ طلا یا ارز بالا و پایین می‌رود.
             </p>
+          ) : null}
+          {goal.figurePartial ? (
+            <p className="mt-2 text-xs leading-6 text-foreground/50">{PARTIAL_FIGURE_COPY}</p>
           ) : null}
           {goal.linked ? null : (
             <GoalCurrentForm key={`${goal.id}-${goal.currentAmount.toString()}`} id={goal.id} currentAmount={goal.currentAmount.toString()} />

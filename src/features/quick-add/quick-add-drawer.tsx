@@ -252,6 +252,11 @@ export function QuickAddDrawer({ context }: { context: QuickAddContext }) {
                   {store.type === "ASSET_ADD" ? "+" : "−"}
                   {quantityDisplay(store.digits)} {unitLabel}
                 </p>
+                {selectedHolding?.valueUnavailable ? (
+                  <p className="text-sm leading-7 text-foreground/70">
+                    قیمت لحظه‌ای در دسترس نیست. مقدار را ثبت کن؛ ارزش تومان وقتی نرخ برسد حساب می‌شود.
+                  </p>
+                ) : null}
                 <p className="text-sm text-foreground/55">کدام دارایی؟</p>
                 <HoldingList
                   holdings={context.holdings}

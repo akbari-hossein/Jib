@@ -15,7 +15,7 @@ export default async function RatesPage() {
   const now = new Date();
   const staleAfterMs = readStaleAfterMs();
   const rows = [...rates.values()].sort((left, right) =>
-    left.assetType.localeCompare(right.assetType),
+    left.rate.assetType.localeCompare(right.rate.assetType),
   );
 
   return (
@@ -31,7 +31,8 @@ export default async function RatesPage() {
       ) : (
         <Card className="px-5 py-4">
           <ul className="flex flex-col gap-4">
-            {rows.map((rate) => {
+            {rows.map((latest) => {
+              const rate = latest.rate;
               const age = describeRateAge(rate.effectiveAt, now, staleAfterMs);
               const detail = `۱ ${REFERENCE_ASSET_UNIT_LABEL[rate.assetType]} × ${formatToman(rate.rateToToman)} (${age.label})`;
               return (

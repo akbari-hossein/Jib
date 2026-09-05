@@ -21,6 +21,13 @@ import {
   REFERENCE_ASSET_OPTION_LABEL,
   type ReferenceAssetType,
 } from "@/lib/finance/purchasing-power";
+import {
+  explainPeriodSavings,
+  PARTIAL_FIGURE_COPY,
+  RATE_UNAVAILABLE_COPY,
+  costBasisFromMovements,
+  valuationChange,
+} from "@/lib/finance/asset-savings";
 import { describeRateAge, readStaleAfterMs } from "@/lib/finance/rate-freshness";
 import { getLatestRate, getLatestRates } from "@/lib/finance/referenceRates";
 import { hydrateAccountSnapshots, listAccountItems, listAccounts } from "@/server/queries/accounts";
@@ -47,12 +54,31 @@ async function sumIncome(userId: string, from: Date, to: Date) {
   return result._sum.amount ?? 0n;
 }
 
-async function sumAssetAdds(userId: string, from: Date, to: Date) {
-  const result = await prisma.transaction.aggregate({
-    where: { userId, type: "ASSET_ADD", occurredAt: { gte: from, lt: to } },
-    _sum: { amount: true },
+async function listAssetMovements(userId: string, from: Date, to: Date) {
+  return prisma.transaction.findMany({
+    where: {
+      userId,
+      type: { in: ["ASSET_ADD", "ASSET_REMOVE"] },
+      occurredAt: { gte: from, lt: to },
+    },
+    select: {
+      id: true,
+      type: true,
+      amount: true,
+      movementReason: true,
+      occurredAt: true,
+      accountId: true,
+      note: true,
+    },
+    orderBy: { occurredAt: "asc" },
   });
-  return result._sum.amount ?? 0n;
+}
+
+async function listAllAssetMovements(userId: string) {
+  return prisma.transaction.findMany({
+    where: { userId, type: { in: ["ASSET_ADD", "ASSET_REMOVE"] } },
+    select: { type: true, amount: true, movementReason: true },
+  });
 }
 
 export async function getDashboard(
@@ -79,10 +105,11 @@ export async function getDashboard(
     monthlySpent,
     previousMonthSpent,
     monthlyIncome,
-    monthlyAssetAdds,
+    monthlyMovements,
+    lifetimeMovements,
     recent,
     rates,
-    referenceRate,
+    referenceLookup,
   ] = await Promise.all([
     listAccounts(userId),
     listAccountItems(userId),
@@ -104,7 +131,8 @@ export async function getDashboard(
     sumExpenses(userId, monthFrom, monthTo, false),
     sumExpenses(userId, tehranMidnightUtc(previousMonthStart), monthFrom, false),
     sumIncome(userId, monthFrom, monthTo),
-    sumAssetAdds(userId, monthFrom, monthTo),
+    listAssetMovements(userId, monthFrom, monthTo),
+    listAllAssetMovements(userId),
     listRecentTransactions(userId, 5),
     getLatestRates(),
     referenceAssetPreference ? getLatestRate(referenceAssetPreference) : Promise.resolve(null),
@@ -138,33 +166,64 @@ export async function getDashboard(
   });
 
   const greeting = greetingForPeriod(getDayPeriod(now));
-  const monthlySavings = monthlyIncome - monthlySpent + monthlyAssetAdds;
+  const savingsBreakdown = explainPeriodSavings({
+    income: monthlyIncome,
+    expenses: monthlySpent,
+    movements: monthlyMovements,
+  });
+  const monthlyExtraSavings = savingsBreakdown.extraSavings;
+  const monthlySavings = savingsBreakdown.monthlySavings;
+  if (process.env.DEBUG_SAVINGS_BREAKDOWN === "1") {
+    console.info(
+      JSON.stringify({
+        event: "savings_breakdown",
+        userId,
+        income: monthlyIncome.toString(),
+        expenses: monthlySpent.toString(),
+        extraSavings: monthlyExtraSavings.toString(),
+        monthlySavings: monthlySavings.toString(),
+        lines: savingsBreakdown.lines.map((line) => ({
+          id: line.id,
+          type: line.type,
+          amount: line.amount.toString(),
+          reason: line.movementReason,
+          included: line.included,
+          contribution: line.contribution.toString(),
+          explanation: line.explanation,
+        })),
+      }),
+    );
+  }
   const displayedAvailable =
     snapshot.availableMoney < 0n ? -snapshot.availableMoney : snapshot.availableMoney;
   const staleAfterMs = readStaleAfterMs();
+  const referenceRate = referenceLookup?.rate ?? null;
   const availableEquivalent = describePurchasingPower(displayedAvailable, referenceRate);
   const referenceAge = referenceRate ? describeRateAge(referenceRate.effectiveAt, now, staleAfterMs) : null;
-  if (availableEquivalent && referenceAge?.stale) {
-    availableEquivalent.rateDateLabel = referenceAge.label;
+  if (availableEquivalent && (referenceLookup?.isStale || referenceAge?.stale)) {
+    availableEquivalent.rateDateLabel = referenceAge?.label ?? availableEquivalent.rateDateLabel;
   }
   const monthlySavingsHint =
     monthlyIncome > 0n
       ? describeSavingsInReferenceAsset(monthlySavings, referenceRate, "month")
       : null;
-  if (monthlySavingsHint && referenceAge?.stale) {
-    monthlySavingsHint.rateDateLabel = referenceAge.label;
+  if (monthlySavingsHint && (referenceLookup?.isStale || referenceAge?.stale)) {
+    monthlySavingsHint.rateDateLabel = referenceAge?.label ?? monthlySavingsHint.rateDateLabel;
   }
+  const unpricedHoldings = holdings.filter((item) => item.valueUnavailable);
+  const figurePartial = unpricedHoldings.length > 0;
   const assetTotal = sumAssetHoldingValue(accounts);
   const netWorth = calculateNetWorth(accounts);
-  const rateRows = [...rates.values()].map((rate) => {
-    const age = describeRateAge(rate.effectiveAt, now, staleAfterMs);
+  const assetValuationChange = valuationChange(assetTotal, costBasisFromMovements(lifetimeMovements));
+  const rateRows = [...rates.values()].map((latest) => {
+    const age = describeRateAge(latest.rate.effectiveAt, now, staleAfterMs);
     return {
-      assetType: rate.assetType,
-      label: REFERENCE_ASSET_OPTION_LABEL[rate.assetType],
-      rateToToman: rate.rateToToman.toString(),
-      rateId: rate.id,
+      assetType: latest.rate.assetType,
+      label: REFERENCE_ASSET_OPTION_LABEL[latest.rate.assetType],
+      rateToToman: latest.rate.rateToToman.toString(),
+      rateId: latest.rate.id,
       rateDateLabel: age.label,
-      stale: age.stale,
+      stale: latest.isStale,
     };
   });
 
@@ -191,7 +250,12 @@ export async function getDashboard(
     previousMonthSpent,
     monthlyIncome,
     monthlySavings,
+    monthlyExtraSavings,
     monthlySavingsHint,
+    figurePartial,
+    partialNote: figurePartial ? PARTIAL_FIGURE_COPY : null,
+    rateUnavailableCopy: RATE_UNAVAILABLE_COPY,
+    assetValuationChange,
     monthlyChange: snapshot.monthlyChange,
     currentMonth: today.month,
     currentYear: today.year,

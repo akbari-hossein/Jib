@@ -65,6 +65,9 @@ export function DashboardView({
                     {dashboard.assetTotal > 0n ? (
                       <AssetBreakdownLine total={dashboard.assetTotal} group={dashboard.assetGroup} />
                     ) : null}
+                    {dashboard.figurePartial ? (
+                      <p className="text-xs text-muted-foreground">{dashboard.partialNote}</p>
+                    ) : null}
                   </div>
                 ) : null
               }
@@ -140,6 +143,21 @@ export function DashboardView({
               <p className="mt-1 text-xs text-muted-foreground">
                 ارزش کل حدود {formatCompactToman(dashboard.netWorth)} — دارایی‌ها پس‌انداز هستند، نه سفته‌بازی.
               </p>
+              {dashboard.assetValuationChange != null && dashboard.assetValuationChange !== 0n ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  تغییر ارزش نسبت به نرخ زمان خرید:{" "}
+                  {dashboard.assetValuationChange > 0n ? "+" : "−"}
+                  {formatCompactToman(
+                    dashboard.assetValuationChange < 0n
+                      ? -dashboard.assetValuationChange
+                      : dashboard.assetValuationChange,
+                  )}
+                  . این عدد وارد پس‌انداز ماه نمی‌شود.
+                </p>
+              ) : null}
+              {dashboard.figurePartial ? (
+                <p className="mt-2 text-xs text-muted-foreground">{dashboard.partialNote}</p>
+              ) : null}
               <ul className="mt-4 flex flex-col gap-3">
                 {dashboard.holdings.map((holding) => (
                   <li key={holding.id} className="flex items-start justify-between gap-3">
@@ -158,7 +176,7 @@ export function DashboardView({
                     </div>
                     <div className="flex items-center gap-1">
                       {holding.valueUnavailable ? (
-                        <span className="text-xs text-muted-foreground">نرخ موجود نیست</span>
+                        <span className="text-xs text-muted-foreground">{dashboard.rateUnavailableCopy}</span>
                       ) : (
                         <MoneyDisplay amount={holding.balance} className="text-sm font-semibold" />
                       )}
@@ -205,8 +223,12 @@ export function DashboardView({
               tone="savings"
               size="sm"
               secondary={
-                dashboard.assetTotal > 0n ? (
-                  <AssetBreakdownLine total={dashboard.assetTotal} group={dashboard.assetGroup} />
+                dashboard.monthlyExtraSavings > 0n ? (
+                  <p className="text-xs text-muted-foreground">
+                    شامل {formatCompactToman(dashboard.monthlyExtraSavings)} خرید دارایی این ماه — نه تغییر نرخ
+                  </p>
+                ) : dashboard.figurePartial ? (
+                  <p className="text-xs text-muted-foreground">{dashboard.partialNote}</p>
                 ) : null
               }
             />

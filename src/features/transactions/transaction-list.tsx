@@ -1,11 +1,10 @@
-import { deleteTransaction } from "@/server/actions/transactions";
 import { CategoryIcon } from "@/components/category-icon";
 import { HoldingExplain } from "@/components/finance/holding-explain";
 import { MoneyDisplay } from "@/components/money/money-display";
-import { Button } from "@/components/ui/button";
+import { DeleteTransactionButton } from "@/features/transactions/delete-transaction-button";
 import { formatToman } from "@/lib/currency/format";
 import { formatJalaliDay, getTehranJalaliDate, jalaliFromInstant } from "@/lib/dates/tehran";
-import { TRANSACTION_TYPE_LABEL } from "@/lib/labels";
+import { ASSET_MOVEMENT_REASON_LABEL, TRANSACTION_TYPE_LABEL } from "@/lib/labels";
 import { formatQuantity, parseQuantityToScaled } from "@/lib/finance/quantity";
 import { cn } from "@/lib/utils";
 import type { Account, Category, Transaction } from "@prisma/client";
@@ -78,7 +77,11 @@ export function TransactionList({ transactions }: { transactions: Row[] }) {
                         {item.type === "TRANSFER"
                           ? `از ${item.account.name} به ${item.toAccount?.name ?? ""}`
                           : isAssetMovement(item.type)
-                            ? TRANSACTION_TYPE_LABEL[item.type]
+                            ? `${TRANSACTION_TYPE_LABEL[item.type]}${
+                                item.movementReason
+                                  ? ` · ${ASSET_MOVEMENT_REASON_LABEL[item.movementReason]}`
+                                  : ""
+                              }`
                             : item.category?.name ?? TRANSACTION_TYPE_LABEL[item.type]}
                       </p>
                       <p className="truncate text-xs text-foreground/45">
@@ -104,12 +107,7 @@ export function TransactionList({ transactions }: { transactions: Row[] }) {
                       )}
                       {explain ? <HoldingExplain detail={explain} /> : null}
                     </div>
-                    <form action={deleteTransaction}>
-                      <input type="hidden" name="id" value={item.id} />
-                      <Button type="submit" variant="ghost" size="sm" className="h-7 px-2 text-foreground/40">
-                        حذف
-                      </Button>
-                    </form>
+                    <DeleteTransactionButton id={item.id} isAsset={isAssetMovement(item.type)} amount={item.amount} />
                   </div>
                 </li>
               );

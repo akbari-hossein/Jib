@@ -6,6 +6,7 @@ import { AccountGlyph } from "@/features/accounts/account-icon";
 import { HoldingExplain } from "@/components/finance/holding-explain";
 import { MoneyDisplay } from "@/components/money/money-display";
 import { ACCOUNT_TYPE_LABEL } from "@/lib/labels";
+import { RATE_UNAVAILABLE_COPY } from "@/lib/finance/asset-savings";
 import { toPersianDigits } from "@/lib/currency/format";
 import type { AccountListItem } from "@/server/queries/accounts";
 
@@ -73,7 +74,7 @@ function AccountRows({
             </div>
             <div className="flex items-center gap-1">
               {account.valueUnavailable ? (
-                <span className="text-xs text-muted-foreground">نرخ موجود نیست</span>
+                <span className="text-xs text-muted-foreground">{RATE_UNAVAILABLE_COPY}</span>
               ) : (
                 <MoneyDisplay amount={account.balance} className="text-sm font-semibold" />
               )}

@@ -1,4 +1,4 @@
-import { Prisma, type TransactionType } from "@prisma/client";
+import { Prisma, type AssetMovementReason, type TransactionType } from "@prisma/client";
 import { calculateAssetHoldingValue } from "@/lib/finance/assetHoldings";
 import { isReferenceAssetType } from "@/lib/finance/purchasing-power";
 import { decimalStringFromScaled, parseQuantityToScaled } from "@/lib/finance/quantity";
@@ -16,6 +16,8 @@ type CreateInput = {
   recurringTransactionId?: string | null;
   quantityDelta?: bigint;
   rateToTomanSnapshot?: bigint | null;
+  referenceRateId?: string | null;
+  movementReason?: AssetMovementReason;
   convertToAccountId?: string | null;
 };
 
@@ -130,7 +132,7 @@ async function persistAssetMovement(
   const snapshotRate =
     input.rateToTomanSnapshot != null && input.rateToTomanSnapshot > 0n
       ? {
-          id: "snapshot",
+          id: input.referenceRateId ?? "snapshot",
           assetType: account.assetType,
           rateToToman: input.rateToTomanSnapshot,
           source: "snapshot",
@@ -140,6 +142,14 @@ async function persistAssetMovement(
       : null;
   const amount = calculateAssetHoldingValue(delta, snapshotRate) ?? 0n;
   const signedDelta = input.type === "ASSET_ADD" ? delta : -delta;
+  const movementReason =
+    input.movementReason ?? (input.type === "ASSET_ADD" ? "PURCHASE" : "SALE");
+  if (input.type === "ASSET_ADD" && (movementReason === "SALE")) {
+    throw new Error("INVALID_QUANTITY");
+  }
+  if (input.type === "ASSET_REMOVE" && (movementReason === "PURCHASE" || movementReason === "OPENING")) {
+    throw new Error("INVALID_QUANTITY");
+  }
 
   let linkedCashTransactionId: string | null = null;
   if (input.type === "ASSET_REMOVE" && input.convertToAccountId) {
@@ -174,6 +184,8 @@ async function persistAssetMovement(
       note: input.note,
       quantityDelta: new Prisma.Decimal(decimalStringFromScaled(signedDelta)),
       rateToTomanSnapshot: snapshotRate?.rateToToman ?? null,
+      referenceRateId: input.referenceRateId && input.referenceRateId !== "snapshot" ? input.referenceRateId : null,
+      movementReason,
       linkedCashTransactionId,
     },
   });

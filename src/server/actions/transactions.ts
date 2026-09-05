@@ -141,7 +141,9 @@ export async function createAssetMovement(input: {
         accountId: input.accountId,
         occurredAt: new Date(),
         quantityDelta: quantity,
-        rateToTomanSnapshot: rate?.rateToToman ?? null,
+        rateToTomanSnapshot: rate?.rate.rateToToman ?? null,
+        referenceRateId: rate?.rate.id ?? null,
+        movementReason: input.type === "ASSET_ADD" ? "PURCHASE" : "SALE",
         convertToAccountId: input.type === "ASSET_REMOVE" ? input.convertToAccountId : null,
       });
     });

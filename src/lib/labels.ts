@@ -32,6 +32,13 @@ export const TRANSACTION_TYPE_LABEL: Record<TransactionType, string> = {
   ASSET_REMOVE: "کاهش دارایی",
 };
 
+export const ASSET_MOVEMENT_REASON_LABEL = {
+  OPENING: "موجودی اولیه",
+  PURCHASE: "خرید",
+  SALE: "فروش",
+  CORRECTION: "اصلاح",
+} as const;
+
 export const FREQUENCY_LABEL: Record<RecurringFrequency, string> = {
   WEEKLY: "هفتگی",
   MONTHLY: "ماهانه",

@@ -38,6 +38,7 @@ export const ADMIN_NAV = [
   { href: "/admin/budgets", label: "بودجه‌ها" },
   { href: "/admin/goals", label: "اهداف" },
   { href: "/admin/analytics", label: "تحلیل محصول" },
+  { href: "/admin/rates", label: "نرخ‌ها" },
   { href: "/admin/audit", label: "گزارش اقدامات" },
   { href: "/admin/settings", label: "تنظیمات" },
 ] as const;

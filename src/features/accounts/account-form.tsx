@@ -33,8 +33,10 @@ export function AccountForm({
   const [icon, setIcon] = useState(account?.icon ?? "");
   const [color, setColor] = useState(account?.color ?? "");
   const [type, setType] = useState<(typeof TYPES)[number]>(account?.type ?? "CARD");
+  const [quantityReason, setQuantityReason] = useState<"correction" | "actual">("correction");
   const isAsset = type === "ASSET_HOLDING";
   const formRef = useRef<HTMLFormElement>(null);
+  const lockType = Boolean(account);
 
   function handleSubmit(formData: FormData) {
     setError(null);
@@ -57,6 +59,7 @@ export function AccountForm({
   return (
     <form ref={formRef} action={handleSubmit} className="flex flex-col gap-4">
       {account ? <input type="hidden" name="id" value={account.id} /> : null}
+      {lockType ? <input type="hidden" name="type" value={type} /> : null}
       <input type="hidden" name="icon" value={icon} />
       <input type="hidden" name="color" value={color} />
 
@@ -85,7 +88,12 @@ export function AccountForm({
                 name="type"
                 value={typeOption}
                 checked={type === typeOption}
-                onChange={() => setType(typeOption)}
+                onChange={() => {
+                  if (!lockType) {
+                    setType(typeOption);
+                  }
+                }}
+                disabled={lockType}
                 className="sr-only"
               />
               {ACCOUNT_TYPE_LABEL[typeOption]}
@@ -98,10 +106,14 @@ export function AccountForm({
         <>
           <div className="flex flex-col gap-2">
             <Label htmlFor={isEdit ? "edit-asset-type" : "asset-type"}>نوع دارایی</Label>
+            {isEdit && account?.assetType ? (
+              <input type="hidden" name="assetType" value={account.assetType} />
+            ) : null}
             <NativeSelect
               id={isEdit ? "edit-asset-type" : "asset-type"}
-              name="assetType"
+              name={isEdit ? undefined : "assetType"}
               defaultValue={account?.assetType ?? "GOLD_COIN"}
+              disabled={isEdit}
             >
               {REFERENCE_ASSET_TYPES.map((asset) => (
                 <option key={asset} value={asset}>
@@ -121,7 +133,46 @@ export function AccountForm({
             />
             <p className="text-xs leading-6 text-foreground/45">
               مقدار فیزیکی است — گرم، سکه، یا واحد ارز. ارزش تومان از نرخ روز حساب می‌شود.
+              {isEdit
+                ? " اگر نرخ لحظه‌ای نباشد، مقدار ذخیره می‌شود و ارزش تومان بعداً پر می‌شود."
+                : " موجودی اولیه پس‌انداز این ماه نیست؛ فقط دارایی‌ای که از قبل داشتی را ثبت می‌کند."}
             </p>
+            {isEdit ? (
+              <fieldset className="mt-2 flex flex-col gap-2">
+                <legend className="text-sm font-medium">اگر مقدار را عوض می‌کنی</legend>
+                <input type="hidden" name="quantityReason" value={quantityReason} />
+                <label className="flex items-start gap-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-6">
+                  <input
+                    type="radio"
+                    name="quantityReasonChoice"
+                    checked={quantityReason === "correction"}
+                    onChange={() => setQuantityReason("correction")}
+                    className="mt-1 size-4 accent-primary"
+                  />
+                  <span>
+                    اصلاح مقدار
+                    <span className="mt-1 block text-xs text-foreground/45">
+                      غلط ثبت شده بود. روی پس‌انداز این ماه اثر نمی‌گذارد.
+                    </span>
+                  </span>
+                </label>
+                <label className="flex items-start gap-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-6">
+                  <input
+                    type="radio"
+                    name="quantityReasonChoice"
+                    checked={quantityReason === "actual"}
+                    onChange={() => setQuantityReason("actual")}
+                    className="mt-1 size-4 accent-primary"
+                  />
+                  <span>
+                    خرید یا فروش واقعی
+                    <span className="mt-1 block text-xs text-foreground/45">
+                      افزایش به‌عنوان پس‌انداز این ماه حساب می‌شود؛ کاهش از آن کم می‌شود.
+                    </span>
+                  </span>
+                </label>
+              </fieldset>
+            ) : null}
           </div>
         </>
       ) : (

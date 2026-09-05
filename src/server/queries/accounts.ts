@@ -81,7 +81,7 @@ export async function hydrateAccountSnapshots(accounts: Account[]): Promise<Acco
         quantityScaled: scaledFromAccount(account),
       },
       account.assetType && isReferenceAssetType(account.assetType)
-        ? (rates.get(account.assetType) ?? null)
+        ? (rates.get(account.assetType)?.rate ?? null)
         : null,
     ),
   );
@@ -98,7 +98,7 @@ export async function listAccountItems(userId: string): Promise<AccountListItem[
     [...rates.keys()].map(async (assetType) => {
       const previous = await getLatestRate(assetType, new Date(todayStart.getTime() - 1));
       if (previous) {
-        previousRates.set(assetType, previous.rateToToman);
+        previousRates.set(assetType, previous.rate.rateToToman);
       }
     }),
   );
@@ -106,7 +106,8 @@ export async function listAccountItems(userId: string): Promise<AccountListItem[
   return accounts.map((account) => {
     const assetType =
       account.assetType && isReferenceAssetType(account.assetType) ? account.assetType : null;
-    const rate = assetType ? (rates.get(assetType) ?? null) : null;
+    const rate = assetType ? (rates.get(assetType)?.rate ?? null) : null;
+    const stale = assetType ? (rates.get(assetType)?.isStale ?? false) : false;
     const snapshot = toAccountSnapshot(
       {
         balance: account.balance,
@@ -130,7 +131,7 @@ export async function listAccountItems(userId: string): Promise<AccountListItem[
       balance: snapshot.balance.toString(),
       holdingText: explained?.text ?? null,
       holdingDetail: explained?.detail ?? null,
-      staleLabel: age?.stale ? age.label : null,
+      staleLabel: stale && age ? age.label : null,
       valueUnavailable:
         snapshot.holding != null && snapshot.holding.value == null && snapshot.holding.quantityScaled > 0n,
       dayMove,

@@ -38,6 +38,7 @@ describe("assemblePeriodReview", () => {
     expect(review.expenseChange).toEqual({ pct: 16, direction: "up" });
     expect(review.topCategory?.name).toBe("اجاره");
     expect(review.lowestCategory?.name).toBe("سرگرمی");
+    expect(review.extraSavings).toBe(0n);
   });
 
   it("counts asset-add snapshot toman as extra savings", () => {
@@ -49,6 +50,7 @@ describe("assemblePeriodReview", () => {
       categories: [],
     });
     expect(review.net).toBe(12_000_000n);
+    expect(review.extraSavings).toBe(3_000_000n);
     expect(review.savingsRate).toBe(40);
   });
 

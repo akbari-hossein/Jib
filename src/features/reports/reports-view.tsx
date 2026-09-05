@@ -174,6 +174,11 @@ function MonthlyCard({
           value={month.net >= 0n ? month.net : -month.net}
         />
       </dl>
+      {month.extraSavings > 0n ? (
+        <p className="mt-3 text-xs leading-6 text-foreground/45">
+          شامل خرید دارایی این ماه به ارزش {formatCompactToman(month.extraSavings)} — تغییر نرخ طلا یا ارز در این رقم نیست.
+        </p>
+      ) : null}
       {month.savingsRate != null ? (
         <p className="mt-4 text-sm text-foreground/60">
           نرخ پس‌انداز {toPersianDigits(month.savingsRate)}٪

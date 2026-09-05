@@ -46,6 +46,19 @@ describe("calculateAssetHoldingValue", () => {
 
   it("never throws when a live fetch would have failed and left no stored rate", () => {
     expect(() => calculateAssetHoldingValue(QUANTITY_SCALE, null)).not.toThrow();
+    const snapshot = toAccountSnapshot(
+      {
+        balance: 0n,
+        isActive: true,
+        includeInAvailable: false,
+        type: "ASSET_HOLDING",
+        assetType: "GOLD_GRAM",
+        quantityScaled: QUANTITY_SCALE,
+      },
+      null,
+    );
+    expect(snapshot.balance).toBe(0n);
+    expect(snapshot.holding?.value).toBeNull();
   });
 });
 
@@ -192,6 +205,10 @@ describe("goal progress from live holdings", () => {
 describe("savings rate with asset adds", () => {
   it("counts snapshot toman inflows as extra savings", () => {
     expect(calculateSavingsRate(30_000_000n, 21_000_000n, 3_000_000n)).toBe(40);
+  });
+
+  it("does not count opening inventory in the savings rate", () => {
+    expect(calculateSavingsRate(30_000_000n, 21_000_000n, 0n)).toBe(30);
   });
 });
 

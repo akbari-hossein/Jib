@@ -42,6 +42,14 @@ enum TransactionType {
   ASSET_REMOVE
 }
 
+/// Why an asset quantity changed. Only PURCHASE/SALE affect period savings.
+enum AssetMovementReason {
+  OPENING
+  PURCHASE
+  SALE
+  CORRECTION
+}
+
 enum CategoryGroup {
   ESSENTIAL
   LIVING
@@ -144,7 +152,8 @@ model Account {
   name               String
   type               AccountType
   balance            BigInt              @default(0)
-  /// Physical quantity for ASSET_HOLDING. Ignored for toman accounts.
+  /// Physical quantity for ASSET_HOLDING. Scale is 6 dp (grams to 0.001, USD to 0.01).
+  /// Non-negative: enforced by Account_quantity_nonnegative_chk.
   quantity           Decimal             @default(0) @db.Decimal(18, 6)
   assetType          ReferenceAssetType?
   currency           String              @default("TOMAN")
@@ -200,10 +209,14 @@ model Transaction {
   occurredAt             DateTime
   merchant               String?
   note                   String?
-  /// Signed quantity change for ASSET_ADD / ASSET_REMOVE. Null for toman txs.
+  /// Signed quantity change for ASSET_ADD / ASSET_REMOVE. Null for toman txs. Same Decimal(18,6) as Account.quantity.
   quantityDelta          Decimal?        @db.Decimal(18, 6)
   /// Whole toman per unit at the time of the asset movement. Never recomputed.
   rateToTomanSnapshot    BigInt?
+  /// Snapshot row used at write time, if any. Amount stays even if this rate is later deleted (SetNull).
+  referenceRateId        String?
+  referenceRate          ReferenceRate?  @relation(fields: [referenceRateId], references: [id], onDelete: SetNull)
+  movementReason         AssetMovementReason?
   linkedCashTransactionId String?        @unique
   linkedCashTransaction  Transaction?    @relation("AssetCashLink", fields: [linkedCashTransactionId], references: [id], onDelete: SetNull)
   cashLinkedFrom         Transaction?    @relation("AssetCashLink")
@@ -408,6 +421,7 @@ model AdminAuditLog {
 /// One toman price for a unit of a reference asset, as of `effectiveAt`.
 /// `rateToToman` is whole toman (no floats). Live providers and manual ingest
 /// insert rows through `recordRate`; calculation never fetches a provider.
+/// Append-only — transactions snapshot the number, they do not FK-depend on this row remaining.
 model ReferenceRate {
   id          String             @id @default(cuid())
   assetType   ReferenceAssetType
@@ -416,5 +430,22 @@ model ReferenceRate {
   effectiveAt DateTime
   createdAt   DateTime           @default(now())
 
+  assetTransactions Transaction[]
+
   @@index([assetType, effectiveAt])
+}
+
+/// One row per ingest attempt (success, skip, or failure). Admin health reads the latest.
+model RateIngestEvent {
+  id        String              @id @default(cuid())
+  source    String
+  assetType ReferenceAssetType?
+  ok        Boolean
+  skipped   Boolean             @default(false)
+  error     String?
+  recorded  Int                 @default(0)
+  createdAt DateTime            @default(now())
+
+  @@index([source, createdAt])
+  @@index([assetType, createdAt])
 }

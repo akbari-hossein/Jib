@@ -1,6 +1,6 @@
 "use server";
 
-import { AccountType, Prisma } from "@prisma/client";
+import { AccountType, Prisma, type AssetMovementReason } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import {
@@ -12,7 +12,7 @@ import { accountDeletionCopy, canPermanentlyDeleteAccount } from "@/lib/accounts
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { isReferenceAssetType, type ReferenceAssetType } from "@/lib/finance/purchasing-power";
-import { decimalStringFromScaled, parseQuantityToScaled } from "@/lib/finance/quantity";
+import { parseQuantityToScaled } from "@/lib/finance/quantity";
 import { parseTomanInput } from "@/lib/validation/money";
 import { getLatestRate } from "@/lib/finance/referenceRates";
 import { assertAccountOwned, userFacingMutationError } from "@/server/services/ownership";
@@ -141,7 +141,9 @@ export async function createAccount(
           accountId: created.id,
           occurredAt: new Date(),
           quantityDelta: quantityScaled,
-          rateToTomanSnapshot: rate?.rateToToman ?? null,
+          rateToTomanSnapshot: rate?.rate.rateToToman ?? null,
+          referenceRateId: rate?.rate.id ?? null,
+          movementReason: "OPENING",
         });
       });
     }
@@ -181,9 +183,10 @@ export async function updateAccount(
   }
 
   let balance: bigint | undefined;
-  let quantity: Prisma.Decimal | undefined;
+  let nextQuantityScaled: bigint | undefined;
   let assetType: ReferenceAssetType | null | undefined;
   const isAsset = typeResult.success && typeResult.data === "ASSET_HOLDING";
+  const quantityReasonRaw = String(formData.get("quantityReason") ?? "").trim();
   if (isAsset) {
     if (!isReferenceAssetType(assetRaw)) {
       return { ok: false, error: "نوع دارایی را انتخاب کن." };
@@ -195,7 +198,7 @@ export async function updateAccount(
       if (parsed == null) {
         return { ok: false, error: "مقدار دارایی معتبر نیست." };
       }
-      quantity = new Prisma.Decimal(decimalStringFromScaled(parsed));
+      nextQuantityScaled = parsed;
     }
   } else if (balanceRaw != null) {
     const parsed = parseTomanInput(String(balanceRaw), { allowZero: true, allowNegative: true });
@@ -207,19 +210,63 @@ export async function updateAccount(
   }
 
   try {
-    await assertAccountOwned(user.id, id);
-    await prisma.account.update({
-      where: { id, userId: user.id },
-      data: {
-        name,
-        type: typeResult.data,
-        includeInAvailable: includeRaw === "on" || includeRaw === "true",
-        color: appearance.color,
-        icon: appearance.icon,
-        ...(balance !== undefined ? { balance } : {}),
-        ...(quantity !== undefined ? { quantity } : {}),
-        ...(assetType !== undefined ? { assetType } : {}),
-      },
+    const existing = await assertAccountOwned(user.id, id);
+    if (existing.type !== typeResult.data && (existing.type === "ASSET_HOLDING" || typeResult.data === "ASSET_HOLDING")) {
+      return { ok: false, error: "نوع حساب دارایی را بعد از ساخت نمی‌شود عوض کرد." };
+    }
+    if (isAsset && existing.assetType && assetType && existing.assetType !== assetType) {
+      return { ok: false, error: "نوع دارایی این حساب را نمی‌شود عوض کرد." };
+    }
+
+    const currentScaled = parseQuantityToScaled(existing.quantity.toString()) ?? 0n;
+    let quantityDelta: bigint | undefined;
+    let movementType: "ASSET_ADD" | "ASSET_REMOVE" | undefined;
+    let movementReason: AssetMovementReason | undefined;
+    if (isAsset && nextQuantityScaled != null && nextQuantityScaled !== currentScaled) {
+      if (nextQuantityScaled < 0n) {
+        return { ok: false, error: "مقدار دارایی نمی‌تواند منفی باشد." };
+      }
+      if (quantityReasonRaw !== "correction" && quantityReasonRaw !== "actual") {
+        return { ok: false, error: "برای تغییر مقدار، دلیل را انتخاب کن: اصلاح یا خرید/فروش واقعی." };
+      }
+      if (nextQuantityScaled > currentScaled) {
+        quantityDelta = nextQuantityScaled - currentScaled;
+        movementType = "ASSET_ADD";
+        movementReason = quantityReasonRaw === "correction" ? "CORRECTION" : "PURCHASE";
+      } else {
+        quantityDelta = currentScaled - nextQuantityScaled;
+        movementType = "ASSET_REMOVE";
+        movementReason = quantityReasonRaw === "correction" ? "CORRECTION" : "SALE";
+      }
+    }
+
+    const rate =
+      movementType && isAsset && isReferenceAssetType(assetRaw) ? await getLatestRate(assetRaw) : null;
+
+    await prisma.$transaction(async (db) => {
+      await db.account.update({
+        where: { id, userId: user.id },
+        data: {
+          name,
+          includeInAvailable: includeRaw === "on" || includeRaw === "true",
+          color: appearance.color,
+          icon: appearance.icon,
+          ...(balance !== undefined ? { balance } : {}),
+        },
+      });
+      if (movementType && quantityDelta && movementReason) {
+        await persistTransaction(db, {
+          userId: user.id,
+          type: movementType,
+          amount: 0n,
+          accountId: id,
+          occurredAt: new Date(),
+          quantityDelta,
+          rateToTomanSnapshot: rate?.rate.rateToToman ?? null,
+          referenceRateId: rate?.rate.id ?? null,
+          movementReason,
+        });
+      }
     });
   } catch (error) {
     return { ok: false, error: userFacingMutationError(error, "ذخیره حساب انجام نشد. دوباره تلاش کن.") };

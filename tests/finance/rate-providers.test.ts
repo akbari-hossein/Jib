@@ -7,6 +7,8 @@ import {
   rawRateToRecordInput,
   readRateProviderConfig,
   shouldRefreshRates,
+  withRetry,
+  isImplausibleJump,
   type RateProviderConfig,
   type RawRate,
 } from "@/lib/finance/rateProviders";
@@ -162,11 +164,16 @@ describe("NavasanProvider", () => {
     );
   });
 
-  it("throws on malformed JSON so ingest keeps the last stored row", async () => {
-    const fetchImpl = vi.fn(async () => new Response("not-json", { status: 200 }));
-    await expect(new NavasanProvider(providerConfig(), fetchImpl).fetchRates()).rejects.toThrow(
-      /invalid JSON/,
-    );
+  it("throws on HTTP 500 so ingest can retry then keep the last stored row", async () => {
+    const fetchImpl = vi.fn(async () => new Response("nope", { status: 500 }));
+    await expect(new NavasanProvider(providerConfig(), fetchImpl).fetchRates()).rejects.toThrow(/HTTP 500/);
+  });
+
+  it("throws on abort/timeout", async () => {
+    const fetchImpl = vi.fn(async () => {
+      throw new DOMException("The operation was aborted.", "TimeoutError");
+    });
+    await expect(new NavasanProvider(providerConfig(), fetchImpl).fetchRates()).rejects.toThrow(/aborted/i);
   });
 });
 
@@ -220,5 +227,45 @@ describe("createRateProvider", () => {
       GOLD_COIN_BAHAR: "bahar",
       GOLD_GRAM: "18ayar",
     });
+  });
+});
+
+describe("withRetry", () => {
+  it("retries transient failures then succeeds", async () => {
+    let attempts = 0;
+    const result = await withRetry(
+      async () => {
+        attempts += 1;
+        if (attempts < 3) {
+          throw new Error("timeout");
+        }
+        return "ok";
+      },
+      { attempts: 3, baseDelayMs: 1, sleep: async () => undefined },
+    );
+    expect(result).toBe("ok");
+    expect(attempts).toBe(3);
+  });
+
+  it("gives up after the configured attempts without leaking a raw throw from the helper's caller contract", async () => {
+    await expect(
+      withRetry(
+        async () => {
+          throw new Error("HTTP 500");
+        },
+        { attempts: 3, baseDelayMs: 1, sleep: async () => undefined },
+      ),
+    ).rejects.toThrow(/HTTP 500/);
+  });
+});
+
+describe("isImplausibleJump", () => {
+  it("rejects a 10x rial-as-toman spike against the last stored rate", () => {
+    expect(isImplausibleJump(112_700n, 1_127_000n, 0.3)).toBe(true);
+    expect(isImplausibleJump(3_000_000n, 30_000_000n, 0.3)).toBe(true);
+  });
+
+  it("allows a modest market move", () => {
+    expect(isImplausibleJump(3_000_000n, 3_200_000n, 0.3)).toBe(false);
   });
 });

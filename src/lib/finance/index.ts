@@ -75,6 +75,7 @@ export {
 export type { FinanceNotification } from "@/lib/finance/notificationRules";
 export { matchTransactionRule } from "@/lib/finance/rules";
 export type { RuleSnapshot } from "@/lib/finance/rules";
+export { extraSavingsFromMovements, costBasisFromMovements, valuationChange, explainPeriodSavings, isLikelyOpeningBalance } from "@/lib/finance/asset-savings";
 export { calculateSavingsRate } from "@/lib/finance/savings-rate";
 export type {
   AccountSnapshot,
