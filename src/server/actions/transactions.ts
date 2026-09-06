@@ -6,8 +6,6 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { parseTomanInput } from "@/lib/validation/money";
-import { parseQuantityToScaled } from "@/lib/finance/quantity";
-import { getLatestRate } from "@/lib/finance/referenceRates";
 import {
   assertAccountOwned,
   assertCategoryOwned,
@@ -98,59 +96,6 @@ export async function createQuickTransaction(input: {
     return {
       ok: false,
       error: userFacingMutationError(error, "ذخیره تراکنش انجام نشد. دوباره تلاش کن."),
-    };
-  }
-
-  revalidateFinance();
-  return { ok: true };
-}
-
-export async function createAssetMovement(input: {
-  type: "ASSET_ADD" | "ASSET_REMOVE";
-  quantity: string;
-  accountId: string;
-  convertToAccountId?: string;
-}): Promise<TransactionActionState> {
-  const user = await requireUser();
-  const quantity = parseQuantityToScaled(input.quantity);
-  if (quantity == null || quantity <= 0n) {
-    return { ok: false, error: "مقدار دارایی را وارد کن." };
-  }
-  if (!input.accountId) {
-    return { ok: false, error: "حساب دارایی را انتخاب کن." };
-  }
-
-  try {
-    const account = await assertAccountOwned(user.id, input.accountId);
-    if (!account.isActive || account.type !== "ASSET_HOLDING" || !account.assetType) {
-      return { ok: false, error: "این حساب دارایی فعال نیست." };
-    }
-    if (input.convertToAccountId) {
-      const cash = await assertAccountOwned(user.id, input.convertToAccountId);
-      if (!cash.isActive || cash.type === "ASSET_HOLDING") {
-        return { ok: false, error: "حساب تومان مقصد معتبر نیست." };
-      }
-    }
-
-    const rate = await getLatestRate(account.assetType);
-    await prisma.$transaction(async (db) => {
-      await persistTransaction(db, {
-        userId: user.id,
-        type: input.type,
-        amount: 0n,
-        accountId: input.accountId,
-        occurredAt: new Date(),
-        quantityDelta: quantity,
-        rateToTomanSnapshot: rate?.rate.rateToToman ?? null,
-        referenceRateId: rate?.rate.id ?? null,
-        movementReason: input.type === "ASSET_ADD" ? "PURCHASE" : "SALE",
-        convertToAccountId: input.type === "ASSET_REMOVE" ? input.convertToAccountId : null,
-      });
-    });
-  } catch (error) {
-    return {
-      ok: false,
-      error: userFacingMutationError(error, "ذخیره دارایی انجام نشد. دوباره تلاش کن."),
     };
   }
 

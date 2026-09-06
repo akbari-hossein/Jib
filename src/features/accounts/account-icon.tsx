@@ -1,6 +1,5 @@
 import {
   Banknote,
-  Coins,
   CreditCard,
   Landmark,
   PiggyBank,
@@ -19,7 +18,6 @@ const ICONS: Record<AccountIconName, LucideIcon> = {
   "piggy-bank": PiggyBank,
   banknote: Banknote,
   smartphone: Smartphone,
-  coins: Coins,
 };
 
 export function AccountGlyph({

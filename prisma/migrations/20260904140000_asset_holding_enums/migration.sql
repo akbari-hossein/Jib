@@ -1,4 +1,0 @@
--- AlterEnum
-ALTER TYPE "AccountType" ADD VALUE 'ASSET_HOLDING';
-ALTER TYPE "TransactionType" ADD VALUE 'ASSET_ADD';
-ALTER TYPE "TransactionType" ADD VALUE 'ASSET_REMOVE';

@@ -29,7 +29,7 @@ export type UserSort = (typeof USER_SORTS)[number];
 export const SORT_DIRS = ["asc", "desc"] as const;
 export type SortDir = (typeof SORT_DIRS)[number];
 
-const TRANSACTION_TYPES = ["EXPENSE", "INCOME", "TRANSFER", "ASSET_ADD", "ASSET_REMOVE"] as const;
+const TRANSACTION_TYPES = ["EXPENSE", "INCOME", "TRANSFER"] as const;
 
 export function firstSearchParam(
   value: string | string[] | undefined,

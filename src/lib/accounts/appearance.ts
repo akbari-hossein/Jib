@@ -16,7 +16,6 @@ export const ACCOUNT_ICONS = [
   "piggy-bank",
   "banknote",
   "smartphone",
-  "coins",
 ] as const;
 
 export const ACCOUNT_ICON_LABEL: Record<(typeof ACCOUNT_ICONS)[number], string> = {
@@ -26,7 +25,6 @@ export const ACCOUNT_ICON_LABEL: Record<(typeof ACCOUNT_ICONS)[number], string> 
   "piggy-bank": "پس‌انداز",
   banknote: "نقد",
   smartphone: "موبایل",
-  coins: "سکه",
 };
 
 export type AccountIconName = (typeof ACCOUNT_ICONS)[number];
@@ -61,8 +59,6 @@ export function accountFallbackIcon(type: AccountType): AccountIconName {
       return "credit-card";
     case "SAVINGS":
       return "piggy-bank";
-    case "ASSET_HOLDING":
-      return "coins";
     default:
       return "wallet";
   }
@@ -78,8 +74,6 @@ export function accountFallbackColor(type: AccountType): AccountColorValue {
       return "#6B7C93";
     case "SAVINGS":
       return "#4F7A6E";
-    case "ASSET_HOLDING":
-      return "#8A7048";
     default:
       return "#6E5E8A";
   }

@@ -24,7 +24,6 @@ import {
 } from "@/lib/notifications/catalog";
 import { isInQuietHours } from "@/lib/notifications/quiet-hours";
 import { getBudgetMonth } from "@/server/queries/budgets";
-import { listGoals } from "@/server/queries/goals";
 import { deliverPushToUser } from "@/server/services/push";
 
 const USER_BATCH = 40;
@@ -142,7 +141,10 @@ async function loadUserSnapshot(
       where: { userId },
       select: { id: true, balance: true, isActive: true, includeInAvailable: true },
     }),
-    listGoals(userId),
+    prisma.goal.findMany({
+      where: { userId, isArchived: false },
+      include: { account: { select: { balance: true } } },
+    }),
     prisma.recurringTransaction.findMany({
       where: { userId, isActive: true },
       select: { id: true, name: true, amount: true, type: true, nextRunAt: true, isActive: true },
@@ -198,11 +200,11 @@ async function loadUserSnapshot(
   const snapshot = assembleDashboard({
     accounts,
     goals: goals.map((goal) => ({
-      currentAmount: goal.currentAmount,
+      currentAmount: goal.account ? goal.account.balance : goal.currentAmount,
       targetAmount: goal.targetAmount,
       targetDate: goal.targetDate,
       accountId: goal.accountId,
-      isArchived: false,
+      isArchived: goal.isArchived,
     })),
     plannedExpenses: recurring
       .filter((item) => item.type === "EXPENSE")
@@ -266,7 +268,7 @@ async function loadUserSnapshot(
     goals: goals.map((goal) => ({
       id: goal.id,
       name: goal.name,
-      currentAmount: goal.currentAmount,
+      currentAmount: goal.account ? goal.account.balance : goal.currentAmount,
       targetAmount: goal.targetAmount,
     })),
   };

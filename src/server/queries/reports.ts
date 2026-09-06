@@ -17,12 +17,6 @@ import {
   summarizeLoggedDays,
   type MonthlyRecapDto,
 } from "@/lib/finance/monthly-recap-data";
-import { extraSavingsFromMovements } from "@/lib/finance/asset-savings";
-import {
-  describeSavingsInReferenceAsset,
-  type ReferenceAssetType,
-} from "@/lib/finance/purchasing-power";
-import { getLatestRate } from "@/lib/finance/referenceRates";
 import { assemblePeriodReview, type CategorySpend, type PeriodReview } from "@/lib/finance/reports";
 import { JALALI_MONTHS } from "@/lib/labels";
 import { getBudgetMonth, type BudgetMonthDto } from "@/server/queries/budgets";
@@ -75,19 +69,11 @@ async function categorySpend(userId: string, from: Date, to: Date): Promise<Cate
 }
 
 async function periodTotals(userId: string, from: Date, to: Date, previousFrom: Date, previousTo: Date) {
-  const [income, expenses, previousExpenses, categories, extraSavings] = await Promise.all([
+  const [income, expenses, previousExpenses, categories] = await Promise.all([
     sumByType(userId, "INCOME", from, to),
     sumByType(userId, "EXPENSE", from, to),
     sumByType(userId, "EXPENSE", previousFrom, previousTo),
     categorySpend(userId, from, to),
-    prisma.transaction.findMany({
-      where: {
-        userId,
-        type: { in: ["ASSET_ADD", "ASSET_REMOVE"] },
-        occurredAt: { gte: from, lt: to },
-      },
-      select: { type: true, amount: true, movementReason: true },
-    }).then((rows) => extraSavingsFromMovements(rows)),
   ]);
 
   return assemblePeriodReview({
@@ -95,7 +81,6 @@ async function periodTotals(userId: string, from: Date, to: Date, previousFrom: 
     expenses,
     previousExpenses,
     categories,
-    extraSavings,
   });
 }
 
@@ -140,7 +125,7 @@ function composeRecap(input: {
   goals: GoalListItem[];
   includeGoalPct: boolean;
 }): MonthlyRecapDto | null {
-  if (input.review.income === 0n && input.review.expenses === 0n && input.review.net === 0n) {
+  if (input.review.income === 0n && input.review.expenses === 0n) {
     return null;
   }
 
@@ -213,10 +198,7 @@ export async function getPreviousMonthRecapPrompt(userId: string): Promise<Month
   return getMonthlyRecap(userId, previous.year, previous.month);
 }
 
-export async function getReports(
-  userId: string,
-  referenceAssetPreference: ReferenceAssetType | null = null,
-) {
+export async function getReports(userId: string) {
   const today = getTehranJalaliDate();
   const weekStart = jalaliWeekStart(today);
   const weekEnd = addJalaliDays(weekStart, 6);
@@ -229,7 +211,7 @@ export async function getReports(
   const monthTo = tehranMidnightUtc(nextMonth);
   const includePreviousPrompt = today.day <= NEW_MONTH_RECAP_PROMPT_DAYS;
 
-  const [week, month, budget, goals, extras, previousRecap, referenceLookup] = await Promise.all([
+  const [week, month, budget, goals, extras, previousRecap] = await Promise.all([
     periodTotals(
       userId,
       tehranMidnightUtc(weekStart),
@@ -250,21 +232,9 @@ export async function getReports(
     includePreviousPrompt
       ? getMonthlyRecap(userId, previousMonthStart.year, previousMonthStart.month)
       : Promise.resolve(null),
-    referenceAssetPreference ? getLatestRate(referenceAssetPreference) : Promise.resolve(null),
   ]);
 
-  const hasActivity =
-    week.expenses > 0n ||
-    week.income > 0n ||
-    month.expenses > 0n ||
-    month.income > 0n ||
-    week.net !== 0n ||
-    month.net !== 0n;
-  const referenceRate = referenceLookup?.rate ?? null;
-  const weekSavingsHint =
-    week.income > 0n ? describeSavingsInReferenceAsset(week.net, referenceRate, "week") : null;
-  const monthSavingsHint =
-    month.income > 0n ? describeSavingsInReferenceAsset(month.net, referenceRate, "month") : null;
+  const hasActivity = week.expenses > 0n || week.income > 0n || month.expenses > 0n || month.income > 0n;
   const recap = composeRecap({
     year: today.year,
     month: today.month,
@@ -280,7 +250,6 @@ export async function getReports(
     week: {
       title: "گزارش این هفته",
       rangeLabel: formatJalaliRange(weekStart, weekEnd),
-      savingsHint: weekSavingsHint,
       ...week,
     },
     month: {
@@ -288,7 +257,6 @@ export async function getReports(
       rangeLabel: `${JALALI_MONTHS[today.month - 1] ?? ""} ${today.year}`,
       year: today.year,
       month: today.month,
-      savingsHint: monthSavingsHint,
       ...month,
     },
     recap,

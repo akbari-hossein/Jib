@@ -1,5 +1,5 @@
 import { requireUser } from "@/lib/auth/session";
-import { listAccountItems } from "@/server/queries/accounts";
+import { listAccounts, toAccountListItem } from "@/server/queries/accounts";
 import { AccountForm } from "@/features/accounts/account-form";
 import { AccountList } from "@/features/accounts/account-list";
 import { EmptyState } from "@/components/empty-state";
@@ -9,16 +9,17 @@ export const metadata = { title: "حساب‌ها" };
 
 export default async function AccountsPage() {
   const user = await requireUser();
-  const items = await listAccountItems(user.id);
+  const accounts = await listAccounts(user.id);
+  const items = accounts.map(toAccountListItem);
 
   return (
     <main data-tour="accounts-page" className="flex flex-col gap-6 px-5 pt-8">
       <PageHeader
         title="حساب‌ها"
-        description="حساب‌های تومان و دارایی‌های فیزیکی. دارایی‌ها به‌طور پیش‌فرض از قابل‌خرج جدا هستند."
+        description="حساب‌هایی که در قابل‌خرج باشند، عدد امروز را می‌سازند."
         dataTour="accounts-heading"
       />
-      {items.length === 0 ? (
+      {accounts.length === 0 ? (
         <EmptyState
           title="هنوز حسابی اضافه نکردی"
           description="با اضافه کردن اولین حسابت، جیب می‌تونه وضعیت پولت رو برات محاسبه کنه."

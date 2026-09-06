@@ -11,7 +11,6 @@ const LABELS: Record<string, string> = {
   budgets: "بودجه‌ها",
   goals: "اهداف",
   analytics: "تحلیل محصول",
-  rates: "نرخ‌ها",
   audit: "گزارش اقدامات",
   settings: "تنظیمات",
 };

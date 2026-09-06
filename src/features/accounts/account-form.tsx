@@ -7,18 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/money/money-input";
-import { NativeSelect } from "@/components/ui/native-select";
 import { ACCOUNT_COLORS, ACCOUNT_ICONS, ACCOUNT_ICON_LABEL } from "@/lib/accounts/appearance";
 import { ACCOUNT_TYPE_LABEL } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { createAccount, updateAccount } from "@/server/actions/accounts";
 import type { AccountListItem } from "@/server/queries/accounts";
-import {
-  REFERENCE_ASSET_OPTION_LABEL,
-  REFERENCE_ASSET_TYPES,
-} from "@/lib/finance/purchasing-power";
 
-const TYPES = ["CASH", "BANK", "CARD", "SAVINGS", "ASSET_HOLDING", "OTHER"] as const;
+const TYPES = ["CASH", "BANK", "CARD", "SAVINGS", "OTHER"] as const;
 
 export function AccountForm({
   account,
@@ -32,11 +27,7 @@ export function AccountForm({
   const [error, setError] = useState<string | null>(null);
   const [icon, setIcon] = useState(account?.icon ?? "");
   const [color, setColor] = useState(account?.color ?? "");
-  const [type, setType] = useState<(typeof TYPES)[number]>(account?.type ?? "CARD");
-  const [quantityReason, setQuantityReason] = useState<"correction" | "actual">("correction");
-  const isAsset = type === "ASSET_HOLDING";
   const formRef = useRef<HTMLFormElement>(null);
-  const lockType = Boolean(account);
 
   function handleSubmit(formData: FormData) {
     setError(null);
@@ -59,7 +50,6 @@ export function AccountForm({
   return (
     <form ref={formRef} action={handleSubmit} className="flex flex-col gap-4">
       {account ? <input type="hidden" name="id" value={account.id} /> : null}
-      {lockType ? <input type="hidden" name="type" value={type} /> : null}
       <input type="hidden" name="icon" value={icon} />
       <input type="hidden" name="color" value={color} />
 
@@ -78,119 +68,38 @@ export function AccountForm({
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium">نوع</legend>
         <div className="flex flex-wrap gap-2">
-          {TYPES.map((typeOption) => (
+          {TYPES.map((type, index) => (
             <label
-              key={typeOption}
+              key={type}
               className="cursor-pointer rounded-full bg-surface-muted px-3 py-2 text-sm has-[:checked]:bg-primary has-[:checked]:text-primary-foreground"
             >
               <input
                 type="radio"
                 name="type"
-                value={typeOption}
-                checked={type === typeOption}
-                onChange={() => {
-                  if (!lockType) {
-                    setType(typeOption);
-                  }
-                }}
-                disabled={lockType}
+                value={type}
+                defaultChecked={account ? account.type === type : index === 2}
                 className="sr-only"
               />
-              {ACCOUNT_TYPE_LABEL[typeOption]}
+              {ACCOUNT_TYPE_LABEL[type]}
             </label>
           ))}
         </div>
       </fieldset>
 
-      {isAsset ? (
-        <>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor={isEdit ? "edit-asset-type" : "asset-type"}>نوع دارایی</Label>
-            {isEdit && account?.assetType ? (
-              <input type="hidden" name="assetType" value={account.assetType} />
-            ) : null}
-            <NativeSelect
-              id={isEdit ? "edit-asset-type" : "asset-type"}
-              name={isEdit ? undefined : "assetType"}
-              defaultValue={account?.assetType ?? "GOLD_COIN"}
-              disabled={isEdit}
-            >
-              {REFERENCE_ASSET_TYPES.map((asset) => (
-                <option key={asset} value={asset}>
-                  {REFERENCE_ASSET_OPTION_LABEL[asset]}
-                </option>
-              ))}
-            </NativeSelect>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor={isEdit ? "edit-account-quantity" : "account-quantity"}>مقدار</Label>
-            <Input
-              id={isEdit ? "edit-account-quantity" : "account-quantity"}
-              name="quantity"
-              inputMode="decimal"
-              defaultValue={account?.quantity ?? "0"}
-              placeholder="مثلاً ۲٫۵"
-            />
-            <p className="text-xs leading-6 text-foreground/45">
-              مقدار فیزیکی است — گرم، سکه، یا واحد ارز. ارزش تومان از نرخ روز حساب می‌شود.
-              {isEdit
-                ? " اگر نرخ لحظه‌ای نباشد، مقدار ذخیره می‌شود و ارزش تومان بعداً پر می‌شود."
-                : " موجودی اولیه پس‌انداز این ماه نیست؛ فقط دارایی‌ای که از قبل داشتی را ثبت می‌کند."}
-            </p>
-            {isEdit ? (
-              <fieldset className="mt-2 flex flex-col gap-2">
-                <legend className="text-sm font-medium">اگر مقدار را عوض می‌کنی</legend>
-                <input type="hidden" name="quantityReason" value={quantityReason} />
-                <label className="flex items-start gap-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-6">
-                  <input
-                    type="radio"
-                    name="quantityReasonChoice"
-                    checked={quantityReason === "correction"}
-                    onChange={() => setQuantityReason("correction")}
-                    className="mt-1 size-4 accent-primary"
-                  />
-                  <span>
-                    اصلاح مقدار
-                    <span className="mt-1 block text-xs text-foreground/45">
-                      غلط ثبت شده بود. روی پس‌انداز این ماه اثر نمی‌گذارد.
-                    </span>
-                  </span>
-                </label>
-                <label className="flex items-start gap-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-6">
-                  <input
-                    type="radio"
-                    name="quantityReasonChoice"
-                    checked={quantityReason === "actual"}
-                    onChange={() => setQuantityReason("actual")}
-                    className="mt-1 size-4 accent-primary"
-                  />
-                  <span>
-                    خرید یا فروش واقعی
-                    <span className="mt-1 block text-xs text-foreground/45">
-                      افزایش به‌عنوان پس‌انداز این ماه حساب می‌شود؛ کاهش از آن کم می‌شود.
-                    </span>
-                  </span>
-                </label>
-              </fieldset>
-            ) : null}
-          </div>
-        </>
-      ) : (
-        <div className="flex flex-col gap-2">
-          <Label htmlFor={isEdit ? "edit-account-balance" : "account-balance"}>موجودی فعلی</Label>
-          <MoneyInput
-            id={isEdit ? "edit-account-balance" : "account-balance"}
-            name="balance"
-            defaultValue={account?.type === "ASSET_HOLDING" ? "0" : (account?.balance ?? "0")}
-            allowNegative
-          />
-          {isEdit ? (
-            <p className="text-xs leading-6 text-foreground/45">
-              موجودی را دستی عوض کن؛ این کار تراکنش جدید نمی‌سازد.
-            </p>
-          ) : null}
-        </div>
-      )}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor={isEdit ? "edit-account-balance" : "account-balance"}>موجودی فعلی</Label>
+        <MoneyInput
+          id={isEdit ? "edit-account-balance" : "account-balance"}
+          name="balance"
+          defaultValue={account?.balance ?? "0"}
+          allowNegative
+        />
+        {isEdit ? (
+          <p className="text-xs leading-6 text-foreground/45">
+            موجودی را دستی عوض کن؛ این کار تراکنش جدید نمی‌سازد.
+          </p>
+        ) : null}
+      </div>
 
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium">آیکون</legend>
@@ -244,7 +153,7 @@ export function AccountForm({
           <span>
             در قابل‌خرج خانه حساب شود
             <span className="mt-1 block text-xs text-foreground/45">
-              حساب‌های پس‌انداز و دارایی معمولاً خارج می‌مانند تا عدد امروز را شلوغ نکنند.
+              حساب‌های پس‌انداز معمولاً خارج می‌مانند تا عدد امروز را شلوغ نکنند.
             </span>
           </span>
         </label>

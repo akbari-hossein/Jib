@@ -93,8 +93,6 @@ export default async function AdminTransactionsPage({
           <option value="EXPENSE">{TRANSACTION_TYPE_LABEL.EXPENSE}</option>
           <option value="INCOME">{TRANSACTION_TYPE_LABEL.INCOME}</option>
           <option value="TRANSFER">{TRANSACTION_TYPE_LABEL.TRANSFER}</option>
-          <option value="ASSET_ADD">{TRANSACTION_TYPE_LABEL.ASSET_ADD}</option>
-          <option value="ASSET_REMOVE">{TRANSACTION_TYPE_LABEL.ASSET_REMOVE}</option>
         </NativeSelect>
         <Input name="from" type="date" defaultValue={firstSearchParam(params.from)} className="h-11 text-sm" />
         <Input name="to" type="date" defaultValue={firstSearchParam(params.to)} className="h-11 text-sm" />

@@ -1,4 +1,3 @@
-import type { TransactionType } from "@prisma/client";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
 import { jalaliToEpochDay, type JalaliDate } from "@/lib/dates/tehran";
 import type { NotificationRuleKey } from "@/lib/notifications/catalog";
@@ -51,7 +50,7 @@ export type RecurringExpenseInput = {
   id: string;
   name: string;
   amount: bigint;
-  type: TransactionType;
+  type: "EXPENSE" | "INCOME" | "TRANSFER";
   nextRunAt: JalaliDate;
   today: JalaliDate;
 };

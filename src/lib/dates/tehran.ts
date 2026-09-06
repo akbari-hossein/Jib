@@ -220,30 +220,6 @@ export function jalaliFromInstant(date: Date): JalaliDate {
   return getTehranJalaliDate(date);
 }
 
-const JALALI_MONTH_NAMES = [
-  "فروردین",
-  "اردیبهشت",
-  "خرداد",
-  "تیر",
-  "مرداد",
-  "شهریور",
-  "مهر",
-  "آبان",
-  "آذر",
-  "دی",
-  "بهمن",
-  "اسفند",
-] as const;
-
-function persianDigit(value: number): string {
-  return String(value).replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]!);
-}
-
-export function formatJalaliAbsolute(date: JalaliDate): string {
-  const month = JALALI_MONTH_NAMES[date.month - 1] ?? "";
-  return `${persianDigit(date.day)} ${month} ${persianDigit(date.year)}`;
-}
-
 export function formatJalaliDay(date: JalaliDate, today: JalaliDate): string {
   if (isSameJalaliDay(date, today)) {
     return "امروز";
@@ -252,24 +228,56 @@ export function formatJalaliDay(date: JalaliDate, today: JalaliDate): string {
     return "دیروز";
   }
 
-  const month = JALALI_MONTH_NAMES[date.month - 1] ?? "";
+  const months = [
+    "فروردین",
+    "اردیبهشت",
+    "خرداد",
+    "تیر",
+    "مرداد",
+    "شهریور",
+    "مهر",
+    "آبان",
+    "آذر",
+    "دی",
+    "بهمن",
+    "اسفند",
+  ] as const;
+  const month = months[date.month - 1] ?? "";
+  const day = String(date.day).replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]!);
   if (date.year !== today.year) {
-    return `${persianDigit(date.day)} ${month} ${persianDigit(date.year)}`;
+    const year = String(date.year).replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]!);
+    return `${day} ${month} ${year}`;
   }
-  return `${persianDigit(date.day)} ${month}`;
+  return `${day} ${month}`;
 }
 
 export function formatJalaliRange(from: JalaliDate, to: JalaliDate): string {
-  const fromMonth = JALALI_MONTH_NAMES[from.month - 1] ?? "";
-  const toMonth = JALALI_MONTH_NAMES[to.month - 1] ?? "";
+  const months = [
+    "فروردین",
+    "اردیبهشت",
+    "خرداد",
+    "تیر",
+    "مرداد",
+    "شهریور",
+    "مهر",
+    "آبان",
+    "آذر",
+    "دی",
+    "بهمن",
+    "اسفند",
+  ] as const;
+  const digit = (value: number) =>
+    String(value).replace(/[0-9]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]!);
+  const fromMonth = months[from.month - 1] ?? "";
+  const toMonth = months[to.month - 1] ?? "";
 
   if (from.year === to.year && from.month === to.month) {
-    return `${persianDigit(from.day)} تا ${persianDigit(to.day)} ${fromMonth}`;
+    return `${digit(from.day)} تا ${digit(to.day)} ${fromMonth}`;
   }
   if (from.year === to.year) {
-    return `${persianDigit(from.day)} ${fromMonth} تا ${persianDigit(to.day)} ${toMonth}`;
+    return `${digit(from.day)} ${fromMonth} تا ${digit(to.day)} ${toMonth}`;
   }
-  return `${persianDigit(from.day)} ${fromMonth} ${persianDigit(from.year)} تا ${persianDigit(to.day)} ${toMonth} ${persianDigit(to.year)}`;
+  return `${digit(from.day)} ${fromMonth} ${digit(from.year)} تا ${digit(to.day)} ${toMonth} ${digit(to.year)}`;
 }
 
 export function isSameJalaliDay(left: JalaliDate, right: JalaliDate): boolean {

@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { MoneyDisplay } from "@/components/money/money-display";
 import { cn } from "@/lib/utils";
 
@@ -6,7 +5,6 @@ export function FinancialMetric({
   label,
   amount,
   hint,
-  secondary,
   empty,
   tone = "default",
   size = "md",
@@ -16,7 +14,6 @@ export function FinancialMetric({
   label: string;
   amount?: bigint | string;
   hint?: string;
-  secondary?: ReactNode;
   empty?: boolean;
   tone?: "default" | "income" | "expense" | "savings";
   size?: "sm" | "md" | "lg";
@@ -54,7 +51,6 @@ export function FinancialMetric({
           <MoneyDisplay amount={amount ?? 0n} />
         </p>
       )}
-      {secondary ? <div className="mt-2">{secondary}</div> : null}
       {hint ? <p className="mt-2 text-xs leading-6 text-muted-foreground">{hint}</p> : null}
     </div>
   );

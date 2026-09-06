@@ -142,10 +142,6 @@ describe("savings rate", () => {
   it("uses integer percent", () => {
     expect(calculateSavingsRate(30_000_000n, 21_000_000n)).toBe(30);
   });
-
-  it("adds asset-holding inflows valued at the transaction snapshot", () => {
-    expect(calculateSavingsRate(30_000_000n, 21_000_000n, 3_000_000n)).toBe(40);
-  });
 });
 
 describe("monthly change", () => {

@@ -5,7 +5,6 @@ import {
   getIncomeCycle,
   isLeapJalaliYear,
   formatJalaliRange,
-  formatJalaliAbsolute,
   jalaliMonthLength,
   jalaliWeekStart,
   monthsRemainingForGoal,
@@ -110,12 +109,6 @@ describe("formatJalaliRange", () => {
     expect(
       formatJalaliRange({ year: 1404, month: 5, day: 10 }, { year: 1404, month: 5, day: 16 }),
     ).toBe("۱۰ تا ۱۶ مرداد");
-  });
-});
-
-describe("formatJalaliAbsolute", () => {
-  it("always includes the year", () => {
-    expect(formatJalaliAbsolute({ year: 1404, month: 6, day: 10 })).toBe("۱۰ شهریور ۱۴۰۴");
   });
 });
 

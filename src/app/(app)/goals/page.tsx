@@ -34,13 +34,7 @@ export default async function GoalsPage() {
 
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">هدف جدید</h2>
-        <GoalForm
-          accounts={accounts.map((account) => ({
-            id: account.id,
-            name: account.name,
-            type: account.type,
-          }))}
-        />
+        <GoalForm accounts={accounts.map((account) => ({ id: account.id, name: account.name }))} />
       </section>
     </main>
   );

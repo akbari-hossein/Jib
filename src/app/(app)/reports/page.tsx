@@ -6,6 +6,6 @@ export const metadata = { title: "گزارش‌ها" };
 
 export default async function ReportsPage() {
   const user = await requireUser();
-  const reports = await getReports(user.id, user.referenceAssetPreference);
+  const reports = await getReports(user.id);
   return <ReportsView reports={reports} />;
 }

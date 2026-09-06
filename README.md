@@ -18,7 +18,6 @@ The product is designed for Iran: Jalali calendar, Tehran timezone, and amounts 
 - **Recurring** — weekly, monthly, or yearly income and expenses
 - **Category rules** — auto-categorize by merchant or note (exact / contains)
 - **Reports** — calm weekly and monthly reviews, category spend, budget performance
-- **Purchasing power** — optional USD / euro / gold-coin / gold-gram equivalent next to toman amounts, from stored live market rates
 - **Notifications** — deterministic, explainable nudges (budget thresholds, recurring due, goal milestones) via Web Push and an in-app center
 - **PWA** — installable, standalone, with an offline fallback page
 - **Auth** — email and password, optional Google sign-in, cookie sessions
@@ -108,17 +107,10 @@ cp .env.example .env
 | `GOOGLE_CLIENT_ID` | Optional. Google OAuth client ID. Leave empty to hide Google sign-in. |
 | `GOOGLE_CLIENT_SECRET` | Optional. Google OAuth client secret. |
 | `GOOGLE_REDIRECT_URI` | Optional. Defaults to `{origin}/api/auth/google/callback`. |
-| `CRON_SECRET` | Shared secret for `GET /api/cron/notifications` and `GET /api/cron/reference-rates`. Required in production (16+ chars). |
+| `CRON_SECRET` | Shared secret for `GET /api/cron/notifications`. Required in production (16+ chars). |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Web Push public key. Generate with `npx web-push generate-vapid-keys`. |
 | `VAPID_PRIVATE_KEY` | Web Push private key. Keep this on the server only. |
 | `VAPID_SUBJECT` | Optional. `mailto:` or site URL used in VAPID claims. |
-| `REFERENCE_RATE_INGEST_SECRET` | Optional. Bearer token for `POST /api/internal/reference-rates`. Also accepted by the reference-rate cron. |
-| `RATE_PROVIDER_NAME` | Optional. Live rate adapter (`navasan`). |
-| `RATE_PROVIDER_API_KEY` | Optional. Server-only provider key. Never expose to the client. |
-| `RATE_PROVIDER_BASE_URL` | Optional. Provider origin, e.g. `https://api.navasan.tech`. |
-| `RATE_PROVIDER_POLL_INTERVAL_MINUTES` | Optional. Minimum minutes between live fetches. |
-| `RATE_STALE_AFTER_HOURS` | Optional. UI staleness threshold for stored rates (default 6). |
-| `RATE_ALERT_AFTER_HOURS` | Optional. Log an alert if ingest has not succeeded (default 24). |
 
 Example `.env`:
 
@@ -186,8 +178,7 @@ Create an account at `/signup` with email and password (at least 8 characters). 
 | `/transactions` | Signed in | Ledger |
 | `/budgets` | Signed in | This Jalali month |
 | `/goals` | Signed in | Savings goals |
-| `/accounts` | Signed in | Wallets, balances, and physical holdings |
-| `/rates` | Signed in | Latest stored market rates |
+| `/accounts` | Signed in | Wallets and balances |
 | `/recurring` | Signed in | Repeating income/expense |
 | `/rules` | Signed in | Auto-categorization |
 | `/reports` | Signed in | Week / month review |
@@ -202,13 +193,12 @@ Create an account at `/signup` with email and password (at least 8 characters). 
 
 Prisma lives in `prisma/schema.prisma`. The main entities:
 
-- **User** — email, optional password hash, optional Google id, optional name, payday, locale `fa-IR`, currency `TOMAN`, optional `referenceAssetPreference`
-- **ReferenceRate** — USD / euro / gold price in toman as of `effectiveAt` (append-only; live provider or manual ingest; see `src/lib/finance/README.md`)
-- **Account** — type (including `ASSET_HOLDING`), toman `balance` or physical `quantity` + `assetType`
+- **User** — email, optional password hash, optional Google id, optional name, payday, locale `fa-IR`, currency `TOMAN`
+- **Account** — type, balance, `includeInAvailable`
 - **Category** — system defaults seeded on first login (essential / living / lifestyle / financial)
-- **Transaction** — expense, income, transfer, or asset add/remove (quantity + rate snapshot)
+- **Transaction** — expense, income, or transfer; Jalali-aware `occurredAt`
 - **Budget** + **BudgetCategory** — unique per user + Jalali year/month
-- **Goal** — target, current amount, optional funding accounts (`GoalFunding`)
+- **Goal** — target, current amount, optional account
 - **RecurringTransaction** — frequency, `nextRunAt`, day-of-month
 - **TransactionRule** — match merchant/note → category
 - **NotificationRule** — system-defined, seeded triggers (not user-editable)
@@ -237,7 +227,6 @@ When you change spendable-today, budgets, goals, reports, or notification rules,
 
 - Set a strong unique `AUTH_SECRET`. Rotating it invalidates existing sessions.
 - Point `DATABASE_URL` at a managed Postgres and run `npm run db:deploy` on release.
-- Live rates: set `RATE_PROVIDER_*` and a Bearer secret, then schedule `GET /api/cron/reference-rates` (see `src/lib/finance/rateProviders/README.md`).
 - For Google sign-in, set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and add the callback URL in Google Cloud (`https://your-domain/api/auth/google/callback`).
 - Sessions last 30 days. Login and signup rate limits live in `src/lib/auth/rate-limit.ts`.
 - The service worker caches `/offline` only. Treat the PWA as an installable shell, not a full offline ledger.

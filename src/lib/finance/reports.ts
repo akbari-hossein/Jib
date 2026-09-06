@@ -16,7 +16,6 @@ export type PeriodReview = {
   income: bigint;
   expenses: bigint;
   net: bigint;
-  extraSavings: bigint;
   savingsRate: number | null;
   expenseChange: MonthlyChange;
   categories: RankedCategory[];
@@ -47,17 +46,13 @@ export function assemblePeriodReview(input: {
   expenses: bigint;
   previousExpenses: bigint;
   categories: CategorySpend[];
-  extraSavings?: bigint;
 }): PeriodReview {
-  const extraSavings = input.extraSavings ?? 0n;
-  const net = input.income - input.expenses + extraSavings;
   const categories = rankCategorySpend(input.categories, input.expenses);
   return {
     income: input.income,
     expenses: input.expenses,
-    net,
-    extraSavings,
-    savingsRate: calculateSavingsRate(input.income, input.expenses, extraSavings),
+    net: input.income - input.expenses,
+    savingsRate: calculateSavingsRate(input.income, input.expenses),
     expenseChange: calculateMonthlyChange(input.expenses, input.previousExpenses),
     categories,
     topCategory: categories[0] ?? null,

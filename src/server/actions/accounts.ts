@@ -1,6 +1,6 @@
 "use server";
 
-import { AccountType, Prisma, type AssetMovementReason } from "@prisma/client";
+import { AccountType, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import {
@@ -11,12 +11,8 @@ import {
 import { accountDeletionCopy, canPermanentlyDeleteAccount } from "@/lib/accounts/deletion";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
-import { isReferenceAssetType, type ReferenceAssetType } from "@/lib/finance/purchasing-power";
-import { parseQuantityToScaled } from "@/lib/finance/quantity";
 import { parseTomanInput } from "@/lib/validation/money";
-import { getLatestRate } from "@/lib/finance/referenceRates";
 import { assertAccountOwned, userFacingMutationError } from "@/server/services/ownership";
-import { persistTransaction } from "@/server/services/transactions";
 
 export type AccountActionState = {
   ok: boolean;
@@ -29,10 +25,10 @@ export type AccountActionState = {
   };
 };
 
-const accountTypeSchema = z.enum(["CASH", "BANK", "CARD", "SAVINGS", "ASSET_HOLDING", "OTHER"]);
+const accountTypeSchema = z.enum(["CASH", "BANK", "CARD", "SAVINGS", "OTHER"]);
 
 function includeInAvailableFor(type: AccountType): boolean {
-  return type !== "SAVINGS" && type !== "ASSET_HOLDING";
+  return type !== "SAVINGS";
 }
 
 function revalidateAccounts() {
@@ -63,18 +59,17 @@ function parseAppearance(formData: FormData): { color: string | null; icon: stri
 }
 
 async function countAccountDependents(accountId: string, userId: string) {
-  const [outgoing, incoming, recurringCount, goalCount, fundingCount] = await Promise.all([
+  const [outgoing, incoming, recurringCount, goalCount] = await Promise.all([
     prisma.transaction.count({ where: { userId, accountId } }),
     prisma.transaction.count({ where: { userId, toAccountId: accountId } }),
     prisma.recurringTransaction.count({ where: { userId, accountId } }),
     prisma.goal.count({ where: { userId, accountId, isArchived: false } }),
-    prisma.goalFunding.count({ where: { accountId } }),
   ]);
 
   return {
     transactionCount: outgoing + incoming,
     recurringCount,
-    goalCount: goalCount + fundingCount,
+    goalCount,
   };
 }
 
@@ -85,15 +80,10 @@ export async function createAccount(
   const user = await requireUser();
   const name = String(formData.get("name") ?? "").trim();
   const typeResult = accountTypeSchema.safeParse(formData.get("type"));
-  const isAsset = typeResult.success && typeResult.data === "ASSET_HOLDING";
-  const assetRaw = String(formData.get("assetType") ?? "");
-  const quantityScaled = parseQuantityToScaled(String(formData.get("quantity") ?? "0"));
-  const balance = isAsset
-    ? 0n
-    : parseTomanInput(String(formData.get("balance") ?? "0"), {
-        allowZero: true,
-        allowNegative: true,
-      });
+  const balance = parseTomanInput(String(formData.get("balance") ?? "0"), {
+    allowZero: true,
+    allowNegative: true,
+  });
   const appearance = parseAppearance(formData);
 
   if (name.length < 1 || name.length > 60) {
@@ -102,13 +92,7 @@ export async function createAccount(
   if (!typeResult.success) {
     return { ok: false, error: "نوع حساب معتبر نیست." };
   }
-  if (isAsset && !isReferenceAssetType(assetRaw)) {
-    return { ok: false, error: "نوع دارایی را انتخاب کن." };
-  }
-  if (isAsset && quantityScaled == null) {
-    return { ok: false, error: "مقدار دارایی معتبر نیست." };
-  }
-  if (!isAsset && balance === null) {
+  if (balance === null) {
     return { ok: false, error: "موجودی معتبر نیست." };
   }
   if ("error" in appearance) {
@@ -117,36 +101,18 @@ export async function createAccount(
 
   try {
     const count = await prisma.account.count({ where: { userId: user.id } });
-    const created = await prisma.account.create({
+    await prisma.account.create({
       data: {
         userId: user.id,
         name,
         type: typeResult.data,
-        balance: isAsset ? 0n : (balance ?? 0n),
-        quantity: new Prisma.Decimal("0"),
-        assetType: isAsset && isReferenceAssetType(assetRaw) ? assetRaw : null,
+        balance,
         color: appearance.color,
         icon: appearance.icon,
         includeInAvailable: includeInAvailableFor(typeResult.data),
         sortOrder: count,
       },
     });
-    if (isAsset && isReferenceAssetType(assetRaw) && quantityScaled && quantityScaled > 0n) {
-      const rate = await getLatestRate(assetRaw);
-      await prisma.$transaction(async (db) => {
-        await persistTransaction(db, {
-          userId: user.id,
-          type: "ASSET_ADD",
-          amount: 0n,
-          accountId: created.id,
-          occurredAt: new Date(),
-          quantityDelta: quantityScaled,
-          rateToTomanSnapshot: rate?.rate.rateToToman ?? null,
-          referenceRateId: rate?.rate.id ?? null,
-          movementReason: "OPENING",
-        });
-      });
-    }
   } catch (error) {
     return { ok: false, error: userFacingMutationError(error, "ذخیره حساب انجام نشد. دوباره تلاش کن.") };
   }
@@ -165,8 +131,6 @@ export async function updateAccount(
   const typeResult = accountTypeSchema.safeParse(formData.get("type"));
   const includeRaw = formData.get("includeInAvailable");
   const balanceRaw = formData.get("balance");
-  const quantityRaw = formData.get("quantity");
-  const assetRaw = String(formData.get("assetType") ?? "");
   const appearance = parseAppearance(formData);
 
   if (!id) {
@@ -183,90 +147,26 @@ export async function updateAccount(
   }
 
   let balance: bigint | undefined;
-  let nextQuantityScaled: bigint | undefined;
-  let assetType: ReferenceAssetType | null | undefined;
-  const isAsset = typeResult.success && typeResult.data === "ASSET_HOLDING";
-  const quantityReasonRaw = String(formData.get("quantityReason") ?? "").trim();
-  if (isAsset) {
-    if (!isReferenceAssetType(assetRaw)) {
-      return { ok: false, error: "نوع دارایی را انتخاب کن." };
-    }
-    assetType = assetRaw;
-    balance = 0n;
-    if (quantityRaw != null) {
-      const parsed = parseQuantityToScaled(String(quantityRaw));
-      if (parsed == null) {
-        return { ok: false, error: "مقدار دارایی معتبر نیست." };
-      }
-      nextQuantityScaled = parsed;
-    }
-  } else if (balanceRaw != null) {
+  if (balanceRaw != null) {
     const parsed = parseTomanInput(String(balanceRaw), { allowZero: true, allowNegative: true });
     if (parsed === null) {
       return { ok: false, error: "موجودی معتبر نیست." };
     }
     balance = parsed;
-    assetType = null;
   }
 
   try {
-    const existing = await assertAccountOwned(user.id, id);
-    if (existing.type !== typeResult.data && (existing.type === "ASSET_HOLDING" || typeResult.data === "ASSET_HOLDING")) {
-      return { ok: false, error: "نوع حساب دارایی را بعد از ساخت نمی‌شود عوض کرد." };
-    }
-    if (isAsset && existing.assetType && assetType && existing.assetType !== assetType) {
-      return { ok: false, error: "نوع دارایی این حساب را نمی‌شود عوض کرد." };
-    }
-
-    const currentScaled = parseQuantityToScaled(existing.quantity.toString()) ?? 0n;
-    let quantityDelta: bigint | undefined;
-    let movementType: "ASSET_ADD" | "ASSET_REMOVE" | undefined;
-    let movementReason: AssetMovementReason | undefined;
-    if (isAsset && nextQuantityScaled != null && nextQuantityScaled !== currentScaled) {
-      if (nextQuantityScaled < 0n) {
-        return { ok: false, error: "مقدار دارایی نمی‌تواند منفی باشد." };
-      }
-      if (quantityReasonRaw !== "correction" && quantityReasonRaw !== "actual") {
-        return { ok: false, error: "برای تغییر مقدار، دلیل را انتخاب کن: اصلاح یا خرید/فروش واقعی." };
-      }
-      if (nextQuantityScaled > currentScaled) {
-        quantityDelta = nextQuantityScaled - currentScaled;
-        movementType = "ASSET_ADD";
-        movementReason = quantityReasonRaw === "correction" ? "CORRECTION" : "PURCHASE";
-      } else {
-        quantityDelta = currentScaled - nextQuantityScaled;
-        movementType = "ASSET_REMOVE";
-        movementReason = quantityReasonRaw === "correction" ? "CORRECTION" : "SALE";
-      }
-    }
-
-    const rate =
-      movementType && isAsset && isReferenceAssetType(assetRaw) ? await getLatestRate(assetRaw) : null;
-
-    await prisma.$transaction(async (db) => {
-      await db.account.update({
-        where: { id, userId: user.id },
-        data: {
-          name,
-          includeInAvailable: includeRaw === "on" || includeRaw === "true",
-          color: appearance.color,
-          icon: appearance.icon,
-          ...(balance !== undefined ? { balance } : {}),
-        },
-      });
-      if (movementType && quantityDelta && movementReason) {
-        await persistTransaction(db, {
-          userId: user.id,
-          type: movementType,
-          amount: 0n,
-          accountId: id,
-          occurredAt: new Date(),
-          quantityDelta,
-          rateToTomanSnapshot: rate?.rate.rateToToman ?? null,
-          referenceRateId: rate?.rate.id ?? null,
-          movementReason,
-        });
-      }
+    await assertAccountOwned(user.id, id);
+    await prisma.account.update({
+      where: { id, userId: user.id },
+      data: {
+        name,
+        type: typeResult.data,
+        includeInAvailable: includeRaw === "on" || includeRaw === "true",
+        color: appearance.color,
+        icon: appearance.icon,
+        ...(balance !== undefined ? { balance } : {}),
+      },
     });
   } catch (error) {
     return { ok: false, error: userFacingMutationError(error, "ذخیره حساب انجام نشد. دوباره تلاش کن.") };

@@ -10,7 +10,7 @@ export const metadata = { title: "خانه" };
 export default async function HomePage() {
   const user = await requireUser();
   const [dashboard, unreadCount, previousRecap, budget] = await Promise.all([
-    getDashboard(user.id, user.incomeDayOfMonth, user.referenceAssetPreference),
+    getDashboard(user.id, user.incomeDayOfMonth),
     getUnreadNotificationCount(user.id),
     getPreviousMonthRecapPrompt(user.id),
     getBudgetMonth(user.id),

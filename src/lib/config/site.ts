@@ -56,7 +56,6 @@ export const PRIVATE_PATH_PREFIXES = [
   "/rules",
   "/recurring",
   "/reports",
-  "/rates",
   "/notifications",
   "/export",
   "/admin",

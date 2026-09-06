@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/money/money-input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { getTehranJalaliDate } from "@/lib/dates/tehran";
 
 const initial: GoalActionState = { ok: false };
@@ -14,7 +15,7 @@ const initial: GoalActionState = { ok: false };
 export function GoalForm({
   accounts,
 }: {
-  accounts: { id: string; name: string; type: string }[];
+  accounts: { id: string; name: string }[];
 }) {
   const [state, action, pending] = useActionState(createGoal, initial);
   const [linked, setLinked] = useState(false);
@@ -30,37 +31,24 @@ export function GoalForm({
         <Label htmlFor="targetAmount">مبلغ هدف</Label>
         <MoneyInput id="targetAmount" name="targetAmount" required />
       </div>
-      {accounts.length > 0 ? (
-        <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium">حساب‌های تأمین‌کننده (اختیاری)</legend>
-          <p className="text-xs leading-6 text-foreground/45">
-            می‌توانی حساب پس‌انداز یا دارایی (طلا/ارز) وصل کنی. پیشرفت هدف با ارزش امروز همان حساب‌هاست.
-          </p>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="accountId">حساب پس‌انداز (اختیاری)</Label>
+        <NativeSelect
+          id="accountId"
+          name="accountId"
+          onChange={(event) => setLinked(event.target.value !== "")}
+        >
+          <option value="">بدون حساب — رزرو از قابل‌خرج</option>
           {accounts.map((account) => (
-            <label key={account.id} className="flex items-center gap-3 text-sm">
-              <input
-                type="checkbox"
-                name="fundingAccountId"
-                value={account.id}
-                className="size-4 accent-primary"
-                onChange={(event) => {
-                  const form = event.currentTarget.form;
-                  const checked = form
-                    ? [...form.querySelectorAll<HTMLInputElement>('input[name="fundingAccountId"]')].some(
-                        (input) => input.checked,
-                      )
-                    : event.currentTarget.checked;
-                  setLinked(checked);
-                }}
-              />
-              <span>
-                {account.name}
-                {account.type === "ASSET_HOLDING" ? " · دارایی" : ""}
-              </span>
-            </label>
+            <option key={account.id} value={account.id}>
+              {account.name}
+            </option>
           ))}
-        </fieldset>
-      ) : null}
+        </NativeSelect>
+        <p className="text-xs leading-6 text-foreground/45">
+          اگر حساب وصل کنی، موجودی همان حساب پیشرفت است و دوباره از قابل‌خرج کم نمی‌شود.
+        </p>
+      </div>
       {linked ? null : (
         <div className="flex flex-col gap-2">
           <Label htmlFor="currentAmount">مبلغ فعلی</Label>
