@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { completeFinancialTask } from "@/server/actions/today";
 import { cn } from "@/lib/utils";
@@ -12,27 +12,23 @@ export type TodayTaskItem = {
 };
 
 export function FinancialTaskList({ tasks }: { tasks: TodayTaskItem[] }) {
-  const [items, setItems] = useState(tasks);
+  const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
-
-  useEffect(() => {
-    setItems(tasks);
-  }, [tasks]);
+  const items = tasks.filter((task) => !completedIds.includes(task.id));
 
   if (items.length === 0) {
     return null;
   }
 
   function complete(taskId: string) {
-    const previous = items;
-    setItems(items.filter((item) => item.id !== taskId));
+    setCompletedIds((ids) => [...ids, taskId]);
     setPendingId(taskId);
     startTransition(async () => {
       const result = await completeFinancialTask(taskId);
       setPendingId(null);
       if (!result.ok) {
-        setItems(previous);
+        setCompletedIds((ids) => ids.filter((id) => id !== taskId));
         toast.error(result.error ?? "ذخیره نشد. دوباره تلاش کن.");
       }
     });
