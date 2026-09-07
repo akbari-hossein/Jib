@@ -6,6 +6,15 @@ export {
 } from "@/lib/finance/available-money";
 export { calculateBudgetUsage } from "@/lib/finance/budget-usage";
 export { assembleDashboard } from "@/lib/finance/dashboard";
+export { getTodaySummary, timeOfDayFromNow, UPCOMING_RECURRING_HORIZON_DAYS } from "@/lib/finance/today-summary";
+export type {
+  CalendarEventSummary,
+  FinancialTaskSummary,
+  GoalProgressSummary,
+  TimeOfDay,
+  TodaySummary,
+  UpcomingFinancialEvent,
+} from "@/lib/finance/today-summary";
 export { calculateDailyAllowance } from "@/lib/finance/daily-allowance";
 export { calculateGoalProgress } from "@/lib/finance/goal-progress";
 export { calculateMonthlyChange } from "@/lib/finance/monthly-change";
