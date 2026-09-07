@@ -101,7 +101,7 @@ describe("proposeGeneratedTasks", () => {
 
     expect(tasks).toEqual([
       {
-        title: "نگاهی به بودجه «غذا»",
+        title: "بودجه «غذا» نزدیک سقفه",
         type: "BUDGET_CHECK",
         dueDate: TODAY,
         sourceType: "BUDGET",

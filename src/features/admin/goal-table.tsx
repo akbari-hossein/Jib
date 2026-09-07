@@ -29,7 +29,7 @@ export function AdminGoalTable({
             <tr>
               <th className="px-4 py-3 text-start font-medium">کاربر</th>
               <th className="px-4 py-3 text-start font-medium">هدف</th>
-              <th className="px-4 py-3 text-start font-medium">هدف / پیشرفت</th>
+              <th className="px-4 py-3 text-start font-medium">مبلغ / پیشرفت</th>
               <th className="px-4 py-3 text-start font-medium">ایجاد</th>
               <th className="px-4 py-3 text-start font-medium">وضعیت</th>
             </tr>

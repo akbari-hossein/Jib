@@ -20,7 +20,7 @@ export default async function RulesPage() {
     <main className="flex flex-col gap-6 px-5 pt-8">
       <PageHeader
         title="قوانین"
-        description="اگر فروشنده‌ای را چند بار به یک دسته بزنی، جیب همان را به خاطر می‌سپارد. اینجا می‌توانی قانون‌ها را ببینی یا خودت بسازی."
+        description="اگر فروشنده‌ای را چند بار به یک دسته بزنی، جیب همان را به خاطر می‌سپارد. اینجا قانون‌ها را می‌بینی یا خودت می‌سازی."
       />
 
       {rules.length === 0 ? (

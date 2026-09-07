@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { markOnboardingDone } from "@/server/actions/onboarding";
 
 const CONCEPTS = [
-  { icon: House, title: "خانه", body: "امروز چقدر می‌توانی خرج کنی" },
+  { icon: House, title: "خانه", body: "امروز چقدر می‌تونی خرج کنی" },
   { icon: Wallet, title: "حساب‌ها", body: "پولت کجاست" },
   { icon: List, title: "تراکنش و بودجه", body: "کجا می‌رود و سقف کجاست" },
   { icon: Target, title: "هدف‌ها", body: "پس‌انداز از قابل‌خرج جدا" },
@@ -207,7 +207,7 @@ function WelcomePanel({
             {step.primary}
           </Button>
           <p className="text-center text-xs leading-6 text-muted-foreground">
-            کمتر از یک دقیقه. هر وقت بخواهی از بیشتر می‌توانی دوباره ببینی.
+            کمتر از یک دقیقه. هر وقت خواستی، از بیشتر دوباره می‌بینی.
           </p>
         </div>
       </div>

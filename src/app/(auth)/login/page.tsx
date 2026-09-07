@@ -11,7 +11,7 @@ const OAUTH_ERRORS: Record<string, string> = {
   google: "ورود با گوگل انجام نشد. دوباره تلاش کن.",
   google_denied: "ورود با گوگل لغو شد.",
   google_unverified: "ایمیل گوگل هنوز تأیید نشده.",
-  google_email: "گوگل ایمیل این حساب را نداد.",
+  google_email: "گوگل ایمیل را برنگرداند.",
   google_config: "ورود با گوگل روی این سرور فعال نیست.",
   disabled: "امکان ورود به این حساب وجود ندارد.",
 };

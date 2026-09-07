@@ -64,7 +64,7 @@ export function AdminUserActions({
     <section className="rounded-3xl border border-border bg-card p-5">
       <h2 className="text-base font-semibold">اقدامات مدیریتی</h2>
       <p className="mt-1 text-sm leading-7 text-muted-foreground">
-        این کارها در گزارش اقدامات ثبت می‌شوند و از سمت سرور بررسی می‌شوند.
+        این کارها در گزارش اقدامات ثبت می‌شوند و در سرور اعتبارسنجی می‌شوند.
       </p>
 
       <form action={roleAction} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -116,7 +116,7 @@ export function AdminUserActions({
           disabled={isSelf}
           onClick={() => setDialog("delete")}
         >
-          حذف حساب کاربر
+          حذف کاربر
         </Button>
       </div>
 
@@ -128,7 +128,7 @@ export function AdminUserActions({
           title={status === "ACTIVE" ? "غیرفعال کردن کاربر؟" : "فعال‌سازی دوباره؟"}
           description={
             status === "ACTIVE"
-              ? "جلسات کاربر بسته می‌شود و دیگر نمی‌تواند وارد جیب شود."
+              ? "نشست‌های کاربر بسته می‌شود و دیگر نمی‌تواند وارد جیب شود."
               : "کاربر دوباره می‌تواند با همین ایمیل وارد شود."
           }
           confirmLabel={status === "ACTIVE" ? "غیرفعال کن" : "فعال کن"}
@@ -143,7 +143,7 @@ export function AdminUserActions({
         <ConfirmDialog
           open={dialog === "onboarding" && !onboardingState.ok}
           title="بازنشانی راهنمای شروع؟"
-          description="کاربر در ورود بعدی دوباره تور شروع جیب را می‌بیند. داده‌های مالی‌اش پاک نمی‌شود."
+          description="کاربر در ورود بعدی دوباره راهنمای شروع جیب را می‌بیند. داده‌های مالی‌اش پاک نمی‌شود."
           confirmLabel="بازنشانی"
           pending={onboardingPending}
           error={onboardingState.error}

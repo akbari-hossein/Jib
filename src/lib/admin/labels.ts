@@ -26,8 +26,8 @@ export const USER_FILTER_LABEL = {
   recently_active: "فعالیت اخیر",
   onboarding_complete: "راهنمای شروع تمام شده",
   onboarding_incomplete: "راهنمای شروع ناتمام",
-  with_accounts: "دارای حساب",
-  with_transactions: "دارای تراکنش",
+  with_accounts: "با حساب",
+  with_transactions: "با تراکنش",
 } as const;
 
 export const ADMIN_NAV = [

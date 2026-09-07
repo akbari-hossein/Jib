@@ -73,7 +73,7 @@ export function AdminBudgetTable({
                         usage?.status === "over" ? "expense" : usage?.status === "near" ? "warning" : "muted"
                       }
                     >
-                      {usage?.status === "over" ? "بالای سقف" : usage?.status === "near" ? "نزدیک سقف" : "سالم"}
+                      {usage?.status === "over" ? "بالای سقف" : usage?.status === "near" ? "نزدیک سقف" : "زیر سقف"}
                     </Badge>
                   </td>
                 </tr>

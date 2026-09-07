@@ -92,7 +92,7 @@ export function FinancialTaskList({
         </form>
       ) : null}
       {items.length === 0 && !adding ? (
-        <p className="text-sm text-muted-foreground">کار بازی برای امروز نیست.</p>
+        <p className="text-sm text-muted-foreground">برای امروز کاری نداری.</p>
       ) : null}
       {items.length > 0 ? (
         <ul className="overflow-hidden rounded-3xl border border-border bg-card">

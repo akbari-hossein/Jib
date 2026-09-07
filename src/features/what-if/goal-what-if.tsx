@@ -131,7 +131,7 @@ export function GoalWhatIf({
           />
         </dl>
         <p className="pt-1 text-xs leading-6 text-muted-foreground">
-          ماه تا رسیدن ≈ مانده ÷ پس‌انداز ماهانه (رند به بالا)
+          ماه تا رسیدن ≈ مانده ÷ پس‌انداز ماهانه (گرد به بالا)
           <br />
           تاریخ ≈ امروز + همان تعداد ماه در تقویم شمسی
         </p>

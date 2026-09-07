@@ -63,7 +63,7 @@ export function periodChangeCopy(
 
 export function budgetUsageCopy(name: string, pct: number, status: BudgetStatus): string {
   if (status === "over") {
-    return `از سقف ${name} رد شدی. هنوز می‌تونی سقف را تنظیم کنی.`;
+    return `از سقف ${name} رد شدی. هنوز می‌تونی سقف رو تنظیم کنی.`;
   }
   if (status === "near") {
     return `بودجه ${name} رو ${pct}٪ مصرف کردی.`;

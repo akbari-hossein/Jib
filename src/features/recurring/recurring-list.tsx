@@ -40,7 +40,7 @@ export function RecurringList({ items }: { items: RecurringListItem[] }) {
               <form action={postRecurringNow}>
                 <input type="hidden" name="id" value={item.id} />
                 <Button type="submit" size="sm">
-                  ثبت این دوره
+                  ثبت الان
                 </Button>
               </form>
             ) : null}

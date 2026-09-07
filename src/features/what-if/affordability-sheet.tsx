@@ -100,7 +100,7 @@ export function AffordabilitySheet({ snapshot }: { snapshot: AffordabilitySnapsh
           <Drawer.Handle className="mx-auto mt-3 mb-2 h-1.5 w-12 rounded-full bg-border" />
           <Drawer.Title className="px-5 text-base font-semibold">می‌تونم این رو بخرم؟</Drawer.Title>
           <p className="mt-1 px-5 text-xs leading-6 text-muted-foreground">
-            فقط شبیه‌سازی است. با بررسی هیچ تراکنشی ثبت نمی‌شود.
+            فقط برای برآورد است. با بررسی چیزی ثبت نمی‌شود.
           </p>
           <div className="flex-1 overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4">
             <p className="numeric-display text-center text-4xl font-semibold tracking-tight">
@@ -222,7 +222,7 @@ export function AffordabilitySheet({ snapshot }: { snapshot: AffordabilitySnapsh
 
 function availableMoneyCopy(next: bigint, previous: bigint): string {
   if (next === previous) {
-    return `قابل‌خرج این دوره ${formatCompactToman(previous)} می‌ماند.`;
+    return `قابل‌خرج این دوره ${formatCompactToman(previous)} می‌مونه.`;
   }
   if (next < 0n) {
     return `قابل‌خرج این دوره ${formatCompactToman(-next)} کسری می‌آید (الان ${formatCompactToman(previous)} است).`;

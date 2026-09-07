@@ -18,7 +18,7 @@ export function RuleForm({
   return (
     <form action={action} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="matchValue">اگر فروشنده شامل این باشد</Label>
+        <Label htmlFor="matchValue">اگر نام فروشنده شامل این باشد</Label>
         <Input id="matchValue" name="matchValue" placeholder="مثلاً اسنپ" required />
       </div>
       <input type="hidden" name="matchType" value="CONTAINS" />

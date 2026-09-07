@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   applicationName: APP_NAME,
   title: {
-    default: `${APP_NAME} — بدون، امروز چقدر می‌تونی خرج کنی`,
+    default: `${APP_NAME} — امروز چقدر می‌تونی خرج کنی؟`,
     template: `%s · ${APP_NAME}`,
   },
   description: APP_DESCRIPTION,
@@ -41,12 +41,12 @@ export const metadata: Metadata = {
     locale: SITE.locale,
     url: "/",
     siteName: SITE.brand,
-    title: `${APP_NAME} — بدون، امروز چقدر می‌تونی خرج کنی`,
+    title: `${APP_NAME} — امروز چقدر می‌تونی خرج کنی؟`,
     description: APP_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${APP_NAME} — بدون، امروز چقدر می‌تونی خرج کنی`,
+    title: `${APP_NAME} — امروز چقدر می‌تونی خرج کنی؟`,
     description: APP_DESCRIPTION,
   },
   robots: {

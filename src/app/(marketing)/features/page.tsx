@@ -8,7 +8,7 @@ import { breadcrumbJsonLd } from "@/lib/seo/json-ld";
 export const metadata = publicPageMetadata({
   title: "امکانات جیب",
   description:
-    "قابل‌خرج روزانه، ثبت سریع، بودجه ماهانه شمسی، هدف پس‌انداز و مرور هفته و ماه — بدون حسابداری و بدون هوش مصنوعی.",
+    "سهم امروز و قابل‌خرج، ثبت سریع، بودجه ماهانه شمسی، هدف پس‌انداز و مرور هفته و ماه — بدون حسابداری و بدون هوش مصنوعی.",
   path: "/features",
 });
 
@@ -19,7 +19,7 @@ const ITEMS = [
   },
   {
     title: "ثبت سریع",
-    body: "مبلغ، دسته، حساب. قانون فروشنده را خودت می‌سازی؛ مدل زبانی در کار نیست.",
+    body: "مبلغ، دسته، حساب. قانون فروشنده را خودت می‌سازی؛ حدس خودکار در کار نیست.",
   },
   {
     title: "بودجه و هدف",
@@ -58,7 +58,7 @@ export default function FeaturesPage() {
       />
       <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">امکانات</h1>
       <p className="mt-4 max-w-2xl text-base leading-8 text-muted-foreground">
-        جیب کمک می‌کند بفهمی چقدر پول داری، چقدرش قابل خرج است، و امروز تا کجا می‌توانی پیش بروی.
+        جیب کمک می‌کند بفهمی چقدر پول داری، چقدرش قابل‌خرج است، و امروز تا کجا می‌تونی خرج کنی.
       </p>
       <ul className="mt-10 grid gap-4 md:grid-cols-2">
         {ITEMS.map((item) => (

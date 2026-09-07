@@ -78,7 +78,7 @@ export function NotificationSettings({ settings }: { settings: NotificationSetti
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="eveningHour">یادآوری ثبت‌نکردن</Label>
+              <Label htmlFor="eveningHour">ساعت یادآوری ثبت</Label>
               <NativeSelect id="eveningHour" name="eveningHour" defaultValue={String(settings.eveningHour)}>
                 {HOURS.map((hour) => (
                   <option key={`ev-${hour}`} value={hour}>

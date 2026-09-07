@@ -12,7 +12,7 @@ export default function TermsPage() {
   return (
     <MarketingArticle
       title="شرایط استفاده"
-      description="متن کوتاه و روشن. اگر جایی مبهم بود، همان را مبهم نگذار؛ بپرس."
+      description="قوانین کوتاه و روشن استفاده از جیب."
       crumbs={[{ name: "شرایط استفاده", path: "/terms" }]}
     >
       <h2>جیب چیست</h2>

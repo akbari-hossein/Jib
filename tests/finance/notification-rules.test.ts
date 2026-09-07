@@ -145,7 +145,7 @@ describe("checkSpendingPaceAnomaly", () => {
     expect(result?.dedupeKey).toBe("week:1404-06-08");
     expect(result?.href).toBe("/reports#week");
     expect(result?.explanation).toContain("× ۷ ÷ ۳");
-    expect(result?.explanation).toContain("برآورد خطی");
+    expect(result?.explanation).toContain("تا جمعه");
   });
 
   it("does not fire when the linear projection stays within the threshold", () => {
@@ -205,7 +205,7 @@ describe("checkGoalMilestone", () => {
 
   it("fires at 50%", () => {
     const result = checkGoalMilestone({ ...macbook, currentAmount: 40_000_000n });
-    expect(result?.body).toBe("به ۵۰٪ هدف «مک‌بوک» رسیدی! 🎉");
+    expect(result?.body).toBe("به ۵۰٪ هدف «مک‌بوک» رسیدی.");
     expect(result?.dedupeKey).toBe("goal_mac:50");
     expect(result?.href).toBe("/goals#goal-goal_mac");
   });

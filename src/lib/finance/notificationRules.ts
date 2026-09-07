@@ -217,12 +217,12 @@ export function checkSpendingPaceAnomaly(weeklyStats: SpendingPaceInput): Financ
     href: "/reports#week",
     dedupeKey: `week:${weeklyStats.weekKey}`,
     explanation: [
+      `تا جمعه، با همین سرعت، حدود ${formatToman(projected)} خرج می‌کنی — ${toPersianDigits(projectedPctOverLast)}٪ بیشتر از هفته قبل.`,
       `خرج این هفته تا الان: ${formatToman(weeklyStats.currentWeekSpendToDate)}`,
-      `روزهای سپری‌شده از شنبه: ${toPersianDigits(daysElapsed)} از ${toPersianDigits(JALALI_WEEK_LENGTH)}`,
-      `برآورد خطی تا جمعه: ${formatToman(weeklyStats.currentWeekSpendToDate)} × ${toPersianDigits(JALALI_WEEK_LENGTH)} ÷ ${toPersianDigits(daysElapsed)} = ${formatToman(projected)}`,
+      `روزهای گذشته از شنبه: ${toPersianDigits(daysElapsed)} از ${toPersianDigits(JALALI_WEEK_LENGTH)}`,
+      `حساب: ${formatToman(weeklyStats.currentWeekSpendToDate)} × ${toPersianDigits(JALALI_WEEK_LENGTH)} ÷ ${toPersianDigits(daysElapsed)} = ${formatToman(projected)}`,
       `خرج هفته قبل: ${formatToman(weeklyStats.lastWeekTotal)}`,
-      `آستانه: ${toPersianDigits(thresholdPct)}٪ بیشتر از هفته قبل = ${formatToman(ceiling)}`,
-      `برآورد حدود ${toPersianDigits(projectedPctOverLast)}٪ از هفته قبل بیشتر است. این یک مدل پیش‌بینی نیست؛ فقط ضرب و تقسیم خطی است.`,
+      `آستانه خبر: ${toPersianDigits(thresholdPct)}٪ بیشتر از هفته قبل (${formatToman(ceiling)})`,
     ].join("\n"),
     payload: {
       weekKey: weeklyStats.weekKey,
@@ -274,7 +274,7 @@ export function checkGoalMilestone(goal: GoalMilestoneInput): FinanceNotificatio
   return {
     ruleKey: "GOAL_MILESTONE",
     title: "هدف",
-    body: `به ${toPersianDigits(milestone)}٪ هدف «${goal.name}» رسیدی! 🎉`,
+    body: `به ${toPersianDigits(milestone)}٪ هدف «${goal.name}» رسیدی.`,
     href: `/goals#goal-${goal.id}`,
     dedupeKey: `${goal.id}:${milestone}`,
     explanation: `موجودی هدف ${formatToman(goal.currentAmount)} از ${formatToman(goal.targetAmount)} است. این یادآوری برای مرحله ${toPersianDigits(milestone)}٪ است و تکرار نمی‌شود.`,

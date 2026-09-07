@@ -63,7 +63,7 @@ export default async function AdminTransactionsPage({
       <AdminBreadcrumbs />
       <PageHeader
         title="تراکنش‌ها"
-        description="بازرسی عملیاتی. مبلغ و نوع قابل مشاهده است؛ ویرایش یا حذف از این پنل انجام نمی‌شود."
+        description="فقط مشاهده. مبلغ و نوع دیده می‌شود؛ ویرایش یا حذف از این پنل ممکن نیست."
       />
 
       <form className="grid gap-3 rounded-3xl border border-border bg-card p-4 md:grid-cols-2 xl:grid-cols-4">
@@ -113,7 +113,7 @@ export default async function AdminTransactionsPage({
       {result.total === 0 ? (
         <EmptyState
           title="تراکنشی پیدا نشد"
-          description="فیلترها را ساده‌تر کن یا عبارت جستجو را عوض کن."
+          description="فیلتر یا جستجو را تغییر بده."
         />
       ) : (
         <>

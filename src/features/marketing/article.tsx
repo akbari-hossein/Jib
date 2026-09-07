@@ -21,7 +21,7 @@ export function MarketingArticle({
       <p className="mt-4 text-base leading-8 text-muted-foreground">{description}</p>
       <article className="prose-fa mt-10">{children}</article>
       <div className="mt-12 rounded-3xl border border-border bg-card px-5 py-6">
-        <p className="font-medium">می‌خواهی روی پول خودت امتحان کنی؟</p>
+        <p className="font-medium">می‌خوای خودت امتحانش کنی؟</p>
         <p className="mt-2 text-sm leading-7 text-muted-foreground">
           حساب بساز. لازم نیست از اول کامل باشی.
         </p>

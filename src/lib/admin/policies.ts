@@ -1,9 +1,9 @@
 import type { UserRole, UserStatus } from "@prisma/client";
 
 export const ADMIN_POLICY_ERRORS = {
-  selfStatus: "نمی‌توانی وضعیت حساب خودت را تغییر بدهی.",
+  selfStatus: "نمی‌توانی وضعیت خودت را تغییر بدهی.",
   selfRole: "نمی‌توانی نقش خودت را تغییر بدهی.",
-  selfDelete: "نمی‌توانی حساب خودت را حذف کنی.",
+  selfDelete: "نمی‌توانی خودت را حذف کنی.",
   lastAdminRole: "حداقل یک مدیر باید در سیستم بماند.",
   lastAdminDelete: "آخرین مدیر را نمی‌شود حذف کرد.",
 } as const;

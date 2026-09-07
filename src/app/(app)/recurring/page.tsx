@@ -26,7 +26,7 @@ export default async function RecurringPage() {
 
       {items.length === 0 ? (
         <EmptyState
-          title="هنوز مورد تکراری نداری"
+          title="هنوز تکراری‌ای نداری"
           description="اجاره یا اشتراک ماهانه را اضافه کن تا قبل از موعد در عدد امروز دیده شود."
         />
       ) : (
@@ -34,7 +34,7 @@ export default async function RecurringPage() {
       )}
 
       <section className="rounded-3xl border border-border bg-card p-5">
-        <h2 className="mb-4 text-base font-semibold">مورد جدید</h2>
+        <h2 className="mb-4 text-base font-semibold">تکراری جدید</h2>
         <RecurringForm
           accounts={accounts.map((account) => ({ id: account.id, name: account.name }))}
           categories={categories.map((category) => ({

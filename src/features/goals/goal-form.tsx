@@ -46,7 +46,7 @@ export function GoalForm({
           ))}
         </NativeSelect>
         <p className="text-xs leading-6 text-foreground/45">
-          اگر حساب وصل کنی، موجودی همان حساب پیشرفت است و دوباره از قابل‌خرج کم نمی‌شود.
+          اگر حساب وصل کنی، پیشرفت همان موجودی حساب است و دیگر از قابل‌خرج کم نمی‌شود.
         </p>
       </div>
       {linked ? null : (

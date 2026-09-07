@@ -37,7 +37,7 @@ export default async function AdminAccountsPage({
   return (
     <main className="flex flex-col gap-6">
       <AdminBreadcrumbs />
-      <PageHeader title="حساب‌ها" description="بازرسی حساب‌های کاربران. عملیات مخرب روی حساب از این پنل انجام نمی‌شود." />
+      <PageHeader title="حساب‌ها" description="مشاهده حساب‌های کاربران. حذف یا ویرایش حساب از این پنل ممکن نیست." />
 
       <form className="grid gap-3 rounded-3xl border border-border bg-card p-4 md:grid-cols-[1fr_10rem_10rem_auto]">
         <Input name="q" defaultValue={query} placeholder="نام حساب یا کاربر" className="h-11 text-sm" />
@@ -56,7 +56,7 @@ export default async function AdminAccountsPage({
       </form>
 
       {result.total === 0 ? (
-        <EmptyState title="حسابی پیدا نشد" description="فیلتر یا جستجو را عوض کن." />
+        <EmptyState title="حسابی پیدا نشد" description="فیلتر یا جستجو را تغییر بده." />
       ) : (
         <>
           <AdminAccountTable accounts={result.accounts} />

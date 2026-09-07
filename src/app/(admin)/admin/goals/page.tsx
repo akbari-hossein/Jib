@@ -37,7 +37,7 @@ export default async function AdminGoalsPage({
   return (
     <main className="flex flex-col gap-6">
       <AdminBreadcrumbs />
-      <PageHeader title="اهداف" description="ببین کاربرها چطور برای پس‌انداز هدف می‌گذارند." />
+      <PageHeader title="اهداف" description="نمای کلی اهداف پس‌انداز کاربران." />
 
       <form className="grid gap-3 rounded-3xl border border-border bg-card p-4 md:grid-cols-[1fr_10rem_10rem_auto]">
         <Input name="q" defaultValue={query} placeholder="نام هدف یا کاربر" className="h-11 text-sm" />
@@ -56,7 +56,7 @@ export default async function AdminGoalsPage({
       </form>
 
       {result.total === 0 ? (
-        <EmptyState title="هدفی پیدا نشد" description="فیلتر یا جستجو را عوض کن." />
+        <EmptyState title="هدفی پیدا نشد" description="فیلتر یا جستجو را تغییر بده." />
       ) : (
         <>
           <AdminGoalTable goals={result.goals} />

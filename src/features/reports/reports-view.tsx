@@ -36,7 +36,7 @@ export function ReportsView({ reports }: { reports: ReportsDto }) {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">گزارش‌ها</h1>
         <p className="mt-2 text-sm leading-7 text-foreground/60">
-          مرور آرام هفته و ماه — بدون جدول حسابداری.
+          خلاصه هفته و ماه — بدون جدول حسابداری.
         </p>
       </header>
 
@@ -55,7 +55,7 @@ export function ReportsView({ reports }: { reports: ReportsDto }) {
       {reports.budget.items.length > 0 || reports.budget.overallUsage ? (
         <section className="rounded-3xl border border-border bg-card px-5 py-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-base font-semibold">عملکرد بودجه</h2>
+            <h2 className="text-base font-semibold">وضعیت بودجه</h2>
             <Link href="/budgets" className="text-sm text-primary">
               بودجه
             </Link>

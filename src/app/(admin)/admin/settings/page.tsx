@@ -45,8 +45,8 @@ export default async function AdminSettingsPage() {
         <p className="mt-2 text-sm leading-7 text-muted-foreground">
           الان {adminCount} مدیر در سیستم هست. اولین مدیر را می‌توان با متغیر{" "}
           <code className="rounded-md bg-surface-muted px-1.5 py-0.5 text-xs">ADMIN_BOOTSTRAP_EMAILS</code> ساخت؛
-          فقط وقتی هیچ مدیری وجود ندارد و همان ایمیل به <span className="whitespace-nowrap">/admin</span> سر
-          بزند ارتقا داده می‌شود.
+          فقط وقتی هیچ مدیری وجود ندارد و همان ایمیل به <span className="whitespace-nowrap">/admin</span>{" "}
+          برود، ارتقا داده می‌شود.
         </p>
         <p className="mt-3 text-sm text-muted-foreground">
           بوت‌استرپ محیطی: {bootstrapConfigured ? "تنظیم شده" : "تنظیم نشده"}

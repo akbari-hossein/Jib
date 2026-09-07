@@ -27,7 +27,7 @@ export const NOTIFICATION_RULE_CATALOG: NotificationRuleCatalogItem[] = [
   {
     key: "NO_TRANSACTION_TODAY",
     title: "یادآوری ثبت تراکنش",
-    description: "اگر معمولاً هر روز ثبت می‌کنی و تا عصر چیزی ننوشتی، یک یادآوری آرام می‌آید.",
+    description: "اگر معمولاً هر روز ثبت می‌کنی و تا عصر چیزی ننوشتی، یک یادآوری می‌فرستد.",
     isActiveByDefault: true,
     legacyPref: null,
   },
@@ -48,7 +48,7 @@ export const NOTIFICATION_RULE_CATALOG: NotificationRuleCatalogItem[] = [
   {
     key: "SPENDING_PACE_ANOMALY",
     title: "سرعت خرج این هفته",
-    description: "اگر برآورد خطی خرج این هفته بیش از حد از هفته قبل جلو بزند، یک‌بار در همان هفته می‌گوید.",
+    description: "اگر سرعت خرج این هفته از هفته قبل خیلی بیشتر شود، یک‌بار در همان هفته می‌گوید.",
     isActiveByDefault: true,
     legacyPref: "weeklyReview",
   },
@@ -62,7 +62,7 @@ export const NOTIFICATION_RULE_CATALOG: NotificationRuleCatalogItem[] = [
   {
     key: "GOAL_MILESTONE",
     title: "رسیدن به مرحله هدف",
-    description: "در ۲۵٪، ۵۰٪، ۷۵٪ و ۱۰۰٪ پیشرفت هر هدف، یک‌بار تبریک می‌گوید.",
+    description: "در ۲۵٪، ۵۰٪، ۷۵٪ و ۱۰۰٪ پیشرفت هر هدف، یک‌بار خبر می‌دهد.",
     isActiveByDefault: true,
     legacyPref: "goalMilestone",
   },

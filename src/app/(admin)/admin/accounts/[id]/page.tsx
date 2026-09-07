@@ -75,7 +75,7 @@ export default async function AdminAccountDetailPage({
       </Card>
 
       <p className="text-xs text-muted-foreground">
-        تراکنش خروجی: {formatCount(account._count.outgoingTransactions)} · ورود جابه‌جایی:{" "}
+        تراکنش‌ها: {formatCount(account._count.outgoingTransactions)} · ورودی جابه‌جایی:{" "}
         {formatCount(account._count.incomingTransfers)} · اهداف: {formatCount(account._count.goals)} · تکراری:{" "}
         {formatCount(account._count.recurring)}
       </p>

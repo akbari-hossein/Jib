@@ -99,7 +99,7 @@ export async function saveDailyCheckIn(mood: CheckInMood): Promise<TodayMutation
   const user = await requireUser();
   const parsed = moodSchema.safeParse(mood);
   if (!parsed.success) {
-    return { ok: false, error: "حال معتبر نیست." };
+    return { ok: false, error: "حالت معتبر نیست." };
   }
 
   const today = jalaliDateOnlyUtc(getTehranJalaliDate());

@@ -22,7 +22,7 @@ export default async function AccountsPage() {
       {accounts.length === 0 ? (
         <EmptyState
           title="هنوز حسابی اضافه نکردی"
-          description="با اضافه کردن اولین حسابت، جیب می‌تونه وضعیت پولت رو برات محاسبه کنه."
+          description="اولین حساب را اضافه کن تا عدد قابل‌خرج ساخته شود."
           action={
             <div data-tour="add-account">
               <AccountForm />

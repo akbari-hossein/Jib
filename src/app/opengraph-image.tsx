@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { APP_NAME, APP_NAME_EN } from "@/lib/config/app";
 
-export const alt = "جیب — بدون، امروز چقدر می‌تونی خرج کنی";
+export const alt = "جیب — امروز چقدر می‌تونی خرج کنی؟";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -68,10 +68,10 @@ export default async function OpenGraphImage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
           <div style={{ fontSize: 72, fontWeight: 600, lineHeight: 1.2 }}>
-            بدون، امروز چقدر می‌تونی خرج کنی.
+            امروز چقدر می‌تونی خرج کنی؟
           </div>
           <div style={{ fontSize: 32, opacity: 0.62, lineHeight: 1.5, maxWidth: 880 }}>
-            مدیریت پول شخصی برای تومان و تقویم شمسی — بدون حسابداری.
+            مدیریت پول شخصی با تومان و تقویم شمسی — بدون حسابداری.
           </div>
         </div>
       </div>

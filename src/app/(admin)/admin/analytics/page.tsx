@@ -17,11 +17,11 @@ export default async function AdminAnalyticsPage() {
       <AdminBreadcrumbs />
       <PageHeader
         title="تحلیل محصول"
-        description="ببین جیب واقعاً استفاده می‌شود یا فقط ثبت‌نام شده."
+        description="نشان می‌دهد کاربران فعال‌اند یا فقط ثبت‌نام کرده‌اند."
       />
 
       <section>
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">جذب</h2>
+        <h2 className="mb-3 text-sm font-medium text-muted-foreground">ثبت‌نام</h2>
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           <KpiCard label="کل کاربران" value={analytics.totalUsers} />
           <KpiCard label="امروز" value={analytics.usersToday} />
@@ -71,30 +71,30 @@ export default async function AdminAnalyticsPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">نگهداشت</h2>
+        <h2 className="mb-3 text-sm font-medium text-muted-foreground">ماندگاری</h2>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <RetentionCard
-            label="نگهداشت ۱ روزه"
+            label="ماندگاری ۱ روزه"
             cohort={analytics.retention.day1.cohort}
             retained={analytics.retention.day1.retained}
             rate={analytics.retention.day1.rate}
           />
           <RetentionCard
-            label="نگهداشت ۷ روزه"
+            label="ماندگاری ۷ روزه"
             cohort={analytics.retention.day7.cohort}
             retained={analytics.retention.day7.retained}
             rate={analytics.retention.day7.rate}
           />
           <RetentionCard
-            label="نگهداشت ۳۰ روزه"
+            label="ماندگاری ۳۰ روزه"
             cohort={analytics.retention.day30.cohort}
             retained={analytics.retention.day30.retained}
             rate={analytics.retention.day30.rate}
           />
         </div>
         <p className="mt-3 text-xs leading-6 text-muted-foreground">
-          نگهداشت یعنی کاربر حداقل به اندازه همان تعداد روز بعد از ثبت‌نام دوباره فعال شده باشد. اگر
-          کوهورت هنوز کوچک است، درصد نمایش داده نمی‌شود.
+          ماندگاری یعنی کاربر بعد از ثبت‌نام، حداقل به همان تعداد روز دوباره فعال شده باشد. اگر
+          تعداد کاربران این بازه هنوز کم است، درصد نمایش داده نمی‌شود.
         </p>
       </section>
     </main>

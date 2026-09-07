@@ -2,16 +2,16 @@ import { MarketingArticle } from "@/features/marketing/article";
 import { publicPageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = publicPageMetadata({
-  title: "چطور برای یک هدف مالی پس‌انداز کنم؟",
+  title: "چطور برای یک هدف پس‌انداز کنم؟",
   description:
-    "برای پس‌انداز هدف‌دار، مبلغ هدف و افق زمانی را مشخص کن و آن را از پول قابل‌خرج جدا کن. جیب مانده ماهانه را حساب می‌کند.",
+    "برای پس‌انداز ماندگار، مبلغ و مهلت را مشخص کن و آن را از پول قابل‌خرج جدا کن. جیب مانده ماهانه را حساب می‌کند.",
   path: "/saving",
 });
 
 export default function SavingPage() {
   return (
     <MarketingArticle
-      title="چطور برای خرید یک هدف مالی پس‌انداز کنم؟"
+      title="چطور برای یک هدف پس‌انداز کنم؟"
       description="پس‌انداز وقتی می‌ماند که از پولی که امروز می‌توانی خرج کنی جدا شود."
       crumbs={[{ name: "پس‌انداز و هدف", path: "/saving" }]}
     >

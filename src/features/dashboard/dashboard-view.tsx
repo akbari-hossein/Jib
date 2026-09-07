@@ -48,7 +48,7 @@ export function DashboardView({
           <div data-tour="available-money">
             <FinancialMetric
               className="mt-4"
-              label={dashboard.isShortfall ? "کسری" : "قابل خرج"}
+              label={dashboard.isShortfall ? "کسری" : "قابل‌خرج"}
               amount={dashboard.isShortfall ? -dashboard.availableMoney : dashboard.availableMoney}
               empty={!dashboard.hasAccounts}
               size="lg"
@@ -64,7 +64,7 @@ export function DashboardView({
       {!dashboard.hasAccounts ? (
         <EmptyState
           title="هنوز حسابی اضافه نکردی"
-          description="با اضافه کردن اولین حسابت، جیب می‌تونه وضعیت پولت رو برات محاسبه کنه."
+          description="اولین حساب را اضافه کن تا عدد قابل‌خرج ساخته شود."
           action={
             <Button asChild>
               <Link href="/accounts">افزودن حساب</Link>
@@ -76,7 +76,7 @@ export function DashboardView({
           <Card className="px-5 py-4">
             <p className="text-[15px] leading-7">
               {dashboard.overspentToday
-                ? "امروز بیشتر از سهم روز خرج شده. فردا سهم از باقی‌مانده حساب می‌شود."
+                ? "امروز بیشتر از سهمت خرج کردی. فردا از باقی‌مانده دوباره حساب می‌شود."
                 : `امروز می‌تونی تا ${formatCompactToman(dashboard.remainingToday)} خرج کنی.`}
             </p>
             <p className="mt-2 text-xs text-muted-foreground">{remainingLabel}</p>
@@ -87,7 +87,7 @@ export function DashboardView({
                 <FormulaRow label="خرج‌های نزدیک" value={formatToman(dashboard.plannedExpenses)} prefix="− " />
                 <FormulaRow label="پس‌انداز این دوره" value={formatToman(dashboard.requiredSavings)} prefix="− " />
                 <FormulaRow
-                  label={dashboard.isShortfall ? "کسری" : "قابل خرج"}
+                  label={dashboard.isShortfall ? "کسری" : "قابل‌خرج"}
                   value={formatToman(
                     dashboard.isShortfall ? -dashboard.availableMoney : dashboard.availableMoney,
                   )}

@@ -112,7 +112,7 @@ export function RecurringForm({
         </p>
       ) : null}
       <Button type="submit" disabled={pending} className="w-full">
-        {pending ? "در حال ذخیره…" : "افزودن مورد تکراری"}
+        {pending ? "در حال ذخیره…" : "افزودن تکراری"}
       </Button>
     </form>
   );

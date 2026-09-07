@@ -48,7 +48,7 @@ function AvailableTodayCard({
         hint={
           empty
             ? undefined
-            : `${toPersianDigits(daysRemainingInPeriod)} روز مانده · ${formatToman(totalAvailable)} قابل خرج`
+            : `${toPersianDigits(daysRemainingInPeriod)} روز مانده · ${formatToman(totalAvailable)} قابل‌خرج`
         }
       />
     </div>
@@ -113,7 +113,7 @@ export function TodayView({
       {!summary.hasAccounts ? (
         <EmptyState
           title="هنوز حسابی اضافه نکردی"
-          description="با اضافه کردن اولین حسابت، جیب می‌تونه وضعیت پولت رو برات محاسبه کنه."
+          description="اولین حساب را اضافه کن تا عدد قابل‌خرج ساخته شود."
           action={
             <Button asChild>
               <Link href="/accounts">افزودن حساب</Link>

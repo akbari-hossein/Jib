@@ -13,7 +13,7 @@ export default function OfflinePage() {
       <Logo href="/home" size="sm" />
       <h1 className="mt-3 text-3xl font-semibold tracking-tight">آفلاین هستی</h1>
       <p className="mt-3 text-sm leading-7 text-muted-foreground">
-        اتصال اینترنت برقرار نیست. پوستهٔ برنامه اینجاست؛ اطلاعات مالی وقتی آنلاین
+        اتصال اینترنت برقرار نیست. خود برنامه اینجاست؛ اطلاعات مالی وقتی آنلاین
         شوی به‌روز می‌شود.
       </p>
       <Link href="/home" className="mt-8 text-sm text-primary">

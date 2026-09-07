@@ -32,7 +32,7 @@ export function MonthlyRecapPrompt({ recap }: { recap: MonthlyRecapDto }) {
   return (
     <>
       <section className="rounded-3xl border border-border bg-card px-5 py-4">
-        <p className="text-sm leading-7">خلاصه‌ی ماه قبل رو آماده کردیم، می‌خوای ببینی؟</p>
+        <p className="text-sm leading-7">خلاصه ماه قبل آماده‌ست. می‌خوای ببینی؟</p>
         <div className="mt-3 flex gap-2">
           <Button type="button" size="sm" onClick={() => setOpen(true)}>
             ببین

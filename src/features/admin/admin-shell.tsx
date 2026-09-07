@@ -117,10 +117,10 @@ export function AdminShell({
                 <p className="text-sm font-semibold tracking-tight">پنل مدیریت</p>
                 <p className="flex items-center gap-1.5 truncate text-[11px] text-muted-foreground">
                   <LogoMark className="h-3 w-auto" title={undefined} />
-                  جیب · دسترسی ویژه
+                  جیب · دسترسی مدیر
                 </p>
               </div>
-              <p className="hidden text-sm text-muted-foreground lg:block">دسترسی ویژه · داده‌های کاربران محرمانه است</p>
+              <p className="hidden text-sm text-muted-foreground lg:block">دسترسی مدیر · داده‌های کاربران محرمانه است</p>
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />

@@ -39,7 +39,7 @@ export default async function AdminUsersPage({
   return (
     <main className="flex flex-col gap-6">
       <AdminBreadcrumbs />
-      <PageHeader title="کاربران" description="جستجو، فیلتر و بررسی حساب‌ها بدون نمایش جزئیات مالی در لیست." />
+      <PageHeader title="کاربران" description="جستجو و فیلتر کاربران، بدون جزئیات مالی در لیست." />
 
       <form className="grid gap-3 rounded-3xl border border-border bg-card p-4 md:grid-cols-[1fr_12rem_auto]">
         <Input
@@ -67,7 +67,7 @@ export default async function AdminUsersPage({
           title={query || filter !== "all" ? "نتیجه‌ای پیدا نشد" : "هنوز کاربری نیست"}
           description={
             query || filter !== "all"
-              ? "فیلتر یا عبارت جستجو را عوض کن."
+              ? "فیلتر یا جستجو را تغییر بده."
               : "وقتی کسی در جیب ثبت‌نام کند، اینجا دیده می‌شود."
           }
         />

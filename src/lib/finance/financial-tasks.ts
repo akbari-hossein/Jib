@@ -74,7 +74,7 @@ export function proposeGeneratedTasks(input: {
       title:
         usage.status === "over"
           ? `بودجه «${budget.name}» از سقف رد شد`
-          : `نگاهی به بودجه «${budget.name}»`,
+          : `بودجه «${budget.name}» نزدیک سقفه`,
       type: "BUDGET_CHECK",
       dueDate: input.today,
       sourceType: "BUDGET",

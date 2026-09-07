@@ -14,7 +14,7 @@ export function HeroDashboardMock() {
       </div>
       <div className="overflow-hidden rounded-[2.2rem] border border-border bg-card p-5 shadow-md">
         <p className="text-sm text-muted-foreground">{DEMO.greeting}</p>
-        <p className="mt-6 text-xs text-muted-foreground">قابل خرج</p>
+        <p className="mt-6 text-xs text-muted-foreground">قابل‌خرج</p>
         <p className="numeric-display mt-1 text-[2.2rem] font-semibold leading-none tracking-tight">
           <MoneyDisplay amount={DEMO.available} withUnit={false} />
           <span className="ms-1 text-base font-medium text-muted-foreground">تومان</span>
@@ -55,7 +55,7 @@ export function FullDashboardMock() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-3xl bg-surface-muted px-5 py-5">
-          <p className="text-xs text-muted-foreground">قابل خرج</p>
+          <p className="text-xs text-muted-foreground">قابل‌خرج</p>
           <p className="numeric-display mt-2 text-4xl font-semibold tracking-tight">
             <MoneyDisplay amount={DEMO.available} withUnit={false} />
           </p>

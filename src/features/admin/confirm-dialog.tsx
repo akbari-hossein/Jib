@@ -69,7 +69,7 @@ export function ConfirmDialog({
         {children}
         {requireValue ? (
           <div className="mt-4 flex flex-col gap-2">
-            <Label htmlFor="admin-confirm-text">{requireHint ?? "برای تأیید، مقدار خواسته‌شده را وارد کن."}</Label>
+            <Label htmlFor="admin-confirm-text">{requireHint ?? "برای تأیید، همان عبارتی را که خواسته شده وارد کن."}</Label>
             <Input
               id="admin-confirm-text"
               name="confirm"

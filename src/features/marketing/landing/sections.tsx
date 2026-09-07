@@ -14,7 +14,7 @@ export function HeroSection() {
       <div className="motion-rise flex flex-col items-start gap-6">
         <p className="text-sm text-muted-foreground">جیب · مدیریت پول شخصی</p>
         <h1 className="max-w-xl text-4xl font-semibold leading-[1.25] tracking-tight md:text-5xl">
-          بدون، امروز چقدر می‌تونی خرج کنی.
+          امروز چقدر می‌تونی خرج کنی؟
         </h1>
         <p className="max-w-md text-base leading-8 text-muted-foreground">
           جیب از موجودی، هزینه‌های نزدیک و هدف‌هات یک عدد روشن می‌سازد: پول قابل‌خرج و سهم امروز.
@@ -47,7 +47,7 @@ export function ProblemSection() {
         آخر ماه می‌رسه و هنوز دقیق نمی‌دونی پولت کجا رفت.
       </h2>
       <p className="mt-4 max-w-xl text-base leading-8 text-muted-foreground">
-        درآمد معمولاً ثابت می‌ماند، هزینه‌ها آرام بالا می‌روند، و ثبت همه چیز خودش یک کار اضافه می‌شود.
+        درآمد معمولاً ثابت می‌ماند، هزینه‌ها آرام بالا می‌روند، و ثبت همه‌چیز خودش یک کار اضافه می‌شود.
       </p>
       <div className="mt-10 grid gap-4 md:grid-cols-2">
         {problems.map((item) => (
@@ -108,7 +108,7 @@ export function DailySpendSection() {
       <Card className="p-6">
         <Badge>{DEMO_LABEL}</Badge>
         <dl className="mt-6 space-y-4">
-          <DemoRow label="پول قابل خرج" value={formatToman(DEMO.available)} />
+          <DemoRow label="قابل‌خرج" value={formatToman(DEMO.available)} />
           <DemoRow label="تا درآمد بعدی" value={`${toPersianDigits(DEMO.remainingDays)} روز`} />
           <DemoRow label="امروز می‌تونی حدود" value={formatToman(DEMO.today)} emphasize />
         </dl>
@@ -217,7 +217,7 @@ export function ReviewSection() {
 export function WhySection() {
   const items = [
     { title: "ساده", body: "بدون دفترکل، بدون اصطلاح حسابداری." },
-    { title: "قابل‌اقدام", body: "جواب برای امروز، نه فقط گزارش دیروز." },
+    { title: "برای امروز", body: "جواب همین حالا، نه فقط گزارش دیروز." },
     { title: "سریع", body: "ثبت خرج با مبلغ، دسته و حساب؛ در چند ثانیه." },
     { title: "خصوصی", body: "داده مال توست. به بانک وصل نیستیم و تبلیغ نداریم." },
     { title: "آرام", body: "رابطه با پول نباید شبیه اخطار بانکی باشد." },
@@ -226,7 +226,7 @@ export function WhySection() {
   return (
     <section className="mx-auto w-full max-w-6xl px-5 pb-20">
       <p className="text-sm text-muted-foreground">چرا جیب</p>
-      <h2 className="mt-2 text-3xl font-semibold tracking-tight">کم‌اصطکاک، دقیق، بدون ادعا.</h2>
+      <h2 className="mt-2 text-3xl font-semibold tracking-tight">ساده، دقیق، بی‌ادعا.</h2>
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {items.map((item) => (
           <Card key={item.title} className="p-5">
@@ -308,10 +308,9 @@ export function FinalCtaSection() {
   return (
     <section className="mx-auto w-full max-w-6xl px-5 pb-24">
       <Card className="flex flex-col items-start gap-5 px-6 py-10 md:px-10">
-        <h2 className="max-w-xl text-3xl font-semibold tracking-tight">کنترل پولت را پس بگیر.</h2>
+        <h2 className="max-w-xl text-3xl font-semibold tracking-tight">ببین امروز چقدر می‌تونی خرج کنی.</h2>
         <p className="max-w-lg text-base leading-8 text-muted-foreground">
-          حساب بساز، موجودی را بگذار، و همان روز ببین امروز چقدر می‌توانی خرج کنی. جیب کامل است و هزینه‌ای
-          ندارد.
+          حساب بساز، موجودی را بگذار، و همان روز عدد امروز را ببین. جیب کامل است و هزینه‌ای ندارد.
         </p>
         <PrimaryCta />
       </Card>
