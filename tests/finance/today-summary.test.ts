@@ -224,6 +224,7 @@ describe("getTodaySummary", () => {
     expect(summary.calendarEventsToday).toEqual([]);
     expect(summary.financialTasks).toEqual([]);
     expect(summary.activeGoal).toBeNull();
+    expect(summary.hasAccounts).toBe(false);
     expect(summary.money.daysRemainingInPeriod).toBeGreaterThan(0);
     expect(store.writes).toEqual([]);
   });
@@ -267,6 +268,8 @@ describe("getTodaySummary", () => {
         title: "قبض اینترنت",
         type: "BILL_DUE",
         isCompleted: false,
+        dueDate: yesterday,
+        isOverdue: true,
       },
     ]);
     expect(store.writes).toEqual([]);

@@ -30,6 +30,7 @@ export interface TodaySummary {
     totalAvailable: bigint;
     daysRemainingInPeriod: number;
   };
+  hasAccounts: boolean;
   upcomingFinancialEvents: UpcomingFinancialEvent[];
   calendarEventsToday: CalendarEventSummary[];
   financialTasks: FinancialTaskSummary[];
@@ -59,6 +60,8 @@ export interface FinancialTaskSummary {
   title: string;
   type: FinancialTaskType;
   isCompleted: boolean;
+  dueDate: Date;
+  isOverdue: boolean;
 }
 
 export interface GoalProgressSummary {
@@ -244,6 +247,10 @@ function upcomingOccurrences(item: RecurringRow, today: JalaliDate): JalaliDate[
   return dates;
 }
 
+function isTaskOverdue(dueDate: Date, today: JalaliDate): boolean {
+  return compareJalaliDate(jalaliFromInstant(dueDate), today) < 0;
+}
+
 function pickActiveGoal(goals: GoalRow[], todayUtc: Date): GoalProgressSummary | null {
   const active = goals
     .filter((goal) => !goal.isArchived)
@@ -414,6 +421,7 @@ export async function getTodaySummary(
       totalAvailable: snapshot.availableMoney,
       daysRemainingInPeriod: snapshot.cycle.remainingDays,
     },
+    hasAccounts: accounts.some((account) => account.isActive),
     upcomingFinancialEvents,
     calendarEventsToday: calendarEvents.map((event) => ({
       id: event.id,
@@ -428,6 +436,8 @@ export async function getTodaySummary(
       title: task.title,
       type: task.type,
       isCompleted: task.isCompleted,
+      dueDate: task.dueDate,
+      isOverdue: isTaskOverdue(task.dueDate, today),
     })),
     activeGoal: pickActiveGoal(goals, todayUtc),
   };

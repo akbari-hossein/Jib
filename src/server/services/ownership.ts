@@ -57,6 +57,16 @@ export async function assertGoalOwned(userId: string, goalId: string) {
   return goal;
 }
 
+export async function assertFinancialTaskOwned(userId: string, taskId: string) {
+  const task = await prisma.financialTask.findFirst({
+    where: { id: taskId, userId },
+  });
+  if (!task) {
+    throw new OwnershipError();
+  }
+  return task;
+}
+
 export async function assertRecurringOwned(userId: string, recurringId: string) {
   const recurring = await prisma.recurringTransaction.findFirst({
     where: { id: recurringId, userId },

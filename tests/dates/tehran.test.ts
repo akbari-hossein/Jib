@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   clampJalaliDay,
   diffDaysInclusive,
+  formatTehranTime,
   getIncomeCycle,
   isLeapJalaliYear,
   formatJalaliRange,
@@ -70,6 +71,13 @@ describe("monthsRemainingForGoal", () => {
         { year: 1404, month: 10, day: 1 },
       ),
     ).toBe(9);
+  });
+});
+
+describe("formatTehranTime", () => {
+  it("formats Tehran clock time with Persian digits", () => {
+    const eight = new Date(tehranMidnightUtc({ year: 1403, month: 1, day: 1 }).getTime() + 8 * 60 * 60 * 1000);
+    expect(formatTehranTime(eight)).toBe("۰۸:۰۰");
   });
 });
 
