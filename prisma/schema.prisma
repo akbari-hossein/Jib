@@ -73,6 +73,29 @@ enum NotificationChannel {
   IN_APP
 }
 
+enum CalendarEventSource {
+  MANUAL
+  GOOGLE
+}
+
+enum FinancialTaskType {
+  BILL_DUE
+  BUDGET_CHECK
+  RECURRING_REMINDER
+  CUSTOM
+}
+
+enum FinancialTaskSource {
+  RECURRING_TRANSACTION
+  BUDGET
+}
+
+enum CheckInMood {
+  GOOD
+  NEUTRAL
+  STRESSED
+}
+
 model User {
   id                   String     @id @default(cuid())
   email                String     @unique
@@ -97,6 +120,9 @@ model User {
   budgets              Budget[]
   goals                Goal[]
   recurring            RecurringTransaction[]
+  calendarEvents       CalendarEvent[]
+  financialTasks       FinancialTask[]
+  dailyCheckIns        DailyCheckIn[]
   rules                  TransactionRule[]
   notificationPref       NotificationPreference?
   notificationSettings   UserNotificationSetting[]
@@ -266,6 +292,54 @@ model RecurringTransaction {
   transactions Transaction[]
 
   @@index([userId, isActive, nextRunAt])
+}
+
+model CalendarEvent {
+  id                 String              @id @default(cuid())
+  userId             String
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title              String
+  startTime          DateTime
+  endTime            DateTime?
+  source             CalendarEventSource @default(MANUAL)
+  externalId         String?
+  externalProvider   String?
+  /// User-entered Toman only. Never derived from title, category, or history.
+  linkedCostEstimate BigInt?
+  isDismissed        Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@index([userId, startTime])
+  @@index([userId, externalId])
+}
+
+model FinancialTask {
+  id          String               @id @default(cuid())
+  userId      String
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  type        FinancialTaskType
+  dueDate     DateTime             @db.Date
+  isCompleted Boolean              @default(false)
+  completedAt DateTime?
+  sourceType  FinancialTaskSource?
+  sourceId    String?
+  createdAt   DateTime             @default(now())
+
+  @@index([userId, dueDate, isCompleted])
+  @@unique([userId, sourceType, sourceId, dueDate])
+}
+
+model DailyCheckIn {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime     @db.Date
+  mood      CheckInMood
+  createdAt DateTime     @default(now())
+
+  @@unique([userId, date])
 }
 
 model TransactionRule {
