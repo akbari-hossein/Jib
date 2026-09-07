@@ -1,4 +1,9 @@
-import type { FinancialTaskType, RecurringFrequency, TransactionType } from "@prisma/client";
+import type {
+  CheckInMood,
+  FinancialTaskType,
+  RecurringFrequency,
+  TransactionType,
+} from "@prisma/client";
 import { addRecurringOccurrence, firstOccurrenceOnOrAfter } from "@/lib/dates/recurring";
 import {
   addJalaliDays,
@@ -6,6 +11,7 @@ import {
   getDayPeriod,
   getTehranJalaliDate,
   gregorianUtcFromJalali,
+  jalaliDateOnlyUtc,
   jalaliFromInstant,
   jalaliToEpochDay,
   tehranMidnightUtc,
@@ -35,6 +41,7 @@ export interface TodaySummary {
   calendarEventsToday: CalendarEventSummary[];
   financialTasks: FinancialTaskSummary[];
   activeGoal: GoalProgressSummary | null;
+  checkIn: { mood: CheckInMood } | null;
 }
 
 export interface UpcomingFinancialEvent {
@@ -199,16 +206,17 @@ export type TodaySummaryStore = {
       };
     }) => Promise<TaskRow[]>;
   };
+  dailyCheckIn: {
+    findUnique: (args: {
+      where: { userId_date: { userId: string; date: Date } };
+      select: { mood: true };
+    }) => Promise<{ mood: CheckInMood } | null>;
+  };
 };
 
 export function timeOfDayFromNow(now: Date): TimeOfDay {
   const period = getDayPeriod(now);
   return period === "noon" ? "afternoon" : period;
-}
-
-function dateOnlyUtcFromJalali(date: JalaliDate): Date {
-  const noonUtc = gregorianUtcFromJalali(date);
-  return new Date(Date.UTC(noonUtc.getUTCFullYear(), noonUtc.getUTCMonth(), noonUtc.getUTCDate()));
 }
 
 function urgencyForDaysUntil(daysUntil: number): UpcomingFinancialEvent["urgency"] | null {
@@ -286,9 +294,10 @@ export async function getTodaySummary(
   const todayUtc = gregorianUtcFromJalali(today);
   const dayStart = tehranMidnightUtc(today);
   const dayEnd = tehranMidnightUtc(addJalaliDays(today, 1));
-  const tomorrowDate = dateOnlyUtcFromJalali(addJalaliDays(today, 1));
+  const tomorrowDate = jalaliDateOnlyUtc(addJalaliDays(today, 1));
+  const todayDate = jalaliDateOnlyUtc(today);
 
-  const [user, accounts, goals, recurring, spentTodayResult, calendarEvents, financialTasks] =
+  const [user, accounts, goals, recurring, spentTodayResult, calendarEvents, financialTasks, checkIn] =
     await Promise.all([
       store.user.findUnique({
         where: { id: userId },
@@ -366,6 +375,10 @@ export async function getTodaySummary(
           dueDate: true,
         },
       }),
+      store.dailyCheckIn.findUnique({
+        where: { userId_date: { userId, date: todayDate } },
+        select: { mood: true },
+      }),
     ]);
 
   const nextRecurringIncome =
@@ -440,5 +453,6 @@ export async function getTodaySummary(
       isOverdue: isTaskOverdue(task.dueDate, today),
     })),
     activeGoal: pickActiveGoal(goals, todayUtc),
+    checkIn: checkIn ? { mood: checkIn.mood } : null,
   };
 }

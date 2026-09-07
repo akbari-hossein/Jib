@@ -7,6 +7,8 @@ export {
 export { calculateBudgetUsage } from "@/lib/finance/budget-usage";
 export { assembleDashboard } from "@/lib/finance/dashboard";
 export { getTodaySummary, timeOfDayFromNow, UPCOMING_RECURRING_HORIZON_DAYS } from "@/lib/finance/today-summary";
+export { proposeGeneratedTasks } from "@/lib/finance/financial-tasks";
+export type { GeneratedTaskCandidate } from "@/lib/finance/financial-tasks";
 export type {
   CalendarEventSummary,
   FinancialTaskSummary,

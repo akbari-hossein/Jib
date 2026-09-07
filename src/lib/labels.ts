@@ -35,6 +35,12 @@ export const FREQUENCY_LABEL: Record<RecurringFrequency, string> = {
   YEARLY: "سالانه",
 };
 
+export const CHECK_IN_MOOD_LABEL = {
+  GOOD: "خوب",
+  NEUTRAL: "معمولی",
+  STRESSED: "پراسترس",
+} as const;
+
 export function periodChangeCopy(
   change: MonthlyChange,
   unit: "month" | "week",

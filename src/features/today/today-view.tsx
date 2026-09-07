@@ -6,11 +6,14 @@ import { GoalProgress } from "@/components/finance/goal-progress";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { NotificationBell } from "@/features/notifications/notification-bell";
+import { CalendarToday } from "@/features/today/calendar-today";
+import { DailyCheckIn } from "@/features/today/daily-check-in";
 import { FinancialTaskList } from "@/features/today/financial-task-list";
-import { UpcomingContextRow } from "@/features/today/upcoming-context-row";
+import { UpcomingFinancialEventCard } from "@/features/today/upcoming-context-row";
 import { APP_NAME } from "@/lib/config/app";
 import { formatToman, toPersianDigits } from "@/lib/currency/format";
-import { greetingForPeriod } from "@/lib/dates/tehran";
+import { formatTehranClockInput } from "@/lib/dates/jalali-form";
+import { getTehranGregorianDate, getTehranJalaliDate, greetingForPeriod } from "@/lib/dates/tehran";
 import type { TimeOfDay, TodaySummary } from "@/lib/finance/today-summary";
 
 function greetingCopy(timeOfDay: TimeOfDay, userName: string): string {
@@ -79,6 +82,11 @@ export function TodayView({
   summary: TodaySummary;
   unreadCount: number;
 }) {
+  const today = getTehranJalaliDate();
+  const clock = getTehranGregorianDate();
+  const defaultTime = formatTehranClockInput(clock.hour, clock.minute);
+  const nearest = summary.upcomingFinancialEvents[0] ?? null;
+
   return (
     <main className="flex flex-col gap-6 px-5 pt-8">
       <header className="flex items-start justify-between gap-4">
@@ -100,6 +108,8 @@ export function TodayView({
         <NotificationBell unreadCount={unreadCount} />
       </header>
 
+      <DailyCheckIn mood={summary.checkIn?.mood ?? null} />
+
       {!summary.hasAccounts ? (
         <EmptyState
           title="هنوز حسابی اضافه نکردی"
@@ -112,11 +122,22 @@ export function TodayView({
         />
       ) : (
         <>
-          <UpcomingContextRow
-            events={summary.upcomingFinancialEvents}
-            calendarEvents={summary.calendarEventsToday}
-          />
+          <div className={nearest ? "grid grid-cols-2 gap-3 md:flex" : "grid grid-cols-1"}>
+            {nearest ? <UpcomingFinancialEventCard event={nearest} /> : null}
+            <CalendarToday
+              defaultDate={today}
+              defaultTime={defaultTime}
+              events={summary.calendarEventsToday.map((event) => ({
+                id: event.id,
+                title: event.title,
+                startTime: event.startTime.toISOString(),
+                hasLinkedCost: event.hasLinkedCost,
+                linkedCostEstimate: event.linkedCostEstimate?.toString() ?? null,
+              }))}
+            />
+          </div>
           <FinancialTaskList
+            defaultDueDate={today}
             tasks={summary.financialTasks.map((task) => ({
               id: task.id,
               title: task.title,

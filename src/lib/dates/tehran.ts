@@ -218,11 +218,20 @@ export function gregorianUtcFromJalali(date: JalaliDate): Date {
   return new Date(Date.UTC(gregorian.gy, gregorian.gm - 1, gregorian.gd, 12));
 }
 
+export function jalaliDateOnlyUtc(date: JalaliDate): Date {
+  const noonUtc = gregorianUtcFromJalali(date);
+  return new Date(Date.UTC(noonUtc.getUTCFullYear(), noonUtc.getUTCMonth(), noonUtc.getUTCDate()));
+}
+
 const TEHRAN_OFFSET_MS = 3.5 * 60 * 60 * 1000;
 
 export function tehranMidnightUtc(date: JalaliDate): Date {
   const gregorian = toGregorian(date.year, date.month, date.day);
   return new Date(Date.UTC(gregorian.gy, gregorian.gm - 1, gregorian.gd) - TEHRAN_OFFSET_MS);
+}
+
+export function tehranDateTimeUtc(date: JalaliDate, hour: number, minute: number): Date {
+  return new Date(tehranMidnightUtc(date).getTime() + (hour * 60 + minute) * 60_000);
 }
 
 export function jalaliFromInstant(date: Date): JalaliDate {
