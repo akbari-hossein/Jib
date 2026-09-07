@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parseTehranClock } from "@/lib/dates/jalali-form";
 import {
   clampJalaliDay,
   diffDaysInclusive,
@@ -6,9 +7,11 @@ import {
   getIncomeCycle,
   isLeapJalaliYear,
   formatJalaliRange,
+  jalaliDateOnlyUtc,
   jalaliMonthLength,
   jalaliWeekStart,
   monthsRemainingForGoal,
+  tehranDateTimeUtc,
   tehranMidnightUtc,
 } from "@/lib/dates/tehran";
 
@@ -96,6 +99,22 @@ describe("tehranMidnightUtc", () => {
   });
 });
 
+describe("jalaliDateOnlyUtc", () => {
+  it("stores the Gregorian calendar date at UTC midnight", () => {
+    expect(jalaliDateOnlyUtc({ year: 1403, month: 1, day: 1 }).toISOString()).toBe(
+      "2024-03-20T00:00:00.000Z",
+    );
+  });
+});
+
+describe("tehranDateTimeUtc", () => {
+  it("adds clock time to Tehran midnight", () => {
+    const nine = tehranDateTimeUtc({ year: 1403, month: 1, day: 1 }, 9, 30);
+    expect(nine.toISOString()).toBe("2024-03-20T06:00:00.000Z");
+    expect(formatTehranTime(nine)).toBe("۰۹:۳۰");
+  });
+});
+
 describe("jalaliWeekStart", () => {
   it("starts the Iranian week on Saturday", () => {
     // 1 Farvardin 1403 = Wednesday 20 March 2024
@@ -128,5 +147,18 @@ describe("diffDaysInclusive", () => {
         { year: 1404, month: 1, day: 1 },
       ),
     ).toBe(1);
+  });
+});
+
+describe("parseTehranClock", () => {
+  it("accepts 24-hour and Persian digits", () => {
+    expect(parseTehranClock("09:05")).toEqual({ hour: 9, minute: 5 });
+    expect(parseTehranClock("۲۳:۵۹")).toEqual({ hour: 23, minute: 59 });
+  });
+
+  it("rejects impossible times", () => {
+    expect(parseTehranClock("24:00")).toBeNull();
+    expect(parseTehranClock("12:60")).toBeNull();
+    expect(parseTehranClock("")).toBeNull();
   });
 });

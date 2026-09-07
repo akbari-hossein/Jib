@@ -62,6 +62,7 @@ type Seed = {
     isCompleted: boolean;
     dueDate: Date;
   }>;
+  checkInMood?: "GOOD" | "NEUTRAL" | "STRESSED";
   spentToday?: bigint;
 };
 
@@ -192,6 +193,21 @@ function createStore(seed: Seed = {}): TodaySummaryStore & { writes: string[] } 
       delete: track("financialTask.delete"),
       upsert: track("financialTask.upsert"),
     },
+    dailyCheckIn: {
+      findUnique: async ({
+        where,
+      }: {
+        where: { userId_date: { userId: string; date: Date } };
+      }) => {
+        if (where.userId_date.userId !== USER_ID || !seed.checkInMood) {
+          return null;
+        }
+        return { mood: seed.checkInMood };
+      },
+      create: track("dailyCheckIn.create"),
+      update: track("dailyCheckIn.update"),
+      upsert: track("dailyCheckIn.upsert"),
+    },
   };
 
   return store as unknown as TodaySummaryStore & { writes: string[] };
@@ -225,6 +241,7 @@ describe("getTodaySummary", () => {
     expect(summary.financialTasks).toEqual([]);
     expect(summary.activeGoal).toBeNull();
     expect(summary.hasAccounts).toBe(false);
+    expect(summary.checkIn).toBeNull();
     expect(summary.money.daysRemainingInPeriod).toBeGreaterThan(0);
     expect(store.writes).toEqual([]);
   });
@@ -359,6 +376,14 @@ describe("getTodaySummary", () => {
         linkedCostEstimate: null,
       },
     ]);
+  });
+
+  it("returns today's check-in without writing", async () => {
+    const store = createStore({ checkInMood: "STRESSED" });
+    const summary = await getTodaySummary(USER_ID, NOW, store);
+
+    expect(summary.checkIn).toEqual({ mood: "STRESSED" });
+    expect(store.writes).toEqual([]);
   });
 
   it("is read-only even when write methods exist on the store", async () => {
