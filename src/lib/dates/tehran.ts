@@ -17,6 +17,7 @@ function tehranParts(now: Date) {
     month: "numeric",
     day: "numeric",
     hour: "numeric",
+    minute: "numeric",
     hourCycle: "h23",
   });
 
@@ -29,12 +30,20 @@ function tehranParts(now: Date) {
     month: read("month"),
     day: read("day"),
     hour: read("hour"),
+    minute: read("minute"),
   };
 }
 
 export function getTehranGregorianDate(now = new Date()) {
-  const { year, month, day, hour } = tehranParts(now);
-  return { year, month, day, hour };
+  const { year, month, day, hour, minute } = tehranParts(now);
+  return { year, month, day, hour, minute };
+}
+
+export function formatTehranTime(date: Date): string {
+  const { hour, minute } = getTehranGregorianDate(date);
+  const pad = (value: number) =>
+    String(value).padStart(2, "0").replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]!);
+  return `${pad(hour)}:${pad(minute)}`;
 }
 
 export function getTehranJalaliDate(now = new Date()): JalaliDate {
