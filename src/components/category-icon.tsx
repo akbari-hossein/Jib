@@ -20,9 +20,18 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
+import { isCategoryIcon, type CategoryIconName } from "@/lib/categories/icons";
 import { cn } from "@/lib/utils";
 
-const ICONS: Record<string, LucideIcon> = {
+export {
+  CATEGORY_ICON_LABEL,
+  CATEGORY_ICONS,
+  defaultCategoryIcon,
+  isCategoryIcon,
+  type CategoryIconName,
+} from "@/lib/categories/icons";
+
+const ICONS: Record<CategoryIconName, LucideIcon> = {
   home: Home,
   zap: Zap,
   landmark: Landmark,
@@ -51,6 +60,6 @@ export function CategoryIcon({
   name: string;
   className?: string;
 }) {
-  const Icon = ICONS[name] ?? Sparkles;
+  const Icon = isCategoryIcon(name) ? ICONS[name] : Sparkles;
   return <Icon className={cn("size-4", className)} strokeWidth={1.8} />;
 }

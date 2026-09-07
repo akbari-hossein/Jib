@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   applyTomanInputChange,
+  cleanTomanValue,
   formatTomanInput,
   normalizeTomanInput,
   parseTomanInput,
@@ -30,6 +31,10 @@ describe("normalizeTomanInput", () => {
     expect(normalizeTomanInput("۲۵۰٬۰۰۰")).toEqual({ digits: "250000", negative: false });
     expect(normalizeTomanInput("1 500 000")).toEqual({ digits: "1500000", negative: false });
     expect(normalizeTomanInput("1,500,000")).toEqual({ digits: "1500000", negative: false });
+    expect(normalizeTomanInput("۱,۲۵۰,۰۰۰")).toEqual({ digits: "1250000", negative: false });
+    expect(normalizeTomanInput("1۲5۰ 000")).toEqual({ digits: "1250000", negative: false });
+    expect(normalizeTomanInput("١٢٥٠٠٠٠")).toEqual({ digits: "1250000", negative: false });
+    expect(normalizeTomanInput("۱،۲۵۰،۰۰۰")).toEqual({ digits: "1250000", negative: false });
   });
 
   it("drops the fractional toman part instead of merging decimals", () => {
@@ -52,6 +57,16 @@ describe("parseTomanInput", () => {
     expect(parseTomanInput("۲۵۰٬۰۰۰")).toBe(250_000n);
     expect(parseTomanInput("1,500,000")).toBe(1_500_000n);
     expect(parseTomanInput("1,500.00")).toBe(1_500n);
+    expect(parseTomanInput("۱۲۵۰۰۰۰")).toBe(1_250_000n);
+    expect(parseTomanInput("1۲50,000")).toBe(1_250_000n);
+    expect(parseTomanInput("1250000")).toBe(1_250_000n);
+  });
+
+  it("exposes a clean numeric value for form submission", () => {
+    expect(cleanTomanValue("۱,۲۵۰,۰۰۰")).toBe("1250000");
+    expect(cleanTomanValue("1,250,000")).toBe("1250000");
+    expect(cleanTomanValue("")).toBe("");
+    expect(cleanTomanValue("-50,000", { allowNegative: true })).toBe("-50000");
   });
 
   it("rejects zero unless allowed", () => {
@@ -81,5 +96,17 @@ describe("applyTomanInputChange", () => {
     const next = applyTomanInputChange("15,0000", 7);
     expect(next.formatted).toBe("150,000");
     expect(next.caret).toBe(7);
+  });
+
+  it("counts persian digits when placing the caret", () => {
+    const next = applyTomanInputChange("۱۲۵۰۰۰۰", 7);
+    expect(next.formatted).toBe("1,250,000");
+    expect(next.caret).toBe(9);
+  });
+
+  it("keeps the caret after a persian digit typed in the middle", () => {
+    const next = applyTomanInputChange("1,25۵,000", 6);
+    expect(next.formatted).toBe("1,255,000");
+    expect(next.caret).toBe(5);
   });
 });

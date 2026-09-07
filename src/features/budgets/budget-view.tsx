@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CategoryIcon } from "@/components/category-icon";
 import { EmptyState } from "@/components/empty-state";
 import { UsageBar } from "@/components/usage-bar";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MoneyDisplay } from "@/components/money/money-display";
 import { BudgetCategoryForm, OverallLimitForm } from "@/features/budgets/budget-form";
 import { formatToman, toPersianDigits } from "@/lib/currency/format";
+import { remainingAllocatable, sumBudgetLimits } from "@/lib/finance/budget-allocation";
 import { budgetUsageCopy } from "@/lib/labels";
 import { deleteBudgetCategory } from "@/server/actions/budgets";
 import type { BudgetMonthDto } from "@/server/queries/budgets";
@@ -17,6 +19,9 @@ function toneFor(status: BudgetStatus) {
 }
 
 export function BudgetView({ budget }: { budget: BudgetMonthDto }) {
+  const allocated = sumBudgetLimits(budget.items.map((item) => item.limit));
+  const remaining = remainingAllocatable(budget.overallLimit, budget.items.map((item) => item.limit));
+
   return (
     <main className="flex flex-col gap-6 px-5 pt-8">
       <header data-tour="budgets-heading">
@@ -39,6 +44,13 @@ export function BudgetView({ budget }: { budget: BudgetMonthDto }) {
           <p className="mt-2 text-sm text-foreground/60">
             {budgetUsageCopy("ماه", budget.overallUsage.pct, budget.overallUsage.status)}
           </p>
+          {remaining != null ? (
+            <p className="mt-2 text-xs leading-6 text-foreground/45">
+              {remaining > 0n
+                ? `${formatToman(remaining)} هنوز برای دسته‌ها قابل اختصاص است.`
+                : "همه سقف کل به دسته‌ها اختصاص داده شده."}
+            </p>
+          ) : null}
           <div className="mt-3">
             <UsageBar pct={budget.overallUsage.pct} tone={toneFor(budget.overallUsage.status)} />
           </div>
@@ -86,8 +98,20 @@ export function BudgetView({ budget }: { budget: BudgetMonthDto }) {
       )}
 
       <section className="rounded-3xl border border-border bg-card p-5">
-        <h2 className="mb-4 text-base font-semibold">سقف دسته</h2>
-        <BudgetCategoryForm categories={budget.categories} />
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold">سقف دسته</h2>
+          <Link href="/categories" className="text-xs text-primary">
+            دسته‌بندی‌ها
+          </Link>
+        </div>
+        <BudgetCategoryForm
+          categories={budget.categories}
+          items={budget.items.map((item) => ({
+            categoryId: item.categoryId,
+            limit: item.limit.toString(),
+          }))}
+          overallLimit={budget.overallLimit == null ? null : budget.overallLimit.toString()}
+        />
       </section>
 
       <section className="rounded-3xl border border-border bg-card p-5">
@@ -95,6 +119,7 @@ export function BudgetView({ budget }: { budget: BudgetMonthDto }) {
         <OverallLimitForm
           key={budget.overallLimit == null ? "empty" : budget.overallLimit.toString()}
           overallLimit={budget.overallLimit == null ? "" : budget.overallLimit.toString()}
+          allocated={allocated.toString()}
         />
       </section>
     </main>

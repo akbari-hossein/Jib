@@ -5,7 +5,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CURRENCY_LABEL } from "@/lib/config/app";
 import {
   applyTomanInputChange,
+  cleanTomanValue,
   formatTomanInput,
+  parseTomanInput,
   TOMAN_INPUT_SEPARATOR,
 } from "@/lib/currency/input";
 import { cn } from "@/lib/utils";
@@ -16,10 +18,25 @@ type MoneyInputProps = Omit<
 > & {
   defaultValue?: string | number | bigint;
   allowNegative?: boolean;
+  allowZero?: boolean;
+  invalid?: boolean;
+  onAmountChange?: (amount: bigint | null) => void;
 };
 
 function isSeparator(char: string | undefined): boolean {
   return char === TOMAN_INPUT_SEPARATOR;
+}
+
+function parseAmount(
+  raw: string,
+  allowNegative: boolean,
+  allowZero: boolean,
+): bigint | null {
+  const cleaned = cleanTomanValue(raw, { allowNegative });
+  if (!cleaned) {
+    return allowZero ? 0n : null;
+  }
+  return parseTomanInput(cleaned, { allowNegative, allowZero });
 }
 
 export function MoneyInput({
@@ -27,6 +44,9 @@ export function MoneyInput({
   name,
   defaultValue,
   allowNegative = false,
+  allowZero = false,
+  invalid = false,
+  onAmountChange,
   className,
   disabled,
   required,
@@ -35,15 +55,25 @@ export function MoneyInput({
   onFocus,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
+  "aria-invalid": ariaInvalid,
   ...rest
 }: MoneyInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const caretRef = useRef<number | null>(null);
+  const onAmountChangeRef = useRef(onAmountChange);
   const [text, setText] = useState(() =>
     defaultValue == null || defaultValue === ""
       ? ""
       : formatTomanInput(defaultValue, { allowNegative }),
   );
+
+  useEffect(() => {
+    onAmountChangeRef.current = onAmountChange;
+  }, [onAmountChange]);
+
+  useEffect(() => {
+    onAmountChangeRef.current?.(parseAmount(text, allowNegative, allowZero));
+  }, [allowNegative, allowZero, text]);
 
   useEffect(() => {
     const input = inputRef.current;
@@ -116,20 +146,25 @@ export function MoneyInput({
     }
   }
 
+  const submitted = cleanTomanValue(text, { allowNegative });
+  const showInvalid = invalid || ariaInvalid === true || ariaInvalid === "true";
+
   return (
     <div
       className={cn(
-        "flex h-12 w-full items-center gap-2 rounded-xl border border-border bg-card px-4 transition-colors duration-150",
-        "focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/25",
+        "flex h-14 w-full items-center gap-3 rounded-2xl border bg-card px-4 transition-colors duration-150",
+        showInvalid
+          ? "border-destructive focus-within:border-destructive focus-within:ring-2 focus-within:ring-destructive/25"
+          : "border-border focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/25",
         disabled && "cursor-not-allowed opacity-50",
         className,
       )}
     >
+      {name ? <input type="hidden" name={name} value={submitted} /> : null}
       <input
         {...rest}
         ref={inputRef}
         id={id}
-        name={name}
         type="text"
         inputMode="numeric"
         enterKeyHint="done"
@@ -148,7 +183,8 @@ export function MoneyInput({
         onFocus={onFocus}
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
-        className="numeric-display min-w-0 flex-1 bg-transparent text-left text-base text-foreground outline-none placeholder:text-muted-foreground"
+        aria-invalid={showInvalid || undefined}
+        className="numeric-display min-w-0 flex-1 bg-transparent text-left text-xl font-semibold tracking-tight text-foreground outline-none placeholder:font-normal placeholder:text-muted-foreground"
       />
       <span className="shrink-0 text-sm text-muted-foreground">{CURRENCY_LABEL}</span>
     </div>

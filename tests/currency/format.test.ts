@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
+import {
+  formatCompactToman,
+  formatToman,
+  toLatinDigits,
+  toPersianDigits,
+} from "@/lib/currency/format";
 
 describe("currency format", () => {
   it("formats toman with Persian digits", () => {
@@ -16,5 +21,11 @@ describe("currency format", () => {
 
   it("converts latin digits", () => {
     expect(toPersianDigits("12")).toBe("۱۲");
+  });
+
+  it("converts persian and arabic-indic digits to latin", () => {
+    expect(toLatinDigits("۱۲۳۴۵۶۷۸۹۰")).toBe("1234567890");
+    expect(toLatinDigits("١٢٣")).toBe("123");
+    expect(toLatinDigits("1۲3")).toBe("123");
   });
 });

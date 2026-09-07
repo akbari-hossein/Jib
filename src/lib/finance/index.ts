@@ -5,6 +5,12 @@ export {
   sumReservedForGoals,
 } from "@/lib/finance/available-money";
 export { calculateBudgetUsage } from "@/lib/finance/budget-usage";
+export {
+  isCategoryLimitAllowed,
+  isOverallLimitAllowed,
+  remainingAllocatable,
+  sumBudgetLimits,
+} from "@/lib/finance/budget-allocation";
 export { assembleDashboard } from "@/lib/finance/dashboard";
 export { getTodaySummary, timeOfDayFromNow, UPCOMING_RECURRING_HORIZON_DAYS } from "@/lib/finance/today-summary";
 export { proposeGeneratedTasks } from "@/lib/finance/financial-tasks";

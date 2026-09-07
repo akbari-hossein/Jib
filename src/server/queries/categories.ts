@@ -6,3 +6,10 @@ export async function listCategories(userId: string) {
     orderBy: [{ group: "asc" }, { createdAt: "asc" }],
   });
 }
+
+export async function listManagedCategories(userId: string) {
+  return prisma.category.findMany({
+    where: { userId },
+    orderBy: [{ group: "asc" }, { isSystem: "desc" }, { createdAt: "asc" }],
+  });
+}

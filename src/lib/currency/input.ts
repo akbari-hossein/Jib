@@ -1,4 +1,4 @@
-import { toLatinDigits } from "@/lib/currency/format";
+import { isTomanDigit, toLatinDigits } from "@/lib/currency/format";
 
 export const MAX_TOMAN = 10n ** 15n;
 export const MAX_TOMAN_DIGITS = 15;
@@ -33,7 +33,7 @@ export function normalizeTomanInput(
   const maxDigits = options?.maxDigits ?? MAX_TOMAN_DIGITS;
   const clip = options?.clip ?? true;
   let text = toLatinDigits(raw).replace(/[\s\u00a0\u2009\u202f]/g, "");
-  text = text.replace(/٬/g, ",").replace(/−/g, "-");
+  text = text.replace(/[٬،]/g, ",").replace(/−/g, "-");
 
   let negative = false;
   if (text.startsWith("-")) {
@@ -92,7 +92,13 @@ export function formatTomanDigits(
 
 export function digitCountBefore(value: string, caret: number): number {
   const slice = value.slice(0, Math.max(0, caret));
-  return (slice.match(/\d/g) ?? []).length;
+  let count = 0;
+  for (const char of slice) {
+    if (isTomanDigit(char)) {
+      count += 1;
+    }
+  }
+  return count;
 }
 
 export function caretFromDigitCount(formatted: string, digitsBefore: number): number {
@@ -102,7 +108,7 @@ export function caretFromDigitCount(formatted: string, digitsBefore: number): nu
 
   let seen = 0;
   for (let index = 0; index < formatted.length; index += 1) {
-    if (formatted[index] >= "0" && formatted[index] <= "9") {
+    if (isTomanDigit(formatted[index])) {
       seen += 1;
       if (seen === digitsBefore) {
         return index + 1;
@@ -110,6 +116,17 @@ export function caretFromDigitCount(formatted: string, digitsBefore: number): nu
     }
   }
   return formatted.length;
+}
+
+export function cleanTomanValue(
+  raw: string,
+  options?: Pick<TomanInputOptions, "allowNegative" | "maxDigits">,
+): string {
+  const normalized = normalizeTomanInput(raw, options);
+  if (!normalized.digits) {
+    return "";
+  }
+  return normalized.negative ? `-${normalized.digits}` : normalized.digits;
 }
 
 export function applyTomanInputChange(

@@ -1,16 +1,30 @@
 const PERSIAN_DIGITS = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"] as const;
+const ARABIC_INDIC_DIGITS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"] as const;
 const LATIN_DIGITS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] as const;
+
+const ANY_DIGIT = /[0-9۰-۹٠-٩]/;
 
 export function toPersianDigits(value: string | number | bigint): string {
   return String(value).replace(/[0-9]/g, (digit) => PERSIAN_DIGITS[Number(digit)]!);
 }
 
+export function isTomanDigit(char: string | undefined): boolean {
+  return Boolean(char && ANY_DIGIT.test(char));
+}
+
+/** Converts Persian and Arabic-Indic digits to Latin digits. */
 export function toLatinDigits(value: string): string {
-  return value.replace(/[۰-۹]/g, (digit) => {
-    const index = PERSIAN_DIGITS.indexOf(digit as (typeof PERSIAN_DIGITS)[number]);
-    return index >= 0 ? LATIN_DIGITS[index]! : digit;
+  return value.replace(/[۰-۹٠-٩]/g, (digit) => {
+    const persian = PERSIAN_DIGITS.indexOf(digit as (typeof PERSIAN_DIGITS)[number]);
+    if (persian >= 0) {
+      return LATIN_DIGITS[persian]!;
+    }
+    const arabic = ARABIC_INDIC_DIGITS.indexOf(digit as (typeof ARABIC_INDIC_DIGITS)[number]);
+    return arabic >= 0 ? LATIN_DIGITS[arabic]! : digit;
   });
 }
+
+export const normalizeDigits = toLatinDigits;
 
 export function groupThousands(value: bigint | number): string {
   const absolute = typeof value === "bigint" ? value : BigInt(Math.trunc(value));

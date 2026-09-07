@@ -1,6 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import {
+  categoryBudgetOverCopy,
+  overallBelowAllocatedCopy,
+} from "@/lib/finance/budget-allocation-copy";
+import {
+  isCategoryLimitAllowed,
+  isOverallLimitAllowed,
+  remainingAllocatable,
+  sumBudgetLimits,
+} from "@/lib/finance/budget-allocation";
 import { requireUser } from "@/lib/auth/session";
 import { getTehranJalaliDate } from "@/lib/dates/tehran";
 import { prisma } from "@/lib/db/prisma";
@@ -16,9 +26,22 @@ export type BudgetActionState = {
   error?: string;
 };
 
-async function currentBudgetId(userId: string) {
+class BudgetAllocationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BudgetAllocationError";
+  }
+}
+
+function revalidateBudgets() {
+  revalidatePath("/budgets");
+  revalidatePath("/home");
+  revalidatePath("/reports");
+}
+
+async function ensureCurrentBudget(userId: string) {
   const today = getTehranJalaliDate();
-  const budget = await prisma.budget.upsert({
+  return prisma.budget.upsert({
     where: {
       userId_jalaliYear_jalaliMonth: {
         userId,
@@ -33,13 +56,13 @@ async function currentBudgetId(userId: string) {
       jalaliMonth: today.month,
     },
   });
-  return budget.id;
 }
 
-function revalidateBudgets() {
-  revalidatePath("/budgets");
-  revalidatePath("/home");
-  revalidatePath("/reports");
+function allocationError(error: unknown, fallback: string): string {
+  if (error instanceof BudgetAllocationError) {
+    return error.message;
+  }
+  return userFacingMutationError(error, fallback);
 }
 
 export async function upsertBudgetCategory(
@@ -62,14 +85,38 @@ export async function upsertBudgetCategory(
     if (category.kind === "INCOME") {
       return { ok: false, error: "برای درآمد نمی‌شود سقف گذاشت." };
     }
-    const budgetId = await currentBudgetId(user.id);
-    await prisma.budgetCategory.upsert({
-      where: { budgetId_categoryId: { budgetId, categoryId } },
-      update: { limit },
-      create: { budgetId, categoryId, limit },
+
+    const budget = await ensureCurrentBudget(user.id);
+    await prisma.$transaction(async (tx) => {
+      const locked = await tx.$queryRaw<Array<{ id: string; overallLimit: bigint | null }>>`
+        SELECT id, "overallLimit" FROM "Budget" WHERE id = ${budget.id} FOR UPDATE
+      `;
+      const current = locked[0];
+      if (!current) {
+        throw new BudgetAllocationError("بودجه این ماه پیدا نشد.");
+      }
+
+      const items = await tx.budgetCategory.findMany({
+        where: { budgetId: current.id },
+        select: { categoryId: true, limit: true },
+      });
+      const otherLimits = items
+        .filter((item) => item.categoryId !== categoryId)
+        .map((item) => item.limit);
+
+      if (!isCategoryLimitAllowed(current.overallLimit, limit, otherLimits)) {
+        const remaining = remainingAllocatable(current.overallLimit, otherLimits) ?? 0n;
+        throw new BudgetAllocationError(categoryBudgetOverCopy(remaining));
+      }
+
+      await tx.budgetCategory.upsert({
+        where: { budgetId_categoryId: { budgetId: current.id, categoryId } },
+        update: { limit },
+        create: { budgetId: current.id, categoryId, limit },
+      });
     });
   } catch (error) {
-    return { ok: false, error: userFacingMutationError(error, "ذخیره بودجه انجام نشد. دوباره تلاش کن.") };
+    return { ok: false, error: allocationError(error, "ذخیره بودجه انجام نشد. دوباره تلاش کن.") };
   }
 
   revalidateBudgets();
@@ -89,13 +136,34 @@ export async function updateOverallLimit(
   }
 
   try {
-    const budgetId = await currentBudgetId(user.id);
-    await prisma.budget.update({
-      where: { id: budgetId },
-      data: { overallLimit: limit },
+    const budget = await ensureCurrentBudget(user.id);
+    await prisma.$transaction(async (tx) => {
+      const locked = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM "Budget" WHERE id = ${budget.id} FOR UPDATE
+      `;
+      if (!locked[0]) {
+        throw new BudgetAllocationError("بودجه این ماه پیدا نشد.");
+      }
+
+      const items = await tx.budgetCategory.findMany({
+        where: { budgetId: budget.id },
+        select: { limit: true },
+      });
+      const categoryLimits = items.map((item) => item.limit);
+
+      if (!isOverallLimitAllowed(limit, categoryLimits)) {
+        throw new BudgetAllocationError(
+          overallBelowAllocatedCopy(sumBudgetLimits(categoryLimits), limit ?? 0n),
+        );
+      }
+
+      await tx.budget.update({
+        where: { id: budget.id },
+        data: { overallLimit: limit },
+      });
     });
   } catch (error) {
-    return { ok: false, error: userFacingMutationError(error, "ذخیره سقف کل انجام نشد. دوباره تلاش کن.") };
+    return { ok: false, error: allocationError(error, "ذخیره سقف کل انجام نشد. دوباره تلاش کن.") };
   }
 
   revalidateBudgets();

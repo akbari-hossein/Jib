@@ -52,6 +52,7 @@ export const PRIVATE_PATH_PREFIXES = [
   "/goals",
   "/more",
   "/accounts",
+  "/categories",
   "/settings",
   "/rules",
   "/recurring",
