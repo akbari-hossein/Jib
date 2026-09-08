@@ -129,6 +129,36 @@ body {
   letter-spacing: -0.035em;
 }
 
+/* Native time fields overflow a half-width mobile column (picker icon + inner min-width). */
+.time-input {
+  overflow: hidden;
+}
+
+.time-input::-webkit-datetime-edit,
+.time-input::-webkit-datetime-edit-fields-wrapper {
+  min-width: 0;
+  padding: 0;
+}
+
+.time-input::-webkit-date-and-time-value {
+  min-width: 0;
+  text-align: start;
+}
+
+.time-input::-webkit-calendar-picker-indicator {
+  width: 1rem;
+  height: 1rem;
+  margin-inline: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+@media (max-width: 419px) {
+  .time-input::-webkit-calendar-picker-indicator {
+    display: none;
+  }
+}
+
 .what-if-slider {
   appearance: none;
   height: 1.5rem;

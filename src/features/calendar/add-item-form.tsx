@@ -88,7 +88,7 @@ export function AddItemForm({
               placeholder="مثلاً دندانپزشکی"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 items-end gap-3">
             <div className="flex min-w-0 flex-col gap-2">
               <Label htmlFor="calendar-month-start">شروع</Label>
               <Input
