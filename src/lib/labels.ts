@@ -97,3 +97,15 @@ export const JALALI_MONTHS = [
   "بهمن",
   "اسفند",
 ] as const;
+
+export const JALALI_WEEKDAYS = [
+  "شنبه",
+  "یکشنبه",
+  "دوشنبه",
+  "سه‌شنبه",
+  "چهارشنبه",
+  "پنجشنبه",
+  "جمعه",
+] as const;
+
+export const JALALI_WEEKDAY_SHORT = ["ش", "ی", "د", "س", "چ", "پ", "ج"] as const;

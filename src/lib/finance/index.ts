@@ -12,6 +12,13 @@ export {
   sumBudgetLimits,
 } from "@/lib/finance/budget-allocation";
 export { assembleDashboard } from "@/lib/finance/dashboard";
+export { getCalendarMonthData, jalaliDateKey, jalaliMonthRange } from "@/lib/finance/calendar-month";
+export type {
+  CalendarMonthData,
+  CalendarMonthDay,
+  CalendarMonthEvent,
+  CalendarMonthTask,
+} from "@/lib/finance/calendar-month";
 export { getTodaySummary, timeOfDayFromNow, UPCOMING_RECURRING_HORIZON_DAYS } from "@/lib/finance/today-summary";
 export { proposeGeneratedTasks } from "@/lib/finance/financial-tasks";
 export type { GeneratedTaskCandidate } from "@/lib/finance/financial-tasks";

@@ -5,6 +5,7 @@ import { FinancialMetric } from "@/components/finance/financial-metric";
 import { GoalProgress } from "@/components/finance/goal-progress";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { TodayDateHeader } from "@/features/calendar/today-date-header";
 import { NotificationBell } from "@/features/notifications/notification-bell";
 import { CalendarToday } from "@/features/today/calendar-today";
 import { DailyCheckIn } from "@/features/today/daily-check-in";
@@ -97,6 +98,9 @@ export function TodayView({
               timeOfDay={summary.greeting.timeOfDay}
               userName={summary.greeting.userName}
             />
+          </div>
+          <div className="mt-2">
+            <TodayDateHeader today={today} />
           </div>
           <AvailableTodayCard
             availableToday={summary.money.availableToday}

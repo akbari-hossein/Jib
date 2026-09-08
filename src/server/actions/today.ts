@@ -32,20 +32,23 @@ function revalidateHome() {
   revalidatePath("/home");
 }
 
-export async function completeFinancialTask(taskId: string): Promise<TodayMutationResult> {
+export async function setFinancialTaskCompleted(
+  taskId: string,
+  isCompleted: boolean,
+): Promise<TodayMutationResult> {
   const user = await requireUser();
 
   try {
     const task = await assertFinancialTaskOwned(user.id, taskId);
-    if (task.isCompleted) {
+    if (task.isCompleted === isCompleted) {
       return { ok: true };
     }
 
     await prisma.financialTask.update({
       where: { id: task.id },
       data: {
-        isCompleted: true,
-        completedAt: new Date(),
+        isCompleted,
+        completedAt: isCompleted ? new Date() : null,
       },
     });
     revalidateHome();
@@ -56,6 +59,10 @@ export async function completeFinancialTask(taskId: string): Promise<TodayMutati
       error: userFacingMutationError(error, "ذخیره نشد. دوباره تلاش کن."),
     };
   }
+}
+
+export async function completeFinancialTask(taskId: string): Promise<TodayMutationResult> {
+  return setFinancialTaskCompleted(taskId, true);
 }
 
 export async function createCustomFinancialTask(

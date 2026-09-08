@@ -68,11 +68,15 @@ export function addJalaliMonths(date: JalaliDate, months: number): JalaliDate {
   return { year, month, day: Math.min(date.day, maxDay) };
 }
 
-export function jalaliWeekStart(date: JalaliDate): JalaliDate {
+/** Saturday = 0 … Friday = 6, matching Persian week order. */
+export function jalaliWeekdayIndex(date: JalaliDate): number {
   const gregorian = toGregorian(date.year, date.month, date.day);
   const weekday = new Date(Date.UTC(gregorian.gy, gregorian.gm - 1, gregorian.gd)).getUTCDay();
-  const daysSinceSaturday = (weekday + 1) % 7;
-  return addJalaliDays(date, -daysSinceSaturday);
+  return (weekday + 1) % 7;
+}
+
+export function jalaliWeekStart(date: JalaliDate): JalaliDate {
+  return addJalaliDays(date, -jalaliWeekdayIndex(date));
 }
 
 export function addJalaliDays(date: JalaliDate, days: number): JalaliDate {

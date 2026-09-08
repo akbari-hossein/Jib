@@ -10,6 +10,7 @@ import {
   jalaliDateOnlyUtc,
   jalaliMonthLength,
   jalaliWeekStart,
+  jalaliWeekdayIndex,
   monthsRemainingForGoal,
   tehranDateTimeUtc,
   tehranMidnightUtc,
@@ -128,6 +129,13 @@ describe("jalaliWeekStart", () => {
   it("keeps Saturday as the start of its own week", () => {
     const saturday = { year: 1402, month: 12, day: 26 };
     expect(jalaliWeekStart(saturday)).toEqual(saturday);
+  });
+});
+
+describe("jalaliWeekdayIndex", () => {
+  it("counts Saturday as 0 and Wednesday as 4", () => {
+    expect(jalaliWeekdayIndex({ year: 1402, month: 12, day: 26 })).toBe(0);
+    expect(jalaliWeekdayIndex({ year: 1403, month: 1, day: 1 })).toBe(4);
   });
 });
 
