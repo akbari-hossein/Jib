@@ -1,4 +1,9 @@
-import type { CalendarEventSource, FinancialTaskSource, FinancialTaskType } from "@prisma/client";
+import type {
+  CalendarEventSource,
+  CheckInMood,
+  FinancialTaskSource,
+  FinancialTaskType,
+} from "@prisma/client";
 import {
   addJalaliMonths,
   compareJalaliDate,
@@ -22,6 +27,7 @@ export type CalendarMonthTask = FinancialTaskSummary & {
 export interface CalendarMonthDay {
   events: CalendarMonthEvent[];
   tasks: CalendarMonthTask[];
+  mood: CheckInMood | null;
 }
 
 export interface CalendarMonthData {
@@ -50,6 +56,11 @@ type TaskRow = {
   isCompleted: boolean;
   dueDate: Date;
   sourceType: FinancialTaskSource | null;
+};
+
+type CheckInRow = {
+  date: Date;
+  mood: CheckInMood;
 };
 
 export type CalendarMonthStore = {
@@ -88,10 +99,22 @@ export type CalendarMonthStore = {
       };
     }) => Promise<TaskRow[]>;
   };
+  dailyCheckIn: {
+    findMany: (args: {
+      where: {
+        userId: string;
+        date: { gte: Date; lt: Date };
+      };
+      select: {
+        date: true;
+        mood: true;
+      };
+    }) => Promise<CheckInRow[]>;
+  };
 };
 
 function emptyDay(): CalendarMonthDay {
-  return { events: [], tasks: [] };
+  return { events: [], tasks: [], mood: null };
 }
 
 function dayBucket(days: Record<string, CalendarMonthDay>, date: JalaliDate): CalendarMonthDay {
@@ -135,7 +158,7 @@ export async function getCalendarMonthData(
   const range = jalaliMonthRange(year, month);
   const today = getTehranJalaliDate(now);
 
-  const [events, tasks] = await Promise.all([
+  const [events, tasks, checkIns] = await Promise.all([
     store.calendarEvent.findMany({
       where: {
         userId,
@@ -165,6 +188,16 @@ export async function getCalendarMonthData(
         isCompleted: true,
         dueDate: true,
         sourceType: true,
+      },
+    }),
+    store.dailyCheckIn.findMany({
+      where: {
+        userId,
+        date: { gte: range.taskStart, lt: range.taskEnd },
+      },
+      select: {
+        date: true,
+        mood: true,
       },
     }),
   ]);
@@ -201,6 +234,14 @@ export async function getCalendarMonthData(
       isOverdue: !task.isCompleted && compareJalaliDate(day, today) < 0,
       sourceType: task.sourceType,
     });
+  }
+
+  for (const checkIn of checkIns) {
+    const day = jalaliFromInstant(checkIn.date);
+    if (day.year !== year || day.month !== month) {
+      continue;
+    }
+    dayBucket(days, day).mood = checkIn.mood;
   }
 
   return { year, month, days };

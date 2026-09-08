@@ -9,7 +9,7 @@ import {
   type JalaliDate,
 } from "@/lib/dates/tehran";
 import { jalaliDateKey } from "@/lib/finance/calendar-month";
-import { JALALI_WEEKDAY_SHORT } from "@/lib/labels";
+import { JALALI_WEEKDAY_SHORT, MOOD_EMOJI } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import type { CalendarDayItems } from "@/server/actions/calendar";
 
@@ -65,6 +65,7 @@ export function MonthGrid({
           const items = days[key];
           const hasEvents = (items?.events.length ?? 0) > 0;
           const hasTasks = (items?.tasks.length ?? 0) > 0;
+          const mood = items?.mood ?? null;
           const isToday = isSameJalaliDay(day, today);
           const isSelected = isSameJalaliDay(day, selected);
           return (
@@ -76,7 +77,7 @@ export function MonthGrid({
               aria-current={isToday ? "date" : undefined}
               aria-pressed={isSelected}
               className={cn(
-                "flex aspect-square flex-col items-center justify-center rounded-2xl text-sm transition-colors",
+                "relative flex aspect-square flex-col items-center justify-center rounded-2xl text-sm transition-colors",
                 isSelected
                   ? "bg-primary text-primary-foreground"
                   : isToday
@@ -84,6 +85,14 @@ export function MonthGrid({
                     : "hover:bg-surface-muted",
               )}
             >
+              {mood ? (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute start-1 top-1 text-[11px] leading-none"
+                >
+                  {MOOD_EMOJI[mood]}
+                </span>
+              ) : null}
               <span className="numeric-display leading-none">{toPersianDigits(day.day)}</span>
               {hasEvents || hasTasks ? (
                 <span className="mt-1 flex items-center justify-center gap-0.5">

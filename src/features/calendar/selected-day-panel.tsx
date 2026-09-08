@@ -7,7 +7,7 @@ import { AddItemForm } from "@/features/calendar/add-item-form";
 import { Button } from "@/components/ui/button";
 import { formatToman, toPersianDigits } from "@/lib/currency/format";
 import { formatTehranTime, jalaliWeekdayIndex, type JalaliDate } from "@/lib/dates/tehran";
-import { JALALI_MONTHS, JALALI_WEEKDAYS } from "@/lib/labels";
+import { CHECK_IN_MOOD_DAY_LABEL, JALALI_MONTHS, JALALI_WEEKDAYS, MOOD_EMOJI } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import {
   deleteCalendarEvent,
@@ -63,6 +63,11 @@ export function SelectedDayPanel({
           )}
         </Button>
       </div>
+      {items.mood ? (
+        <p className="text-sm text-muted-foreground">
+          <span aria-hidden>{MOOD_EMOJI[items.mood]}</span> {CHECK_IN_MOOD_DAY_LABEL[items.mood]}
+        </p>
+      ) : null}
       {adding ? (
         <AddItemForm
           day={day}
@@ -73,7 +78,7 @@ export function SelectedDayPanel({
           }}
         />
       ) : null}
-      {empty && !adding ? (
+      {empty && !adding && !items.mood ? (
         <p className="text-sm text-muted-foreground">چیزی برای این روز ثبت نشده</p>
       ) : null}
       {items.events.length > 0 ? (

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { CHECK_IN_MOOD_LABEL } from "@/lib/labels";
+import { CHECK_IN_MOOD_LABEL, MOOD_EMOJI } from "@/lib/labels";
 import { saveDailyCheckIn } from "@/server/actions/today";
 import type { CheckInMood } from "@prisma/client";
 
@@ -47,6 +47,7 @@ export function DailyCheckIn({ mood }: { mood: CheckInMood | null }) {
               disabled={pendingMood === item}
               onClick={() => choose(item)}
             >
+              <span aria-hidden>{MOOD_EMOJI[item]}</span>
               {CHECK_IN_MOOD_LABEL[item]}
             </Button>
           );

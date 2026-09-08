@@ -1,6 +1,11 @@
 "use server";
 
-import type { CalendarEventSource, FinancialTaskSource, FinancialTaskType } from "@prisma/client";
+import type {
+  CalendarEventSource,
+  CheckInMood,
+  FinancialTaskSource,
+  FinancialTaskType,
+} from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import { getCalendarMonthData } from "@/lib/finance/calendar-month";
@@ -36,6 +41,7 @@ export type CalendarTaskItem = {
 export type CalendarDayItems = {
   events: CalendarEventItem[];
   tasks: CalendarTaskItem[];
+  mood: CheckInMood | null;
 };
 
 export type CalendarMonthPayload = {
@@ -89,6 +95,7 @@ export async function loadCalendarMonth(
           isOverdue: task.isOverdue,
           sourceType: task.sourceType,
         })),
+        mood: day.mood,
       };
     }
     return { ok: true, data: { year: data.year, month: data.month, days } };

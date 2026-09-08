@@ -9,14 +9,18 @@ import { Button } from "@/components/ui/button";
 import { toPersianDigits } from "@/lib/currency/format";
 import { addJalaliMonths, type JalaliDate } from "@/lib/dates/tehran";
 import { jalaliDateKey } from "@/lib/finance/calendar-month";
-import { JALALI_MONTHS } from "@/lib/labels";
+import { CHECK_IN_MOOD_LABEL, JALALI_MONTHS, MOOD_EMOJI } from "@/lib/labels";
 import {
   loadCalendarMonth,
   type CalendarDayItems,
   type CalendarMonthPayload,
 } from "@/server/actions/calendar";
 
-const EMPTY_DAY: CalendarDayItems = { events: [], tasks: [] };
+const EMPTY_DAY: CalendarDayItems = { events: [], tasks: [], mood: null };
+
+const MOOD_LEGEND = (["GOOD", "NEUTRAL", "STRESSED"] as const)
+  .map((mood) => `${MOOD_EMOJI[mood]} ${CHECK_IN_MOOD_LABEL[mood]}`)
+  .join("   ");
 
 export function MonthCalendarModal({
   open,
@@ -115,6 +119,9 @@ export function MonthCalendarModal({
               <ChevronLeft className="size-5" />
             </Button>
           </div>
+          <p className="px-5 pb-1 text-center text-[11px] leading-4 text-muted-foreground">
+            {MOOD_LEGEND}
+          </p>
           <div className="px-5">
             <MonthGrid
               year={view.year}
