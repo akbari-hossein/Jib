@@ -33,8 +33,8 @@ export function DailyCheckIn({ mood }: { mood: CheckInMood | null }) {
 
   return (
     <section>
-      <h2 className="mb-3 text-sm text-muted-foreground">حالت امروز چطوره؟</h2>
-      <div className="grid grid-cols-3 gap-2">
+      <h2 className="mb-4 text-sm text-muted-foreground">حالت امروز چطوره؟</h2>
+      <div className="grid grid-cols-3 gap-3">
         {MOODS.map((item) => {
           const isSelected = selected === item;
           return (

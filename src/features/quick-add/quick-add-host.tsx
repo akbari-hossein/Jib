@@ -16,7 +16,7 @@ export function QuickAddHost({ context }: { context: QuickAddContext }) {
         <button
           type="button"
           onClick={() => openDrawer()}
-          className="fixed bottom-24 end-5 z-20 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-150 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="fixed z-20 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-150 end-5 bottom-[calc(6rem+env(safe-area-inset-bottom))] hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label="ثبت سریع"
         >
           <Plus className="size-6" />
@@ -24,7 +24,7 @@ export function QuickAddHost({ context }: { context: QuickAddContext }) {
       ) : (
         <Link
           href="/accounts"
-          className="fixed bottom-24 end-5 z-20 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground"
+          className="fixed z-20 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground end-5 bottom-[calc(6rem+env(safe-area-inset-bottom))]"
           aria-label="افزودن حساب"
         >
           <Plus className="size-6" />

@@ -51,9 +51,9 @@ export function AddItemForm({
     <form
       key={`${kind}-${day.year}-${day.month}-${day.day}`}
       action={submit}
-      className="flex flex-col gap-3 rounded-3xl border border-border bg-card p-4"
+      className="flex flex-col gap-4 rounded-3xl border border-border bg-card p-4"
     >
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         {KINDS.map((item) => (
           <button
             key={item.id}
@@ -63,7 +63,7 @@ export function AddItemForm({
               setError(null);
             }}
             className={cn(
-              "h-9 rounded-full px-3 text-sm transition-colors",
+              "h-11 min-w-0 flex-1 rounded-full px-3 text-sm whitespace-nowrap transition-colors",
               kind === item.id
                 ? "bg-primary text-primary-foreground"
                 : "bg-surface-muted text-foreground/70",
@@ -89,7 +89,7 @@ export function AddItemForm({
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-2">
+            <div className="flex min-w-0 flex-col gap-2">
               <Label htmlFor="calendar-month-start">شروع</Label>
               <Input
                 id="calendar-month-start"
@@ -101,7 +101,7 @@ export function AddItemForm({
                 className="numeric-display"
               />
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex min-w-0 flex-col gap-2">
               <Label htmlFor="calendar-month-end">پایان (اختیاری)</Label>
               <Input
                 id="calendar-month-end"
@@ -134,11 +134,11 @@ export function AddItemForm({
           {error}
         </p>
       ) : null}
-      <div className="flex gap-2">
-        <Button type="submit" size="sm" disabled={pending} className="flex-1">
+      <div className="flex gap-3">
+        <Button type="submit" disabled={pending} className="h-12 min-w-0 flex-1">
           {pending ? "در حال ذخیره…" : kind === "event" ? "ثبت رویداد" : "ثبت کار"}
         </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
+        <Button type="button" variant="ghost" className="h-12 px-4" onClick={onCancel}>
           انصراف
         </Button>
       </div>

@@ -28,8 +28,8 @@ export function FinancialMetric({
       {empty ? (
         <p
           className={cn(
-            "numeric-display mt-2 font-semibold tracking-tight text-foreground/25",
-            size === "lg" && "text-4xl",
+            "numeric-display font-semibold tracking-tight text-foreground/25",
+            size === "lg" ? "mt-3 text-4xl break-words" : "mt-2",
             size === "md" && "text-2xl",
             size === "sm" && "text-lg",
           )}
@@ -39,8 +39,8 @@ export function FinancialMetric({
       ) : (
         <p
           className={cn(
-            "mt-2 font-semibold tracking-tight",
-            size === "lg" && "text-4xl",
+            "font-semibold tracking-tight",
+            size === "lg" ? "mt-3 text-4xl break-words" : "mt-2",
             size === "md" && "text-2xl",
             size === "sm" && "text-lg",
             tone === "income" && "text-income",
@@ -51,7 +51,7 @@ export function FinancialMetric({
           <MoneyDisplay amount={amount ?? 0n} />
         </p>
       )}
-      {hint ? <p className="mt-2 text-xs leading-6 text-muted-foreground">{hint}</p> : null}
+      {hint ? <p className="mt-3 text-xs leading-6 text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }

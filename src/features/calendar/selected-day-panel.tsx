@@ -45,12 +45,12 @@ export function SelectedDayPanel({
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-medium">{formatDayHeading(day, today)}</h2>
+        <h2 className="min-w-0 truncate text-sm font-medium">{formatDayHeading(day, today)}</h2>
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="h-8 px-2 text-primary"
+          className="h-11 shrink-0 px-3 text-primary"
           onClick={() => setAdding((open) => !open)}
         >
           {adding ? (
@@ -122,7 +122,7 @@ function CalendarEventRow({
   }
 
   return (
-    <li className="flex items-start justify-between gap-3 px-4 py-3.5">
+    <li className="flex items-start justify-between gap-3 px-4 py-4">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">
           {event.title}
@@ -188,7 +188,7 @@ function FinancialTaskRow({
         task.isOverdue ? "border-s-warning" : "border-s-transparent",
       )}
     >
-      <div className="flex items-center gap-3 px-4 py-3.5">
+      <div className="flex items-center gap-3 px-4 py-4">
         <input
           id={checkboxId}
           type="checkbox"

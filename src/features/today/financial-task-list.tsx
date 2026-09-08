@@ -57,13 +57,13 @@ export function FinancialTaskList({
 
   return (
     <section>
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-sm text-muted-foreground">کارهای مالی</h2>
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="h-8 px-2 text-primary"
+          className="h-11 px-3 text-primary"
           onClick={() => {
             setAdding((open) => !open);
             setAddError(null);
@@ -73,7 +73,7 @@ export function FinancialTaskList({
         </Button>
       </div>
       {adding ? (
-        <form action={addTask} className="mb-3 flex flex-col gap-3 rounded-3xl border border-border bg-card p-4">
+        <form action={addTask} className="mb-4 flex flex-col gap-3 rounded-3xl border border-border bg-card p-4">
           <Input name="title" required maxLength={80} placeholder="مثلاً پرداخت قبض" />
           <JalaliDateFields
             prefix="due"
@@ -86,7 +86,7 @@ export function FinancialTaskList({
               {addError}
             </p>
           ) : null}
-          <Button type="submit" size="sm" disabled={addPending}>
+          <Button type="submit" className="h-12" disabled={addPending}>
             {addPending ? "در حال ذخیره…" : "ثبت کار"}
           </Button>
         </form>
@@ -106,7 +106,7 @@ export function FinancialTaskList({
                   task.isOverdue ? "border-s-warning" : "border-s-transparent",
                 )}
               >
-                <div className="flex items-center gap-3 px-4 py-3.5">
+                <div className="flex items-center gap-3 px-4 py-4">
                   <input
                     id={checkboxId}
                     type="checkbox"

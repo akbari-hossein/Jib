@@ -44,15 +44,15 @@ export function CalendarToday({
   }
 
   return (
-    <Card className="min-w-0 flex-1 px-4 py-4">
-      <div className="flex items-start justify-between gap-2">
+    <Card className="min-w-0 flex-1 px-5 py-5">
+      <div className="flex items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">تقویم امروز</p>
         <AddCalendarEvent defaultDate={defaultDate} defaultTime={defaultTime} />
       </div>
       {visible.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">رویدادی برای امروز نیست.</p>
+        <p className="mt-3 text-sm text-muted-foreground">رویدادی برای امروز نیست.</p>
       ) : (
-        <ul className="mt-2 flex flex-col gap-3">
+        <ul className="mt-4 flex flex-col gap-4">
           {visible.map((event) => (
             <li key={event.id} className="min-w-0">
               <p className="truncate text-sm font-medium">{event.title}</p>
@@ -64,7 +64,7 @@ export function CalendarToday({
               </p>
               <button
                 type="button"
-                className="mt-1 text-xs text-muted-foreground hover:text-foreground"
+                className="mt-1 inline-flex min-h-11 items-center text-sm text-muted-foreground hover:text-foreground"
                 disabled={pendingId === event.id}
                 onClick={() => dismiss(event.id)}
               >

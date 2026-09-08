@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 import { Drawer } from "vaul";
 import { toast } from "sonner";
 import { AmountKeypad } from "@/features/quick-add/amount-keypad";
@@ -20,6 +20,17 @@ const TYPES = [
   { id: "INCOME", label: "درآمد" },
   { id: "TRANSFER", label: "جابه‌جایی" },
 ] as const;
+
+const BACK_BUTTON_CLASS =
+  "inline-flex min-h-11 items-center self-start text-sm text-foreground/55";
+
+function DrawerFooter({ children }: { children: ReactNode }) {
+  return (
+    <div className="shrink-0 px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      {children}
+    </div>
+  );
+}
 
 export function QuickAddDrawer({ context }: { context: QuickAddContext }) {
   const store = useQuickAddStore();
@@ -97,6 +108,11 @@ export function QuickAddDrawer({ context }: { context: QuickAddContext }) {
     });
   }
 
+  const showAmountFooter = store.step === "amount";
+  const showAccountFooter = store.step === "account" && store.type !== "TRANSFER";
+  const showTransferFooter = store.step === "transferTo";
+  const showFooter = showAmountFooter || showAccountFooter || showTransferFooter;
+
   return (
     <Drawer.Root
       open={store.open}
@@ -108,23 +124,29 @@ export function QuickAddDrawer({ context }: { context: QuickAddContext }) {
         store.closeDrawer();
       }}
       shouldScaleBackground={false}
+      repositionInputs={false}
     >
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/35" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[92dvh] max-w-xl flex-col rounded-t-[1.6rem] border border-border bg-background outline-none">
-          <Drawer.Handle className="mx-auto mt-3 mb-2 h-1.5 w-12 rounded-full bg-border" />
+        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[min(92dvh,100svh)] max-w-xl flex-col overflow-hidden rounded-t-3xl border border-border bg-background outline-none">
+          <Drawer.Handle className="mx-auto mt-3 mb-2 h-1.5 w-12 shrink-0 rounded-full bg-border" />
           <Drawer.Title className="sr-only">ثبت سریع تراکنش</Drawer.Title>
-          <div className="flex-1 overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-2">
+          <div
+            className={cn(
+              "min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-5 pt-2",
+              showFooter ? "pb-4" : "pb-[max(1.5rem,env(safe-area-inset-bottom))]",
+            )}
+          >
             {store.step === "amount" ? (
-              <div className="flex flex-col gap-5">
-                <div className="flex gap-2">
+              <div className="flex flex-col gap-4">
+                <div className="flex gap-3">
                   {TYPES.map((item) => (
                     <button
                       key={item.id}
                       type="button"
                       onClick={() => store.setType(item.id)}
                       className={cn(
-                        "h-9 rounded-full px-3 text-sm transition-colors",
+                        "h-11 rounded-full px-4 text-sm transition-colors",
                         store.type === item.id
                           ? "bg-primary text-primary-foreground"
                           : "bg-surface-muted text-foreground/70",
@@ -134,7 +156,7 @@ export function QuickAddDrawer({ context }: { context: QuickAddContext }) {
                     </button>
                   ))}
                 </div>
-                <p className="numeric-display text-center text-4xl font-semibold tracking-tight">
+                <p className="numeric-display px-1 text-center text-3xl font-semibold tracking-tight break-words min-[390px]:text-4xl">
                   {amount > 0n ? formatToman(amount) : toPersianDigits("0 تومان")}
                 </p>
                 <AmountKeypad
@@ -142,15 +164,12 @@ export function QuickAddDrawer({ context }: { context: QuickAddContext }) {
                   onThousand={store.appendThousand}
                   onBackspace={store.backspace}
                 />
-                <Button type="button" className="w-full" disabled={amount <= 0n} onClick={goNextFromAmount}>
-                  ادامه
-                </Button>
               </div>
             ) : null}
 
             {store.step === "category" ? (
               <div className="flex flex-col gap-4">
-                <button type="button" className="self-start text-sm text-foreground/55" onClick={() => store.goTo("amount")}>
+                <button type="button" className={BACK_BUTTON_CLASS} onClick={() => store.goTo("amount")}>
                   بازگشت
                 </button>
                 <p className="numeric-display text-lg font-semibold">{formatToman(amount)}</p>
@@ -174,7 +193,7 @@ export function QuickAddDrawer({ context }: { context: QuickAddContext }) {
               <div className="flex flex-col gap-4">
                 <button
                   type="button"
-                  className="self-start text-sm text-foreground/55"
+                  className={BACK_BUTTON_CLASS}
                   onClick={() => store.goTo(store.type === "TRANSFER" ? "amount" : "category")}
                 >
                   بازگشت
@@ -193,17 +212,12 @@ export function QuickAddDrawer({ context }: { context: QuickAddContext }) {
                     }
                   }}
                 />
-                {store.type !== "TRANSFER" ? (
-                  <Button type="button" className="w-full" disabled={pending || !selectedAccountId} onClick={save}>
-                    {pending ? "در حال ذخیره…" : "ثبت"}
-                  </Button>
-                ) : null}
               </div>
             ) : null}
 
             {store.step === "transferTo" ? (
               <div className="flex flex-col gap-4">
-                <button type="button" className="self-start text-sm text-foreground/55" onClick={() => store.goTo("account")}>
+                <button type="button" className={BACK_BUTTON_CLASS} onClick={() => store.goTo("account")}>
                   بازگشت
                 </button>
                 <p className="text-sm text-foreground/55">به کدام حساب؟</p>
@@ -212,14 +226,6 @@ export function QuickAddDrawer({ context }: { context: QuickAddContext }) {
                   selectedId={store.toAccountId}
                   onSelect={store.setToAccountId}
                 />
-                <Button
-                  type="button"
-                  className="w-full"
-                  disabled={pending || !store.toAccountId}
-                  onClick={save}
-                >
-                  {pending ? "در حال ذخیره…" : "ثبت جابه‌جایی"}
-                </Button>
               </div>
             ) : null}
 
@@ -229,6 +235,32 @@ export function QuickAddDrawer({ context }: { context: QuickAddContext }) {
               </p>
             ) : null}
           </div>
+          {showAmountFooter ? (
+            <DrawerFooter>
+              <Button type="button" className="w-full" disabled={amount <= 0n} onClick={goNextFromAmount}>
+                ادامه
+              </Button>
+            </DrawerFooter>
+          ) : null}
+          {showAccountFooter ? (
+            <DrawerFooter>
+              <Button type="button" className="w-full" disabled={pending || !selectedAccountId} onClick={save}>
+                {pending ? "در حال ذخیره…" : "ثبت"}
+              </Button>
+            </DrawerFooter>
+          ) : null}
+          {showTransferFooter ? (
+            <DrawerFooter>
+              <Button
+                type="button"
+                className="w-full"
+                disabled={pending || !store.toAccountId}
+                onClick={save}
+              >
+                {pending ? "در حال ذخیره…" : "ثبت جابه‌جایی"}
+              </Button>
+            </DrawerFooter>
+          ) : null}
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
@@ -255,15 +287,15 @@ function CategoryGrid({
         }
         return (
           <section key={group}>
-            <h3 className="mb-2 text-xs text-foreground/45">{CATEGORY_GROUP_LABEL[group]}</h3>
-            <div className="flex flex-wrap gap-2">
+            <h3 className="mb-3 text-xs text-foreground/45">{CATEGORY_GROUP_LABEL[group]}</h3>
+            <div className="flex flex-wrap gap-3">
               {items.map((category) => (
                 <button
                   key={category.id}
                   type="button"
                   onClick={() => onSelect(category.id)}
                   className={cn(
-                    "inline-flex h-10 items-center gap-2 rounded-full px-3 text-sm transition-colors",
+                    "inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm transition-colors",
                     selectedId === category.id
                       ? "bg-primary text-primary-foreground"
                       : "bg-surface-muted text-foreground",
@@ -291,19 +323,19 @@ function AccountList({
   onSelect: (id: string) => void;
 }) {
   return (
-    <ul className="flex flex-col gap-2">
+    <ul className="flex flex-col gap-3">
       {accounts.map((account) => (
         <li key={account.id}>
           <button
             type="button"
             onClick={() => onSelect(account.id)}
             className={cn(
-              "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-start transition-colors",
+              "flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-start transition-colors",
               selectedId === account.id ? "border-primary bg-surface-muted" : "border-border bg-surface",
             )}
           >
-            <span>{account.name}</span>
-            <span className="numeric-display text-sm text-foreground/55">
+            <span className="min-w-0 truncate">{account.name}</span>
+            <span className="numeric-display shrink-0 text-sm text-foreground/55">
               {formatToman(BigInt(account.balance))}
             </span>
           </button>

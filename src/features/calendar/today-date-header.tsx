@@ -25,7 +25,7 @@ export function TodayDateHeader({ today }: { today: JalaliDate }) {
           setOpen(true);
         }}
         aria-label={`تقویم، ${label}`}
-        className="numeric-display rounded-full bg-surface-muted px-3 py-1.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-border/80 hover:text-foreground"
+        className="numeric-display inline-flex h-11 max-w-full items-center rounded-full bg-surface-muted px-4 text-sm font-medium text-foreground/80 transition-colors hover:bg-border/80 hover:text-foreground"
       >
         <span className="truncate">{label}</span>
       </button>

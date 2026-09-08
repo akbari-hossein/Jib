@@ -15,10 +15,10 @@ function eventWhenLabel(event: UpcomingFinancialEvent): string {
 
 export function UpcomingFinancialEventCard({ event }: { event: UpcomingFinancialEvent }) {
   return (
-    <Card className="min-w-0 flex-1 px-4 py-4">
+    <Card className="min-w-0 flex-1 px-5 py-5">
       <p className="text-xs text-muted-foreground">{eventWhenLabel(event)}</p>
       <p className="mt-2 truncate text-sm font-medium">{event.title}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{formatToman(event.amount)}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{formatToman(event.amount)}</p>
     </Card>
   );
 }

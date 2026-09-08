@@ -41,21 +41,26 @@ export function AddCalendarEvent({
   }
 
   return (
-    <Drawer.Root open={open} onOpenChange={handleOpenChange} shouldScaleBackground={false}>
+    <Drawer.Root
+      open={open}
+      onOpenChange={handleOpenChange}
+      shouldScaleBackground={false}
+      repositionInputs={false}
+    >
       <Drawer.Trigger asChild>
-        <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-primary">
+        <Button type="button" variant="ghost" size="sm" className="h-11 px-3 text-primary">
           افزودن رویداد
         </Button>
       </Drawer.Trigger>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/35" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[92dvh] max-w-xl flex-col rounded-t-[1.6rem] border border-border bg-background outline-none">
-          <Drawer.Handle className="mx-auto mt-3 mb-2 h-1.5 w-12 rounded-full bg-border" />
+        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[min(92dvh,100svh)] max-w-xl flex-col overflow-hidden rounded-t-3xl border border-border bg-background outline-none">
+          <Drawer.Handle className="mx-auto mt-3 mb-2 h-1.5 w-12 shrink-0 rounded-full bg-border" />
           <Drawer.Title className="px-5 text-base font-semibold">رویداد تقویم</Drawer.Title>
           <form
             key={String(open)}
             action={submit}
-            className="flex flex-col gap-4 overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3"
+            className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3"
           >
             <div className="flex flex-col gap-2">
               <Label htmlFor="calendar-title">عنوان</Label>
@@ -71,7 +76,7 @@ export function AddCalendarEvent({
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-2">
+              <div className="flex min-w-0 flex-col gap-2">
                 <Label htmlFor="calendar-start">شروع</Label>
                 <Input
                   id="calendar-start"
@@ -83,7 +88,7 @@ export function AddCalendarEvent({
                   className="numeric-display"
                 />
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex min-w-0 flex-col gap-2">
                 <Label htmlFor="calendar-end">پایان (اختیاری)</Label>
                 <Input
                   id="calendar-end"

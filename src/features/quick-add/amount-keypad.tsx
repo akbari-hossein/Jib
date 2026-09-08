@@ -14,9 +14,9 @@ export function AmountKeypad({
   onBackspace: () => void;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-3 gap-2 min-[390px]:gap-3">
       {KEYS.map((key) => {
-        const label = key === "back" ? <Delete className="size-5" /> : toPersianDigits(key);
+        const label = key === "back" ? <Delete className="size-5 rtl:-scale-x-100" /> : toPersianDigits(key);
         return (
           <button
             key={key}
@@ -33,7 +33,7 @@ export function AmountKeypad({
               onDigit(key);
             }}
             className={cn(
-              "flex h-14 items-center justify-center rounded-2xl bg-surface-muted text-xl font-medium transition-colors duration-150",
+              "flex h-12 items-center justify-center rounded-2xl bg-surface-muted text-xl font-medium transition-colors duration-150 min-[390px]:h-14",
               "hover:bg-border/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
             )}
             aria-label={key === "back" ? "حذف" : key === "000" ? "سه صفر" : key}

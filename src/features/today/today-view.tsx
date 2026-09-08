@@ -62,14 +62,14 @@ function ActiveGoalProgress({
   goal: NonNullable<TodaySummary["activeGoal"]>;
 }) {
   return (
-    <Card className="px-5 py-4">
+    <Card className="px-5 py-5">
       <GoalProgress
         name={goal.name}
         currentAmount={goal.currentAmount}
         targetAmount={goal.targetAmount}
         pct={goal.percentage}
       />
-      <Link href="/goals" className="mt-3 inline-block text-sm text-primary">
+      <Link href="/goals" className="mt-4 inline-flex min-h-11 items-center text-sm text-primary">
         هدف‌ها
       </Link>
     </Card>
@@ -89,7 +89,7 @@ export function TodayView({
   const nearest = summary.upcomingFinancialEvents[0] ?? null;
 
   return (
-    <main className="flex flex-col gap-6 px-5 pt-8">
+    <main className="flex flex-col gap-8 px-5 pt-[calc(2rem+env(safe-area-inset-top))]">
       <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -99,18 +99,19 @@ export function TodayView({
               userName={summary.greeting.userName}
             />
           </div>
-          <div className="mt-2">
+          <div className="mt-3">
             <TodayDateHeader today={today} />
           </div>
-          <AvailableTodayCard
-            availableToday={summary.money.availableToday}
-            totalAvailable={summary.money.totalAvailable}
-            daysRemainingInPeriod={summary.money.daysRemainingInPeriod}
-            empty={!summary.hasAccounts}
-          />
         </div>
         <NotificationBell unreadCount={unreadCount} />
       </header>
+
+      <AvailableTodayCard
+        availableToday={summary.money.availableToday}
+        totalAvailable={summary.money.totalAvailable}
+        daysRemainingInPeriod={summary.money.daysRemainingInPeriod}
+        empty={!summary.hasAccounts}
+      />
 
       <DailyCheckIn mood={summary.checkIn?.mood ?? null} />
 
@@ -126,7 +127,7 @@ export function TodayView({
         />
       ) : (
         <>
-          <div className={nearest ? "grid grid-cols-2 gap-3 md:flex" : "grid grid-cols-1"}>
+          <div className={nearest ? "flex flex-col gap-4" : undefined}>
             {nearest ? <UpcomingFinancialEventCard event={nearest} /> : null}
             <CalendarToday
               defaultDate={today}

@@ -79,18 +79,18 @@ export function MonthCalendarModal({
   const showingCurrentMonth = payload?.year === view.year && payload?.month === view.month;
 
   return (
-    <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground={false}>
+    <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground={false} repositionInputs={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/35" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[92dvh] max-h-[92dvh] max-w-xl flex-col rounded-t-[1.6rem] border border-border bg-background outline-none">
-          <Drawer.Handle className="mx-auto mt-3 mb-2 h-1.5 w-12 rounded-full bg-border" />
+        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[min(92dvh,100svh)] max-h-[min(92dvh,100svh)] max-w-xl flex-col overflow-hidden rounded-t-3xl border border-border bg-background outline-none">
+          <Drawer.Handle className="mx-auto mt-3 mb-2 h-1.5 w-12 shrink-0 rounded-full bg-border" />
           <Drawer.Title className="sr-only">تقویم ماه</Drawer.Title>
-          <div className="flex items-center justify-between gap-2 px-3 pb-3">
+          <div className="flex items-center justify-between gap-3 px-5 pb-3">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="size-10"
+              className="size-11"
               aria-label="ماه قبل"
               onClick={() => goToMonth(addJalaliMonths(view, -1))}
             >
@@ -98,7 +98,7 @@ export function MonthCalendarModal({
             </Button>
             <button
               type="button"
-              className="min-w-0 flex-1 truncate rounded-xl px-2 py-2 text-center text-sm font-medium hover:bg-surface-muted"
+              className="min-h-11 min-w-0 flex-1 truncate rounded-xl px-2 text-center text-sm font-medium hover:bg-surface-muted"
               aria-label="بازگشت به ماه جاری"
               onClick={() => goToMonth(today)}
             >
@@ -108,14 +108,14 @@ export function MonthCalendarModal({
               type="button"
               variant="ghost"
               size="icon"
-              className="size-10"
+              className="size-11"
               aria-label="ماه بعد"
               onClick={() => goToMonth(addJalaliMonths(view, 1))}
             >
               <ChevronLeft className="size-5" />
             </Button>
           </div>
-          <div className="px-3">
+          <div className="px-5">
             <MonthGrid
               year={view.year}
               month={view.month}
