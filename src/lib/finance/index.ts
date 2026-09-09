@@ -14,6 +14,7 @@ export {
 export { assembleDashboard } from "@/lib/finance/dashboard";
 export { getCalendarMonthData, jalaliDateKey, jalaliMonthRange } from "@/lib/finance/calendar-month";
 export type {
+  CalendarDayTotals,
   CalendarMonthData,
   CalendarMonthDay,
   CalendarMonthEvent,

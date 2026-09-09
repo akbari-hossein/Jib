@@ -16,7 +16,12 @@ import {
   type CalendarMonthPayload,
 } from "@/server/actions/calendar";
 
-const EMPTY_DAY: CalendarDayItems = { events: [], tasks: [], mood: null };
+const EMPTY_DAY: CalendarDayItems = {
+  events: [],
+  tasks: [],
+  mood: null,
+  totals: { income: "0", expense: "0" },
+};
 
 const MOOD_LEGEND = (["GOOD", "NEUTRAL", "STRESSED"] as const)
   .map((mood) => `${MOOD_EMOJI[mood]} ${CHECK_IN_MOOD_LABEL[mood]}`)

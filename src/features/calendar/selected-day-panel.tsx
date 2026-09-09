@@ -7,7 +7,13 @@ import { AddItemForm } from "@/features/calendar/add-item-form";
 import { Button } from "@/components/ui/button";
 import { formatToman, toPersianDigits } from "@/lib/currency/format";
 import { formatTehranTime, jalaliWeekdayIndex, type JalaliDate } from "@/lib/dates/tehran";
-import { CHECK_IN_MOOD_DAY_LABEL, JALALI_MONTHS, JALALI_WEEKDAYS, MOOD_EMOJI } from "@/lib/labels";
+import {
+  CHECK_IN_MOOD_DAY_LABEL,
+  JALALI_MONTHS,
+  JALALI_WEEKDAYS,
+  MOOD_EMOJI,
+  TRANSACTION_TYPE_LABEL,
+} from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import {
   deleteCalendarEvent,
@@ -40,6 +46,9 @@ export function SelectedDayPanel({
   onChanged: () => void;
 }) {
   const [adding, setAdding] = useState(false);
+  const income = BigInt(items.totals.income);
+  const expense = BigInt(items.totals.expense);
+  const hasTotals = income !== 0n || expense !== 0n;
   const empty = items.events.length === 0 && items.tasks.length === 0;
 
   return (
@@ -63,6 +72,22 @@ export function SelectedDayPanel({
           )}
         </Button>
       </div>
+      {hasTotals ? (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">{TRANSACTION_TYPE_LABEL.INCOME}</p>
+            <p className="numeric-display mt-0.5 text-sm font-semibold text-income">
+              +{formatToman(income, { withUnit: false })}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">{TRANSACTION_TYPE_LABEL.EXPENSE}</p>
+            <p className="numeric-display mt-0.5 text-sm font-semibold text-expense">
+              −{formatToman(expense, { withUnit: false })}
+            </p>
+          </div>
+        </div>
+      ) : null}
       {items.mood ? (
         <p className="text-sm text-muted-foreground">
           <span aria-hidden>{MOOD_EMOJI[items.mood]}</span> {CHECK_IN_MOOD_DAY_LABEL[items.mood]}
@@ -78,7 +103,7 @@ export function SelectedDayPanel({
           }}
         />
       ) : null}
-      {empty && !adding && !items.mood ? (
+      {empty && !adding && !items.mood && !hasTotals ? (
         <p className="text-sm text-muted-foreground">چیزی برای این روز ثبت نشده</p>
       ) : null}
       {items.events.length > 0 ? (

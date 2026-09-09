@@ -42,6 +42,10 @@ export type CalendarDayItems = {
   events: CalendarEventItem[];
   tasks: CalendarTaskItem[];
   mood: CheckInMood | null;
+  totals: {
+    income: string;
+    expense: string;
+  };
 };
 
 export type CalendarMonthPayload = {
@@ -96,6 +100,10 @@ export async function loadCalendarMonth(
           sourceType: task.sourceType,
         })),
         mood: day.mood,
+        totals: {
+          income: day.totals.income.toString(),
+          expense: day.totals.expense.toString(),
+        },
       };
     }
     return { ok: true, data: { year: data.year, month: data.month, days } };

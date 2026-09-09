@@ -3,6 +3,7 @@ import type {
   CheckInMood,
   FinancialTaskSource,
   FinancialTaskType,
+  TransactionType,
 } from "@prisma/client";
 import {
   addJalaliMonths,
@@ -24,10 +25,16 @@ export type CalendarMonthTask = FinancialTaskSummary & {
   sourceType: FinancialTaskSource | null;
 };
 
+export interface CalendarDayTotals {
+  income: bigint;
+  expense: bigint;
+}
+
 export interface CalendarMonthDay {
   events: CalendarMonthEvent[];
   tasks: CalendarMonthTask[];
   mood: CheckInMood | null;
+  totals: CalendarDayTotals;
 }
 
 export interface CalendarMonthData {
@@ -61,6 +68,12 @@ type TaskRow = {
 type CheckInRow = {
   date: Date;
   mood: CheckInMood;
+};
+
+type TransactionRow = {
+  type: TransactionType;
+  amount: bigint;
+  occurredAt: Date;
 };
 
 export type CalendarMonthStore = {
@@ -111,10 +124,24 @@ export type CalendarMonthStore = {
       };
     }) => Promise<CheckInRow[]>;
   };
+  transaction: {
+    findMany: (args: {
+      where: {
+        userId: string;
+        type: { in: Array<"INCOME" | "EXPENSE"> };
+        occurredAt: { gte: Date; lt: Date };
+      };
+      select: {
+        type: true;
+        amount: true;
+        occurredAt: true;
+      };
+    }) => Promise<TransactionRow[]>;
+  };
 };
 
 function emptyDay(): CalendarMonthDay {
-  return { events: [], tasks: [], mood: null };
+  return { events: [], tasks: [], mood: null, totals: { income: 0n, expense: 0n } };
 }
 
 function dayBucket(days: Record<string, CalendarMonthDay>, date: JalaliDate): CalendarMonthDay {
@@ -158,7 +185,7 @@ export async function getCalendarMonthData(
   const range = jalaliMonthRange(year, month);
   const today = getTehranJalaliDate(now);
 
-  const [events, tasks, checkIns] = await Promise.all([
+  const [events, tasks, checkIns, transactions] = await Promise.all([
     store.calendarEvent.findMany({
       where: {
         userId,
@@ -198,6 +225,18 @@ export async function getCalendarMonthData(
       select: {
         date: true,
         mood: true,
+      },
+    }),
+    store.transaction.findMany({
+      where: {
+        userId,
+        type: { in: ["INCOME", "EXPENSE"] },
+        occurredAt: { gte: range.eventStart, lt: range.eventEnd },
+      },
+      select: {
+        type: true,
+        amount: true,
+        occurredAt: true,
       },
     }),
   ]);
@@ -242,6 +281,19 @@ export async function getCalendarMonthData(
       continue;
     }
     dayBucket(days, day).mood = checkIn.mood;
+  }
+
+  for (const transaction of transactions) {
+    const day = jalaliFromInstant(transaction.occurredAt);
+    if (day.year !== year || day.month !== month) {
+      continue;
+    }
+    const bucket = dayBucket(days, day);
+    if (transaction.type === "INCOME") {
+      bucket.totals.income += transaction.amount;
+    } else if (transaction.type === "EXPENSE") {
+      bucket.totals.expense += transaction.amount;
+    }
   }
 
   return { year, month, days };

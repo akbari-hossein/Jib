@@ -44,6 +44,12 @@ type Seed = {
     date: Date;
     mood: "GOOD" | "NEUTRAL" | "STRESSED";
   }>;
+  transactions?: Array<{
+    userId: string;
+    type: "EXPENSE" | "INCOME" | "TRANSFER";
+    amount: bigint;
+    occurredAt: Date;
+  }>;
 };
 
 function unexpectedWrite(method: string) {
@@ -150,6 +156,31 @@ function createStore(seed: Seed = {}): CalendarMonthStore & { reads: string[]; w
       update: track("dailyCheckIn.update"),
       delete: track("dailyCheckIn.delete"),
     },
+    transaction: {
+      findMany: async ({
+        where,
+      }: {
+        where: {
+          userId: string;
+          type: { in: Array<"INCOME" | "EXPENSE"> };
+          occurredAt: { gte: Date; lt: Date };
+        };
+      }) => {
+        reads.push("transaction.findMany");
+        return (seed.transactions ?? [])
+          .filter(
+            (transaction) =>
+              transaction.userId === where.userId &&
+              where.type.in.includes(transaction.type as "INCOME" | "EXPENSE") &&
+              transaction.occurredAt >= where.occurredAt.gte &&
+              transaction.occurredAt < where.occurredAt.lt,
+          )
+          .map(({ type, amount, occurredAt }) => ({ type, amount, occurredAt }));
+      },
+      create: track("transaction.create"),
+      update: track("transaction.update"),
+      delete: track("transaction.delete"),
+    },
   };
 
   return store as unknown as CalendarMonthStore & { reads: string[]; writes: string[] };
@@ -162,7 +193,7 @@ describe("jalaliDateKey", () => {
 });
 
 describe("getCalendarMonthData", () => {
-  it("buckets events and tasks by Jalali day with three queries", async () => {
+  it("buckets events and tasks by Jalali day with four queries", async () => {
     const day18 = { year: 1404, month: 6, day: 18 };
     const day19 = { year: 1404, month: 6, day: 19 };
     const store = createStore({
@@ -236,6 +267,7 @@ describe("getCalendarMonthData", () => {
       "calendarEvent.findMany",
       "financialTask.findMany",
       "dailyCheckIn.findMany",
+      "transaction.findMany",
     ]);
     expect(store.writes).toEqual([]);
     expect(day?.events.map((event) => event.id)).toEqual(["event_1"]);
@@ -245,6 +277,7 @@ describe("getCalendarMonthData", () => {
     expect(day?.tasks[1]?.isCompleted).toBe(true);
     expect(day?.tasks[1]?.sourceType).toBe("BUDGET");
     expect(day?.mood).toBeNull();
+    expect(day?.totals).toEqual({ income: 0n, expense: 0n });
     expect(data.days["1404-06-19"]?.tasks.map((task) => task.id)).toEqual(["task_next_day"]);
     expect(data.days["1404-06-19"]?.mood).toBeNull();
   });
@@ -268,10 +301,12 @@ describe("getCalendarMonthData", () => {
       "calendarEvent.findMany",
       "financialTask.findMany",
       "dailyCheckIn.findMany",
+      "transaction.findMany",
     ]);
     expect(data.days["1404-06-18"]?.mood).toBe("GOOD");
     expect(data.days["1404-06-18"]?.events).toEqual([]);
     expect(data.days["1404-06-18"]?.tasks).toEqual([]);
+    expect(data.days["1404-06-18"]?.totals).toEqual({ income: 0n, expense: 0n });
     expect(data.days["1404-06-19"]?.mood).toBe("STRESSED");
     expect(data.days["1404-06-20"]).toBeUndefined();
     expect(data.days[jalaliDateKey(next)]).toBeUndefined();
@@ -360,6 +395,111 @@ describe("getCalendarMonthData", () => {
     const tasks = data.days[jalaliDateKey(yesterday)]?.tasks ?? [];
     expect(tasks.find((task) => task.id === "overdue")?.isOverdue).toBe(true);
     expect(tasks.find((task) => task.id === "done_yesterday")?.isOverdue).toBe(false);
+  });
+
+  it("sums income and expense per Jalali day and excludes transfers", async () => {
+    const day18 = { year: 1404, month: 6, day: 18 };
+    const day19 = { year: 1404, month: 6, day: 19 };
+    const next = addJalaliMonths({ year: 1404, month: 6, day: 1 }, 1);
+    const store = createStore({
+      transactions: [
+        {
+          userId: USER_ID,
+          type: "INCOME",
+          amount: 2_000_000n,
+          occurredAt: tehranDateTimeUtc(day18, 9, 0),
+        },
+        {
+          userId: USER_ID,
+          type: "INCOME",
+          amount: 500_000n,
+          occurredAt: tehranDateTimeUtc(day18, 21, 30),
+        },
+        {
+          userId: USER_ID,
+          type: "EXPENSE",
+          amount: 890_000n,
+          occurredAt: tehranDateTimeUtc(day18, 14, 0),
+        },
+        {
+          userId: USER_ID,
+          type: "TRANSFER",
+          amount: 1_000_000n,
+          occurredAt: tehranDateTimeUtc(day18, 12, 0),
+        },
+        {
+          userId: USER_ID,
+          type: "EXPENSE",
+          amount: 120_000n,
+          occurredAt: tehranDateTimeUtc(day19, 8, 0),
+        },
+        {
+          userId: OTHER_USER_ID,
+          type: "INCOME",
+          amount: 9_000_000n,
+          occurredAt: tehranDateTimeUtc(day18, 10, 0),
+        },
+        {
+          userId: USER_ID,
+          type: "INCOME",
+          amount: 3_000_000n,
+          occurredAt: tehranDateTimeUtc(next, 1, 0),
+        },
+      ],
+    });
+
+    const data = await getCalendarMonthData(USER_ID, 1404, 6, NOW, store);
+
+    expect(store.reads).toEqual([
+      "calendarEvent.findMany",
+      "financialTask.findMany",
+      "dailyCheckIn.findMany",
+      "transaction.findMany",
+    ]);
+    expect(store.writes).toEqual([]);
+    expect(data.days["1404-06-18"]?.totals).toEqual({ income: 2_500_000n, expense: 890_000n });
+    expect(data.days["1404-06-19"]?.totals).toEqual({ income: 0n, expense: 120_000n });
+    expect(data.days[jalaliDateKey(next)]).toBeUndefined();
+  });
+
+  it("buckets transactions by Tehran midnight like Reports", async () => {
+    const first = { year: 1404, month: 6, day: 1 };
+    const last = { year: 1404, month: 6, day: 31 };
+    const next = addJalaliMonths(first, 1);
+    const store = createStore({
+      transactions: [
+        {
+          userId: USER_ID,
+          type: "EXPENSE",
+          amount: 10_000n,
+          occurredAt: new Date(tehranMidnightUtc(first).getTime() - 1),
+        },
+        {
+          userId: USER_ID,
+          type: "INCOME",
+          amount: 40_000n,
+          occurredAt: tehranMidnightUtc(first),
+        },
+        {
+          userId: USER_ID,
+          type: "EXPENSE",
+          amount: 25_000n,
+          occurredAt: new Date(tehranMidnightUtc(next).getTime() - 1),
+        },
+        {
+          userId: USER_ID,
+          type: "INCOME",
+          amount: 99_000n,
+          occurredAt: tehranMidnightUtc(next),
+        },
+      ],
+    });
+
+    const data = await getCalendarMonthData(USER_ID, 1404, 6, NOW, store);
+    expect(data.days["1404-06-01"]?.totals).toEqual({ income: 40_000n, expense: 0n });
+    expect(data.days["1404-06-31"]?.totals).toEqual({ income: 0n, expense: 25_000n });
+    expect(data.days[jalaliDateKey(last)]?.events).toEqual([]);
+    expect(data.days[jalaliDateKey(next)]).toBeUndefined();
   });
 });
 
