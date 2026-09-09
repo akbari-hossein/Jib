@@ -8,6 +8,7 @@ import type {
 } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
+import type { IranianHoliday } from "@/lib/dates/iranian-holidays";
 import { getCalendarMonthData } from "@/lib/finance/calendar-month";
 import {
   assertCalendarEventOwned,
@@ -46,6 +47,7 @@ export type CalendarDayItems = {
     income: string;
     expense: string;
   };
+  holiday: IranianHoliday | null;
 };
 
 export type CalendarMonthPayload = {
@@ -104,6 +106,7 @@ export async function loadCalendarMonth(
           income: day.totals.income.toString(),
           expense: day.totals.expense.toString(),
         },
+        holiday: day.holiday,
       };
     }
     return { ok: true, data: { year: data.year, month: data.month, days } };

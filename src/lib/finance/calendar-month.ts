@@ -5,12 +5,14 @@ import type {
   FinancialTaskType,
   TransactionType,
 } from "@prisma/client";
+import { getHolidayForJalaliDate, type IranianHoliday } from "@/lib/dates/iranian-holidays";
 import {
   addJalaliMonths,
   compareJalaliDate,
   getTehranJalaliDate,
   jalaliDateOnlyUtc,
   jalaliFromInstant,
+  jalaliMonthLength,
   tehranMidnightUtc,
   type JalaliDate,
 } from "@/lib/dates/tehran";
@@ -35,6 +37,7 @@ export interface CalendarMonthDay {
   tasks: CalendarMonthTask[];
   mood: CheckInMood | null;
   totals: CalendarDayTotals;
+  holiday: IranianHoliday | null;
 }
 
 export interface CalendarMonthData {
@@ -141,7 +144,7 @@ export type CalendarMonthStore = {
 };
 
 function emptyDay(): CalendarMonthDay {
-  return { events: [], tasks: [], mood: null, totals: { income: 0n, expense: 0n } };
+  return { events: [], tasks: [], mood: null, totals: { income: 0n, expense: 0n }, holiday: null };
 }
 
 function dayBucket(days: Record<string, CalendarMonthDay>, date: JalaliDate): CalendarMonthDay {
@@ -293,6 +296,15 @@ export async function getCalendarMonthData(
       bucket.totals.income += transaction.amount;
     } else if (transaction.type === "EXPENSE") {
       bucket.totals.expense += transaction.amount;
+    }
+  }
+
+  const length = jalaliMonthLength(year, month);
+  for (let day = 1; day <= length; day += 1) {
+    const date = { year, month, day };
+    const holiday = getHolidayForJalaliDate(jalaliDateKey(date));
+    if (holiday) {
+      dayBucket(days, date).holiday = holiday;
     }
   }
 

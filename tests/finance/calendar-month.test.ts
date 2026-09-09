@@ -278,8 +278,10 @@ describe("getCalendarMonthData", () => {
     expect(day?.tasks[1]?.sourceType).toBe("BUDGET");
     expect(day?.mood).toBeNull();
     expect(day?.totals).toEqual({ income: 0n, expense: 0n });
+    expect(day?.holiday).toBeNull();
     expect(data.days["1404-06-19"]?.tasks.map((task) => task.id)).toEqual(["task_next_day"]);
     expect(data.days["1404-06-19"]?.mood).toBeNull();
+    expect(data.days["1404-06-19"]?.holiday?.title).toContain("میلاد رسول اکرم");
   });
 
   it("buckets recorded moods by Jalali day and leaves unrecorded days null", async () => {
@@ -307,6 +309,7 @@ describe("getCalendarMonthData", () => {
     expect(data.days["1404-06-18"]?.events).toEqual([]);
     expect(data.days["1404-06-18"]?.tasks).toEqual([]);
     expect(data.days["1404-06-18"]?.totals).toEqual({ income: 0n, expense: 0n });
+    expect(data.days["1404-06-18"]?.holiday).toBeNull();
     expect(data.days["1404-06-19"]?.mood).toBe("STRESSED");
     expect(data.days["1404-06-20"]).toBeUndefined();
     expect(data.days[jalaliDateKey(next)]).toBeUndefined();
@@ -361,9 +364,15 @@ describe("getCalendarMonthData", () => {
     });
 
     const data = await getCalendarMonthData(USER_ID, 1404, 6, NOW, store);
-    expect(Object.keys(data.days).sort()).toEqual(["1404-06-31"]);
+    expect(Object.keys(data.days).sort()).toEqual([
+      "1404-06-02",
+      "1404-06-10",
+      "1404-06-19",
+      "1404-06-31",
+    ]);
     expect(data.days["1404-06-31"]?.events.map((event) => event.id)).toEqual(["in_month"]);
     expect(data.days["1404-06-31"]?.tasks.map((task) => task.id)).toEqual(["task_in"]);
+    expect(data.days[jalaliDateKey(next)]).toBeUndefined();
   });
 
   it("marks incomplete past tasks as overdue", async () => {
@@ -500,6 +509,29 @@ describe("getCalendarMonthData", () => {
     expect(data.days["1404-06-31"]?.totals).toEqual({ income: 0n, expense: 25_000n });
     expect(data.days[jalaliDateKey(last)]?.events).toEqual([]);
     expect(data.days[jalaliDateKey(next)]).toBeUndefined();
+  });
+
+  it("attaches official holidays from the static dataset without extra queries", async () => {
+    const store = createStore();
+    const data = await getCalendarMonthData(USER_ID, 1404, 6, NOW, store);
+
+    expect(store.reads).toEqual([
+      "calendarEvent.findMany",
+      "financialTask.findMany",
+      "dailyCheckIn.findMany",
+      "transaction.findMany",
+    ]);
+    expect(store.writes).toEqual([]);
+    expect(data.days["1404-06-02"]?.holiday).toEqual({
+      jalaliDate: "1404-06-02",
+      title: "شهادت امام رضا (ع)[ ۳۰ صفر ]",
+    });
+    expect(data.days["1404-06-02"]?.events).toEqual([]);
+    expect(data.days["1404-06-02"]?.tasks).toEqual([]);
+    expect(data.days["1404-06-02"]?.mood).toBeNull();
+    expect(data.days["1404-06-02"]?.totals).toEqual({ income: 0n, expense: 0n });
+    expect(data.days["1404-06-18"]).toBeUndefined();
+    expect(data.days["1404-06-20"]).toBeUndefined();
   });
 });
 

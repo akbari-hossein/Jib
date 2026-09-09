@@ -66,23 +66,26 @@ export function MonthGrid({
           const hasEvents = (items?.events.length ?? 0) > 0;
           const hasTasks = (items?.tasks.length ?? 0) > 0;
           const mood = items?.mood ?? null;
+          const holiday = items?.holiday ?? null;
           const isToday = isSameJalaliDay(day, today);
           const isSelected = isSameJalaliDay(day, selected);
+          const dayLabel = toPersianDigits(day.day);
           return (
             <button
               key={key}
               type="button"
               onClick={() => onSelect(day)}
-              aria-label={toPersianDigits(day.day)}
+              aria-label={holiday ? `${dayLabel}، ${holiday.title}` : dayLabel}
               aria-current={isToday ? "date" : undefined}
               aria-pressed={isSelected}
               className={cn(
                 "relative flex aspect-square flex-col items-center justify-center rounded-2xl text-sm transition-colors",
-                isSelected
-                  ? "bg-primary text-primary-foreground"
-                  : isToday
-                    ? "bg-primary/10 ring-1 ring-inset ring-primary/45"
-                    : "hover:bg-surface-muted",
+                isSelected && "bg-primary text-primary-foreground",
+                !isSelected && isToday && "ring-1 ring-inset ring-primary/45",
+                !isSelected && isToday && !holiday && "bg-primary/10",
+                !isSelected && holiday && "bg-savings/15",
+                !isSelected && holiday && !isToday && "hover:bg-savings/25",
+                !isSelected && !isToday && !holiday && "hover:bg-surface-muted",
               )}
             >
               {mood ? (

@@ -21,6 +21,7 @@ const EMPTY_DAY: CalendarDayItems = {
   tasks: [],
   mood: null,
   totals: { income: "0", expense: "0" },
+  holiday: null,
 };
 
 const MOOD_LEGEND = (["GOOD", "NEUTRAL", "STRESSED"] as const)

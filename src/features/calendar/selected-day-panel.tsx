@@ -72,6 +72,9 @@ export function SelectedDayPanel({
           )}
         </Button>
       </div>
+      {items.holiday ? (
+        <p className="text-sm text-muted-foreground">{items.holiday.title}</p>
+      ) : null}
       {hasTotals ? (
         <div className="grid grid-cols-2 gap-4">
           <div>

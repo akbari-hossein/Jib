@@ -223,6 +223,12 @@ When you change spendable-today, budgets, goals, reports, or notification rules,
 
 ---
 
+## Calendar holidays
+
+Official Iranian holidays on the month calendar are a static, developer-maintained file: `src/lib/dates/iranian-holidays.ts`. The snapshot is vendored from [samanzamani/PersianHoliday](https://github.com/samanzamani/PersianHoliday) (mined from time.ir). **Refresh that file manually once a year** when the next official Jalali calendar is published — there is no live API call and no yearly sync job.
+
+---
+
 ## Production notes
 
 - Set a strong unique `AUTH_SECRET`. Rotating it invalidates existing sessions.
