@@ -20,7 +20,7 @@ export function DangComposer({
 
   return (
     <>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2">
         <Button type="button" className="flex-1" onClick={() => setOpen("debt")}>
           دنگ جدید
         </Button>
