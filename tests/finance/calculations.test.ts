@@ -53,6 +53,30 @@ describe("available money", () => {
       }),
     ).toBe(8_420_000n);
   });
+
+  it("subtracts outstanding debts I owe as an extra term", () => {
+    expect(
+      calculateAvailableMoney({
+        liquidBalance: 12_000_000n,
+        reservedForGoals: 1_200_000n,
+        plannedExpenses: 1_500_000n,
+        requiredSavings: 880_000n,
+        outstandingDebtsIOwe: 1_200_000n,
+      }),
+    ).toBe(7_220_000n);
+  });
+
+  it("never adds amounts others owe the user", () => {
+    expect(
+      calculateAvailableMoney({
+        liquidBalance: 12_000_000n,
+        reservedForGoals: 0n,
+        plannedExpenses: 0n,
+        requiredSavings: 0n,
+        outstandingDebtsIOwe: 0n,
+      }),
+    ).toBe(12_000_000n);
+  });
 });
 
 describe("planned expenses", () => {

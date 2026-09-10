@@ -2,6 +2,8 @@ import type {
   AccountType,
   CategoryGroup,
   CheckInMood,
+  DebtStatus,
+  DebtType,
   RecurringFrequency,
   TransactionType,
 } from "@prisma/client";
@@ -28,6 +30,19 @@ export const TRANSACTION_TYPE_LABEL: Record<TransactionType, string> = {
   EXPENSE: "هزینه",
   INCOME: "درآمد",
   TRANSFER: "جابه‌جایی",
+  LOAN_GIVEN: "قرض داده‌شده",
+  LOAN_RECEIVED: "قرض گرفته‌شده",
+};
+
+export const DEBT_TYPE_LABEL: Record<DebtType, string> = {
+  OWED_TO_ME: "طلب تو",
+  I_OWE: "بدهی تو",
+};
+
+export const DEBT_STATUS_LABEL: Record<DebtStatus, string> = {
+  OPEN: "باز",
+  PARTIALLY_SETTLED: "بخشی تسویه",
+  SETTLED: "تسویه‌شده",
 };
 
 export const FREQUENCY_LABEL: Record<RecurringFrequency, string> = {

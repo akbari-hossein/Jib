@@ -97,6 +97,36 @@ export async function assertBudgetCategoryOwned(userId: string, budgetCategoryId
   return item;
 }
 
+export async function assertContactOwned(userId: string, contactId: string) {
+  const contact = await prisma.contact.findFirst({
+    where: { id: contactId, userId },
+  });
+  if (!contact) {
+    throw new OwnershipError();
+  }
+  return contact;
+}
+
+export async function assertDebtRecordOwned(userId: string, debtRecordId: string) {
+  const debt = await prisma.debtRecord.findFirst({
+    where: { id: debtRecordId, userId },
+  });
+  if (!debt) {
+    throw new OwnershipError();
+  }
+  return debt;
+}
+
+export async function assertSplitBillOwned(userId: string, splitBillId: string) {
+  const split = await prisma.splitBill.findFirst({
+    where: { id: splitBillId, userId },
+  });
+  if (!split) {
+    throw new OwnershipError();
+  }
+  return split;
+}
+
 export function userFacingMutationError(error: unknown, fallback: string): string {
   if (error instanceof OwnershipError) {
     return "این مورد در دسترس نیست.";

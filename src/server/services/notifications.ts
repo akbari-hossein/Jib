@@ -136,7 +136,7 @@ async function loadUserSnapshot(
   const weekStart = jalaliWeekStart(today);
   const lastWeekStart = addJalaliDays(weekStart, -7);
 
-  const [accounts, goals, recurring, budget, transactions] = await Promise.all([
+  const [accounts, goals, recurring, budget, transactions, openDebts] = await Promise.all([
     prisma.account.findMany({
       where: { userId },
       select: { id: true, balance: true, isActive: true, includeInAvailable: true },
@@ -159,6 +159,10 @@ async function loadUserSnapshot(
         },
       },
       select: { type: true, amount: true, occurredAt: true },
+    }),
+    prisma.debtRecord.findMany({
+      where: { userId, type: "I_OWE", status: { not: "SETTLED" } },
+      select: { remainingAmount: true },
     }),
   ]);
 
@@ -219,6 +223,7 @@ async function loadUserSnapshot(
     today,
     incomeDayOfMonth,
     nextRecurringIncome,
+    outstandingDebtsIOwe: openDebts.reduce((sum, debt) => sum + debt.remainingAmount, 0n),
   });
 
   const period = jalaliKey({ year: today.year, month: today.month, day: 1 }).slice(0, 7);

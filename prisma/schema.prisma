@@ -37,6 +37,19 @@ enum TransactionType {
   EXPENSE
   INCOME
   TRANSFER
+  LOAN_GIVEN
+  LOAN_RECEIVED
+}
+
+enum DebtType {
+  I_OWE
+  OWED_TO_ME
+}
+
+enum DebtStatus {
+  OPEN
+  PARTIALLY_SETTLED
+  SETTLED
 }
 
 enum CategoryGroup {
@@ -129,6 +142,9 @@ model User {
   notificationLogs       NotificationLog[]
   pushSubscriptions      PushSubscription[]
   adminAuditLogs         AdminAuditLog[]           @relation("AdminActor")
+  contacts               Contact[]
+  debtRecords            DebtRecord[]
+  splitBills             SplitBill[]
 
   @@index([role, status])
   @@index([createdAt])
@@ -170,6 +186,9 @@ model Account {
   incomingTransfers    Transaction[]          @relation("AccountTo")
   recurring            RecurringTransaction[]
   goals                Goal[]
+  debtRecords          DebtRecord[]
+  settlementPayments   SettlementPayment[]
+  splitBills           SplitBill[]
 
   @@index([userId, isActive])
 }
@@ -213,6 +232,10 @@ model Transaction {
   recurringTransaction   RecurringTransaction? @relation(fields: [recurringTransactionId], references: [id], onDelete: SetNull)
   createdAt              DateTime        @default(now())
   updatedAt              DateTime        @updatedAt
+
+  debtRecord        DebtRecord?
+  settlementPayment SettlementPayment?
+  splitBill         SplitBill?
 
   @@index([userId, occurredAt])
   @@index([userId, accountId])
@@ -441,4 +464,84 @@ model AdminAuditLog {
   @@index([adminId, createdAt])
   @@index([targetType, targetId])
   @@index([action, createdAt])
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  phone     String?
+  color     String?
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  debtRecords DebtRecord[]
+
+  @@index([userId])
+}
+
+model DebtRecord {
+  id               String     @id @default(cuid())
+  userId           String
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contactId        String
+  contact          Contact    @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  type             DebtType
+  originalAmount   BigInt
+  remainingAmount  BigInt
+  reason           String?
+  date             DateTime
+  dueDate          DateTime?
+  accountId        String?
+  account          Account?   @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  status           DebtStatus @default(OPEN)
+  splitBillId      String?
+  splitBill        SplitBill? @relation(fields: [splitBillId], references: [id], onDelete: SetNull)
+  transactionId    String?    @unique
+  transaction      Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  settlements SettlementPayment[]
+
+  @@index([userId, status])
+  @@index([contactId])
+  @@index([status])
+}
+
+model SettlementPayment {
+  id            String   @id @default(cuid())
+  debtRecordId  String
+  debtRecord    DebtRecord @relation(fields: [debtRecordId], references: [id], onDelete: Cascade)
+  amount        BigInt
+  date          DateTime @default(now())
+  accountId     String?
+  account       Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  note          String?
+  transactionId String?  @unique
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+
+  @@index([debtRecordId])
+}
+
+model SplitBill {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  totalAmount   BigInt
+  date          DateTime
+  paidByMe      Boolean  @default(true)
+  accountId     String?
+  account       Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  transactionId String?  @unique
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+
+  debtRecords DebtRecord[]
+
+  @@index([userId])
 }

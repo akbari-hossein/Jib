@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, List, MoreHorizontal, Target, Wallet } from "lucide-react";
+import { House, List, MoreHorizontal, Target, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/home", label: "خانه", icon: House },
   { href: "/transactions", label: "تراکنش‌ها", icon: List },
-  { href: "/budgets", label: "بودجه", icon: Wallet },
+  { href: "/dang", label: "دنگ", icon: Users },
   { href: "/goals", label: "اهداف", icon: Target },
   { href: "/more", label: "بیشتر", icon: MoreHorizontal },
 ] as const;

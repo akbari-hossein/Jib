@@ -86,6 +86,7 @@ export function DashboardView({
                 <FormulaRow label="هدف بدون حساب" value={formatToman(dashboard.reservedForGoals)} prefix="− " />
                 <FormulaRow label="خرج‌های نزدیک" value={formatToman(dashboard.plannedExpenses)} prefix="− " />
                 <FormulaRow label="پس‌انداز این دوره" value={formatToman(dashboard.requiredSavings)} prefix="− " />
+                <FormulaRow label="بدهی باز" value={formatToman(dashboard.outstandingDebtsIOwe)} prefix="− " />
                 <FormulaRow
                   label={dashboard.isShortfall ? "کسری" : "قابل‌خرج"}
                   value={formatToman(

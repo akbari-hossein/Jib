@@ -22,7 +22,7 @@ export async function persistTransaction(
       throw new Error("INVALID_TRANSFER");
     }
 
-    await db.transaction.create({
+    const transfer = await db.transaction.create({
       data: {
         userId: input.userId,
         type: "TRANSFER",
@@ -41,10 +41,10 @@ export async function persistTransaction(
       where: { id: input.toAccountId },
       data: { balance: { increment: input.amount } },
     });
-    return;
+    return transfer;
   }
 
-  await db.transaction.create({
+  const transaction = await db.transaction.create({
     data: {
       userId: input.userId,
       type: input.type,
@@ -58,18 +58,16 @@ export async function persistTransaction(
     },
   });
 
+  const outbound = input.type === "EXPENSE" || input.type === "LOAN_GIVEN";
   await db.account.update({
     where: { id: input.accountId },
     data: {
-      balance:
-        input.type === "EXPENSE"
-          ? { decrement: input.amount }
-          : { increment: input.amount },
+      balance: outbound ? { decrement: input.amount } : { increment: input.amount },
     },
   });
 
   const merchant = input.merchant?.trim();
-  if (merchant && input.categoryId) {
+  if (merchant && input.categoryId && (input.type === "EXPENSE" || input.type === "INCOME")) {
     await rememberMerchantRule(db, {
       userId: input.userId,
       merchant,
@@ -77,6 +75,8 @@ export async function persistTransaction(
       accountId: input.accountId,
     });
   }
+
+  return transaction;
 }
 
 export async function reverseTransaction(
@@ -98,12 +98,12 @@ export async function reverseTransaction(
       where: { id: transaction.toAccountId },
       data: { balance: { decrement: transaction.amount } },
     });
-  } else if (transaction.type === "EXPENSE") {
+  } else if (transaction.type === "EXPENSE" || transaction.type === "LOAN_GIVEN") {
     await db.account.update({
       where: { id: transaction.accountId },
       data: { balance: { increment: transaction.amount } },
     });
-  } else if (transaction.type === "INCOME") {
+  } else if (transaction.type === "INCOME" || transaction.type === "LOAN_RECEIVED") {
     await db.account.update({
       where: { id: transaction.accountId },
       data: { balance: { decrement: transaction.amount } },

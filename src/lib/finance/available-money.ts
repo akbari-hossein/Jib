@@ -32,11 +32,13 @@ export function sumPlannedExpenses(
 
 export function calculateAvailableMoney(input: AvailableMoneyInput): bigint {
   const simulatedDelta = input.simulatedDelta ?? 0n;
+  const outstandingDebtsIOwe = input.outstandingDebtsIOwe ?? 0n;
   return (
     input.liquidBalance -
     input.reservedForGoals -
     input.plannedExpenses -
     input.requiredSavings -
+    outstandingDebtsIOwe -
     simulatedDelta
   );
 }

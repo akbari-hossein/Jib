@@ -9,6 +9,8 @@ export type AvailableMoneyInput = {
   reservedForGoals: bigint;
   plannedExpenses: bigint;
   requiredSavings: bigint;
+  /** Outstanding I_OWE remaining amounts. Owed-to-me is never included. */
+  outstandingDebtsIOwe?: bigint;
   simulatedDelta?: bigint;
 };
 

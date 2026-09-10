@@ -11,6 +11,7 @@ import { CalendarToday } from "@/features/today/calendar-today";
 import { DailyCheckIn } from "@/features/today/daily-check-in";
 import { FinancialTaskList } from "@/features/today/financial-task-list";
 import { UpcomingFinancialEventCard } from "@/features/today/upcoming-context-row";
+import { DangCard } from "@/features/debts/dang-card";
 import { APP_NAME } from "@/lib/config/app";
 import { formatToman, toPersianDigits } from "@/lib/currency/format";
 import { formatTehranClockInput } from "@/lib/dates/jalali-form";
@@ -152,6 +153,7 @@ export function TodayView({
           {summary.activeGoal ? <ActiveGoalProgress goal={summary.activeGoal} /> : null}
         </>
       )}
+      <DangCard owedToMe={summary.dang.owedToMe} iOwe={summary.dang.iOwe} />
     </main>
   );
 }

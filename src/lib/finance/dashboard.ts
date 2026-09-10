@@ -28,6 +28,7 @@ export function assembleDashboard(input: {
   today: JalaliDate;
   incomeDayOfMonth: number | null;
   nextRecurringIncome?: JalaliDate | null;
+  outstandingDebtsIOwe?: bigint;
 }) {
   const cycle = getIncomeCycle(
     input.today,
@@ -49,11 +50,13 @@ export function assembleDashboard(input: {
     remainingDays: cycle.remainingDays,
     daysInCycle: cycle.daysInCycle,
   });
+  const outstandingDebtsIOwe = input.outstandingDebtsIOwe ?? 0n;
   const availableMoney = calculateAvailableMoney({
     liquidBalance,
     reservedForGoals,
     plannedExpenses,
     requiredSavings,
+    outstandingDebtsIOwe,
   });
   const allowance = calculateDailyAllowance({
     availableMoney,
@@ -71,6 +74,7 @@ export function assembleDashboard(input: {
     reservedForGoals,
     plannedExpenses,
     requiredSavings,
+    outstandingDebtsIOwe,
     availableMoney,
     allowance,
     monthlyChange,

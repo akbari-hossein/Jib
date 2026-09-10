@@ -4,6 +4,22 @@ export {
   sumPlannedExpenses,
   sumReservedForGoals,
 } from "@/lib/finance/available-money";
+export {
+  applySettlement,
+  calculateContactBalance,
+  calculateDebtImpactOnAvailableMoney,
+  calculateTotalIOwe,
+  calculateTotalOwedToMe,
+  planSettlementAllocation,
+  splitAmountEvenly,
+  SettlementError,
+  SplitError,
+} from "@/lib/finance/debts";
+export type {
+  ContactBalance,
+  ContactBalanceDirection,
+  DebtSnapshot,
+} from "@/lib/finance/debts";
 export { calculateBudgetUsage } from "@/lib/finance/budget-usage";
 export {
   isCategoryLimitAllowed,

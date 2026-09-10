@@ -19,6 +19,11 @@ import {
 } from "@/lib/dates/tehran";
 import { prisma } from "@/lib/db/prisma";
 import { assembleDashboard } from "@/lib/finance/dashboard";
+import {
+  calculateTotalIOwe,
+  calculateTotalOwedToMe,
+  type DebtSnapshot,
+} from "@/lib/finance/debts";
 import { calculateGoalProgress } from "@/lib/finance/goal-progress";
 import type { AccountSnapshot, GoalSnapshot } from "@/lib/finance/types";
 
@@ -35,6 +40,10 @@ export interface TodaySummary {
     availableToday: bigint;
     totalAvailable: bigint;
     daysRemainingInPeriod: number;
+  };
+  dang: {
+    owedToMe: bigint;
+    iOwe: bigint;
   };
   hasAccounts: boolean;
   upcomingFinancialEvents: UpcomingFinancialEvent[];
@@ -212,6 +221,15 @@ export type TodaySummaryStore = {
       select: { mood: true };
     }) => Promise<{ mood: CheckInMood } | null>;
   };
+  debtRecord: {
+    findMany: (args: {
+      where: {
+        userId: string;
+        status: { not: "SETTLED" };
+      };
+      select: { type: true; remainingAmount: true; status: true };
+    }) => Promise<DebtSnapshot[]>;
+  };
 };
 
 export function timeOfDayFromNow(now: Date): TimeOfDay {
@@ -297,7 +315,17 @@ export async function getTodaySummary(
   const tomorrowDate = jalaliDateOnlyUtc(addJalaliDays(today, 1));
   const todayDate = jalaliDateOnlyUtc(today);
 
-  const [user, accounts, goals, recurring, spentTodayResult, calendarEvents, financialTasks, checkIn] =
+  const [
+    user,
+    accounts,
+    goals,
+    recurring,
+    spentTodayResult,
+    calendarEvents,
+    financialTasks,
+    checkIn,
+    openDebts,
+  ] =
     await Promise.all([
       store.user.findUnique({
         where: { id: userId },
@@ -379,6 +407,10 @@ export async function getTodaySummary(
         where: { userId_date: { userId, date: todayDate } },
         select: { mood: true },
       }),
+      store.debtRecord.findMany({
+        where: { userId, status: { not: "SETTLED" } },
+        select: { type: true, remainingAmount: true, status: true },
+      }),
     ]);
 
   const nextRecurringIncome =
@@ -387,6 +419,9 @@ export async function getTodaySummary(
       .map((item) => jalaliFromInstant(item.nextRunAt))
       .filter((date) => compareJalaliDate(date, today) >= 0)
       .sort(compareJalaliDate)[0] ?? null;
+
+  const iOwe = calculateTotalIOwe(openDebts);
+  const owedToMe = calculateTotalOwedToMe(openDebts);
 
   const snapshot = assembleDashboard({
     accounts,
@@ -404,6 +439,7 @@ export async function getTodaySummary(
     today,
     incomeDayOfMonth: user?.incomeDayOfMonth ?? null,
     nextRecurringIncome,
+    outstandingDebtsIOwe: iOwe,
   });
 
   const upcomingFinancialEvents: UpcomingFinancialEvent[] = [];
@@ -433,6 +469,10 @@ export async function getTodaySummary(
       availableToday: snapshot.allowance.displayRemainingToday,
       totalAvailable: snapshot.availableMoney,
       daysRemainingInPeriod: snapshot.cycle.remainingDays,
+    },
+    dang: {
+      owedToMe,
+      iOwe,
     },
     hasAccounts: accounts.some((account) => account.isActive),
     upcomingFinancialEvents,

@@ -48,6 +48,7 @@ export const PUBLIC_PATHS = [
 export const PRIVATE_PATH_PREFIXES = [
   "/home",
   "/transactions",
+  "/dang",
   "/budgets",
   "/goals",
   "/more",

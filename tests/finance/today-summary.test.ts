@@ -64,6 +64,12 @@ type Seed = {
   }>;
   checkInMood?: "GOOD" | "NEUTRAL" | "STRESSED";
   spentToday?: bigint;
+  openDebts?: Array<{
+    userId: string;
+    type: "I_OWE" | "OWED_TO_ME";
+    remainingAmount: bigint;
+    status: "OPEN" | "PARTIALLY_SETTLED" | "SETTLED";
+  }>;
 };
 
 function unexpectedWrite(method: string) {
@@ -208,6 +214,19 @@ function createStore(seed: Seed = {}): TodaySummaryStore & { writes: string[] } 
       update: track("dailyCheckIn.update"),
       upsert: track("dailyCheckIn.upsert"),
     },
+    debtRecord: {
+      findMany: async ({
+        where,
+      }: {
+        where: { userId: string; status: { not: "SETTLED" } };
+      }) =>
+        (seed.openDebts ?? []).filter(
+          (row) => row.userId === where.userId && row.status !== "SETTLED",
+        ),
+      create: track("debtRecord.create"),
+      update: track("debtRecord.update"),
+      delete: track("debtRecord.delete"),
+    },
   };
 
   return store as unknown as TodaySummaryStore & { writes: string[] };
@@ -242,6 +261,7 @@ describe("getTodaySummary", () => {
     expect(summary.activeGoal).toBeNull();
     expect(summary.hasAccounts).toBe(false);
     expect(summary.checkIn).toBeNull();
+    expect(summary.dang).toEqual({ owedToMe: 0n, iOwe: 0n });
     expect(summary.money.daysRemainingInPeriod).toBeGreaterThan(0);
     expect(store.writes).toEqual([]);
   });
@@ -383,6 +403,39 @@ describe("getTodaySummary", () => {
     const summary = await getTodaySummary(USER_ID, NOW, store);
 
     expect(summary.checkIn).toEqual({ mood: "STRESSED" });
+    expect(store.writes).toEqual([]);
+  });
+
+  it("subtracts debts the user owes from available money and keeps owed-to-me separate", async () => {
+    const store = createStore({
+      accounts: [
+        {
+          userId: USER_ID,
+          balance: 12_000_000n,
+          isActive: true,
+          includeInAvailable: true,
+        },
+      ],
+      openDebts: [
+        {
+          userId: USER_ID,
+          type: "I_OWE",
+          remainingAmount: 1_200_000n,
+          status: "OPEN",
+        },
+        {
+          userId: USER_ID,
+          type: "OWED_TO_ME",
+          remainingAmount: 3_400_000n,
+          status: "OPEN",
+        },
+      ],
+    });
+
+    const summary = await getTodaySummary(USER_ID, NOW, store);
+
+    expect(summary.dang).toEqual({ owedToMe: 3_400_000n, iOwe: 1_200_000n });
+    expect(summary.money.totalAvailable).toBe(10_800_000n);
     expect(store.writes).toEqual([]);
   });
 

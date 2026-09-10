@@ -24,7 +24,10 @@ export default async function MorePage() {
       </header>
 
       <nav className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card">
-        <Link href="/notifications" className="px-5 py-4 text-sm hover:bg-surface-muted">
+        <Link href="/budgets" className="px-5 py-4 text-sm hover:bg-surface-muted">
+          بودجه
+        </Link>
+        <Link href="/notifications" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           اعلان‌ها
         </Link>
         <Link href="/settings/notifications" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">

@@ -29,6 +29,7 @@ function revalidateFinance() {
   revalidatePath("/goals");
   revalidatePath("/recurring");
   revalidatePath("/reports");
+  revalidatePath("/dang");
 }
 
 export async function createQuickTransaction(input: {

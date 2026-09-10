@@ -5,6 +5,7 @@ import { SESSION_COOKIE } from "@/lib/config/app";
 const protectedPrefixes = [
   "/home",
   "/transactions",
+  "/dang",
   "/budgets",
   "/goals",
   "/more",
@@ -37,6 +38,8 @@ export const config = {
   matcher: [
     "/home/:path*",
     "/transactions/:path*",
+    "/dang",
+    "/dang/:path*",
     "/budgets/:path*",
     "/goals/:path*",
     "/more/:path*",

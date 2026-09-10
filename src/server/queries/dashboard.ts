@@ -10,6 +10,7 @@ import {
   tehranMidnightUtc,
 } from "@/lib/dates/tehran";
 import { assembleDashboard } from "@/lib/finance/dashboard";
+import { getDangImpactAmounts } from "@/server/queries/debts";
 import { listRecentTransactions } from "@/server/queries/transactions";
 
 async function sumExpenses(userId: string, from: Date, to: Date, liquidOnly: boolean) {
@@ -34,7 +35,7 @@ export async function getDashboard(userId: string, incomeDayOfMonth: number | nu
   const dayStart = tehranMidnightUtc(today);
   const dayEnd = tehranMidnightUtc(addJalaliDays(today, 1));
 
-  const [accounts, goals, recurring, spentToday, monthlySpent, previousMonthSpent, recent, accountCount] =
+  const [accounts, goals, recurring, spentToday, monthlySpent, previousMonthSpent, recent, accountCount, dang] =
     await Promise.all([
       prisma.account.findMany({
         where: { userId },
@@ -64,6 +65,7 @@ export async function getDashboard(userId: string, incomeDayOfMonth: number | nu
       ),
       listRecentTransactions(userId, 5),
       prisma.account.count({ where: { userId, isActive: true } }),
+      getDangImpactAmounts(userId),
     ]);
 
   const nextRecurringIncome =
@@ -89,6 +91,7 @@ export async function getDashboard(userId: string, incomeDayOfMonth: number | nu
     today,
     incomeDayOfMonth,
     nextRecurringIncome,
+    outstandingDebtsIOwe: dang.iOwe,
   });
 
   const greeting = greetingForPeriod(getDayPeriod(now));
@@ -106,6 +109,8 @@ export async function getDashboard(userId: string, incomeDayOfMonth: number | nu
     reservedForGoals: snapshot.reservedForGoals,
     plannedExpenses: snapshot.plannedExpenses,
     requiredSavings: snapshot.requiredSavings,
+    outstandingDebtsIOwe: snapshot.outstandingDebtsIOwe,
+    dangOwedToMe: dang.owedToMe,
     spentToday,
     dailyShare: snapshot.allowance.dailyShare,
     remainingToday: snapshot.allowance.displayRemainingToday,

@@ -39,6 +39,7 @@ function revalidateAccounts() {
   revalidatePath("/reports");
   revalidatePath("/budgets");
   revalidatePath("/recurring");
+  revalidatePath("/dang");
 }
 
 function parseAppearance(formData: FormData): { color: string | null; icon: string | null } | { error: string } {
