@@ -1,13 +1,15 @@
 import Link from "next/link";
-import { CategoryIcon } from "@/components/category-icon";
 import { EmptyState } from "@/components/empty-state";
 import { MoneyDisplay } from "@/components/money/money-display";
 import { UsageBar } from "@/components/usage-bar";
+import { CategorySpendChart } from "@/features/reports/components/category-spend-chart";
+import { MonthComparisonChart } from "@/features/reports/components/month-comparison-chart";
+import { MonthlyTrendChart } from "@/features/reports/components/monthly-trend-chart";
+import { SavingsRateChart } from "@/features/reports/components/savings-rate-chart";
 import { MonthlyRecapPrompt } from "@/features/reports/monthly-recap-prompt";
 import { MonthlyRecapShare } from "@/features/reports/monthly-recap-share";
 import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency/format";
 import { budgetUsageCopy, periodChangeCopy } from "@/lib/labels";
-import type { RankedCategory } from "@/lib/finance/reports";
 import type { BudgetStatus } from "@/lib/finance/types";
 import type { ReportsDto } from "@/server/queries/reports";
 
@@ -45,12 +47,14 @@ export function ReportsView({ reports }: { reports: ReportsDto }) {
       <WeeklyCard week={reports.week} />
       <MonthlyCard month={reports.month} recap={reports.recap} />
 
-      {reports.month.categories.length > 0 ? (
-        <section className="rounded-3xl border border-border bg-card px-5 py-4">
-          <h2 className="text-base font-semibold">خرج به تفکیک دسته</h2>
-          <CategoryList categories={reports.month.categories} />
-        </section>
+      {reports.charts.trend ? <MonthlyTrendChart trend={reports.charts.trend} /> : null}
+      {reports.charts.categories ? (
+        <CategorySpendChart categories={reports.charts.categories} />
       ) : null}
+      {reports.charts.comparison ? (
+        <MonthComparisonChart comparison={reports.charts.comparison} />
+      ) : null}
+      {reports.charts.savingsRate ? <SavingsRateChart series={reports.charts.savingsRate} /> : null}
 
       {reports.budget.items.length > 0 || reports.budget.overallUsage ? (
         <section className="rounded-3xl border border-border bg-card px-5 py-4">
@@ -172,14 +176,6 @@ function MonthlyCard({
       ) : (
         <p className="mt-4 text-sm text-foreground/45">برای نرخ پس‌انداز، درآمد این ماه را ثبت کن.</p>
       )}
-      <p className="mt-2 text-sm text-foreground/55">
-        {periodChangeCopy(month.expenseChange, "month")}
-      </p>
-      {month.topCategory ? (
-        <p className="mt-3 text-sm text-foreground/70">
-          بزرگ‌ترین دسته: {month.topCategory.name} — {formatCompactToman(month.topCategory.amount)}
-        </p>
-      ) : null}
     </section>
   );
 }
@@ -195,25 +191,3 @@ function Row({ label, value }: { label: string; value: bigint }) {
   );
 }
 
-function CategoryList({ categories }: { categories: RankedCategory[] }) {
-  return (
-    <ul className="mt-4 flex flex-col gap-3">
-      {categories.map((category) => (
-        <li key={category.categoryId ?? "none"} className="flex flex-col gap-2">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="flex size-8 items-center justify-center rounded-full bg-surface-muted">
-                <CategoryIcon name={category.icon} />
-              </span>
-              <span className="truncate text-sm">{category.name}</span>
-            </div>
-            <span className="numeric-display text-sm text-foreground/60">
-              {formatCompactToman(category.amount)}
-            </span>
-          </div>
-          <UsageBar pct={category.pct} tone="expense" />
-        </li>
-      ))}
-    </ul>
-  );
-}

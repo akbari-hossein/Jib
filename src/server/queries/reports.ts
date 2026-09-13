@@ -4,6 +4,7 @@ import {
   addJalaliMonths,
   formatJalaliRange,
   getTehranJalaliDate,
+  jalaliFromInstant,
   jalaliMonthLength,
   jalaliWeekStart,
   tehranMidnightUtc,
@@ -17,6 +18,17 @@ import {
   summarizeLoggedDays,
   type MonthlyRecapDto,
 } from "@/lib/finance/monthly-recap-data";
+import {
+  aggregateMonthlyFlows,
+  getCategoryBreakdown,
+  getMonthComparisonData,
+  getMonthlyTrendData,
+  getSavingsRateSeries,
+  listChartMonthWindow,
+  serializeReportCharts,
+  REPORT_TREND_MONTHS,
+  type ChartTransaction,
+} from "@/lib/finance/report-charts";
 import { assemblePeriodReview, type CategorySpend, type PeriodReview } from "@/lib/finance/reports";
 import { JALALI_MONTHS } from "@/lib/labels";
 import { getBudgetMonth, type BudgetMonthDto } from "@/server/queries/budgets";
@@ -210,8 +222,13 @@ export async function getReports(userId: string) {
   const monthFrom = tehranMidnightUtc(monthStart);
   const monthTo = tehranMidnightUtc(nextMonth);
   const includePreviousPrompt = today.day <= NEW_MONTH_RECAP_PROMPT_DAYS;
+  const chartMonths = listChartMonthWindow(
+    { year: today.year, month: today.month },
+    REPORT_TREND_MONTHS,
+  );
+  const chartFrom = tehranMidnightUtc({ ...chartMonths[0]!, day: 1 });
 
-  const [week, month, budget, goals, extras, previousRecap] = await Promise.all([
+  const [week, month, budget, goals, extras, previousRecap, chartRows] = await Promise.all([
     periodTotals(
       userId,
       tehranMidnightUtc(weekStart),
@@ -232,9 +249,49 @@ export async function getReports(userId: string) {
     includePreviousPrompt
       ? getMonthlyRecap(userId, previousMonthStart.year, previousMonthStart.month)
       : Promise.resolve(null),
+    prisma.transaction.findMany({
+      where: {
+        userId,
+        type: { in: ["INCOME", "EXPENSE"] },
+        occurredAt: { gte: chartFrom, lt: monthTo },
+      },
+      select: { type: true, amount: true, occurredAt: true },
+    }),
   ]);
 
-  const hasActivity = week.expenses > 0n || week.income > 0n || month.expenses > 0n || month.income > 0n;
+  const chartTransactions: ChartTransaction[] = chartRows.flatMap((row) => {
+    if (row.type !== "INCOME" && row.type !== "EXPENSE") {
+      return [];
+    }
+    const jalali = jalaliFromInstant(row.occurredAt);
+    return [{ type: row.type, amount: row.amount, year: jalali.year, month: jalali.month }];
+  });
+  const flows = aggregateMonthlyFlows(chartMonths, chartTransactions);
+  const currentFlow = flows[flows.length - 1] ?? {
+    year: today.year,
+    month: today.month,
+    income: month.income,
+    expenses: month.expenses,
+  };
+  const previousFlow = flows[flows.length - 2] ?? {
+    year: previousMonthStart.year,
+    month: previousMonthStart.month,
+    income: 0n,
+    expenses: 0n,
+  };
+  const charts = serializeReportCharts({
+    trend: getMonthlyTrendData(flows),
+    categories: getCategoryBreakdown(month.categories, month.expenses),
+    comparison: getMonthComparisonData({ current: currentFlow, previous: previousFlow }),
+    savingsRate: getSavingsRateSeries(flows),
+  });
+
+  const hasActivity =
+    week.expenses > 0n ||
+    week.income > 0n ||
+    month.expenses > 0n ||
+    month.income > 0n ||
+    chartTransactions.length > 0;
   const recap = composeRecap({
     year: today.year,
     month: today.month,
@@ -261,6 +318,7 @@ export async function getReports(userId: string) {
     },
     recap,
     previousRecap,
+    charts,
     budget,
     goals,
   };

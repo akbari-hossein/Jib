@@ -76,6 +76,21 @@ export type {
 } from "@/lib/finance/monthly-recap-data";
 export { assemblePeriodReview, rankCategorySpend } from "@/lib/finance/reports";
 export type { CategorySpend, PeriodReview, RankedCategory } from "@/lib/finance/reports";
+export {
+  aggregateMonthlyFlows,
+  getCategoryBreakdown,
+  getMonthComparisonData,
+  getMonthlyTrendData,
+  getSavingsRateSeries,
+  listChartMonthWindow,
+  serializeReportCharts,
+  REPORT_TREND_MONTHS,
+} from "@/lib/finance/report-charts";
+export type {
+  ChartTransaction,
+  MonthlyFlow,
+  ReportChartsDto,
+} from "@/lib/finance/report-charts";
 export { calculateRequiredSavings } from "@/lib/finance/required-savings";
 export {
   checkBudgetThreshold,
