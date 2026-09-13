@@ -31,3 +31,7 @@ export function formatChartTomanFull(value: number): string {
 export function formatChartPercent(value: number): string {
   return `${toPersianDigits(Math.round(value))}٪`;
 }
+
+export function formatChartScore(value: number): string {
+  return toPersianDigits(Math.round(value));
+}

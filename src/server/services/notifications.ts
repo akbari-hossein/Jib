@@ -24,6 +24,7 @@ import {
 } from "@/lib/notifications/catalog";
 import { isInQuietHours } from "@/lib/notifications/quiet-hours";
 import { getBudgetMonth } from "@/server/queries/budgets";
+import { persistClosedPeriodSnapshot } from "@/server/queries/financial-health";
 import { deliverPushToUser } from "@/server/services/push";
 
 const USER_BATCH = 40;
@@ -294,6 +295,11 @@ export async function processUserNotifications(
   incomeDayOfMonth: number | null,
   now = new Date(),
 ): Promise<{ considered: number; delivered: number }> {
+  const today = getTehranJalaliDate(now);
+  if (today.day <= 7) {
+    await persistClosedPeriodSnapshot(userId, now).catch(() => undefined);
+  }
+
   const [pref, settings] = await Promise.all([
     prisma.notificationPreference.upsert({
       where: { userId },

@@ -105,6 +105,34 @@ export type { FinanceNotification } from "@/lib/finance/notificationRules";
 export { matchTransactionRule } from "@/lib/finance/rules";
 export type { RuleSnapshot } from "@/lib/finance/rules";
 export { calculateSavingsRate } from "@/lib/finance/savings-rate";
+export {
+  calculateBudgetAdherenceScore,
+  calculateDebtBurdenScore,
+  calculateEmergencyFundScore,
+  calculateFinancialHealthScore,
+  calculateSavingsRateScore,
+  calculateSpendingConsistencyScore,
+  combineWeightedScores,
+  monthlyEquivalentAmount,
+  SCORE_WEIGHTS,
+} from "@/lib/finance/financial-health-score";
+export type {
+  BudgetUsageInput,
+  FinancialHealthInput,
+  FinancialHealthResult,
+  ScoreComponentKey,
+  SubScoreResult,
+} from "@/lib/finance/financial-health-score";
+export {
+  assembleFinancialHealthInput,
+  computeHealthFromSource,
+} from "@/lib/finance/financial-health-input";
+export {
+  formatScoreExplanation,
+  HEALTH_SCORE_COPY,
+  SCORE_COMPONENT_LABEL,
+  scoreDeltaCopy,
+} from "@/lib/finance/financial-health-copy";
 export type {
   AccountSnapshot,
   AvailableMoneyInput,

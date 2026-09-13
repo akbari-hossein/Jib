@@ -11,12 +11,14 @@ import { CalendarToday } from "@/features/today/calendar-today";
 import { DailyCheckIn } from "@/features/today/daily-check-in";
 import { FinancialTaskList } from "@/features/today/financial-task-list";
 import { UpcomingFinancialEventCard } from "@/features/today/upcoming-context-row";
+import { ScoreDashboardWidget } from "@/features/health-score/score-dashboard-widget";
 import { DangCard } from "@/features/debts/dang-card";
 import { APP_NAME } from "@/lib/config/app";
 import { formatToman, toPersianDigits } from "@/lib/currency/format";
 import { formatTehranClockInput } from "@/lib/dates/jalali-form";
 import { getTehranGregorianDate, getTehranJalaliDate, greetingForPeriod } from "@/lib/dates/tehran";
 import type { TimeOfDay, TodaySummary } from "@/lib/finance/today-summary";
+import type { HealthScoreWidgetDto } from "@/server/queries/financial-health";
 
 function greetingCopy(timeOfDay: TimeOfDay, userName: string): string {
   const period = timeOfDay === "afternoon" ? "noon" : timeOfDay;
@@ -80,9 +82,11 @@ function ActiveGoalProgress({
 export function TodayView({
   summary,
   unreadCount,
+  health,
 }: {
   summary: TodaySummary;
   unreadCount: number;
+  health: HealthScoreWidgetDto;
 }) {
   const today = getTehranJalaliDate();
   const clock = getTehranGregorianDate();
@@ -153,6 +157,7 @@ export function TodayView({
           {summary.activeGoal ? <ActiveGoalProgress goal={summary.activeGoal} /> : null}
         </>
       )}
+      <ScoreDashboardWidget health={health} />
       <DangCard owedToMe={summary.dang.owedToMe} iOwe={summary.dang.iOwe} />
     </main>
   );

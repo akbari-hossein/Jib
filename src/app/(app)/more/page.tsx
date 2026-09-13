@@ -36,6 +36,9 @@ export default async function MorePage() {
         <Link href="/reports" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           گزارش‌ها
         </Link>
+        <Link href="/health-score" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          امتیاز مالی
+        </Link>
         <Link href="/accounts" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           حساب‌ها
         </Link>

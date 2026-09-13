@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { NotificationBell } from "@/features/notifications/notification-bell";
 import { MonthlyRecapPrompt } from "@/features/reports/monthly-recap-prompt";
+import { ScoreDashboardWidget } from "@/features/health-score/score-dashboard-widget";
 import { TransactionList } from "@/features/transactions/transaction-list";
 import {
   AffordabilitySheet,
@@ -17,6 +18,7 @@ import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency
 import { JALALI_MONTHS, periodChangeCopy } from "@/lib/labels";
 import type { MonthlyRecapDto } from "@/lib/finance/monthly-recap-data";
 import type { DashboardDto } from "@/server/queries/dashboard";
+import type { HealthScoreWidgetDto } from "@/server/queries/financial-health";
 
 export function DashboardView({
   dashboard,
@@ -24,12 +26,14 @@ export function DashboardView({
   unreadCount,
   previousRecap,
   affordability,
+  health,
 }: {
   dashboard: DashboardDto;
   name: string | null;
   unreadCount: number;
   previousRecap?: MonthlyRecapDto | null;
   affordability: AffordabilitySnapshot;
+  health: HealthScoreWidgetDto;
 }) {
   const title = name ? `${dashboard.greeting} ${name}` : dashboard.greeting;
   const remainingLabel = dashboard.hasKnownIncomeDate
@@ -126,6 +130,8 @@ export function DashboardView({
               گزارش کامل
             </Link>
           </Card>
+
+          <ScoreDashboardWidget health={health} />
 
           {dashboard.recent.length === 0 ? (
             <EmptyState

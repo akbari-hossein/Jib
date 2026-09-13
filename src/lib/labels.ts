@@ -89,6 +89,12 @@ export function periodChangeCopy(
   return `${toPersianDigits(change.pct)}٪ کمتر از ${previous}`;
 }
 
+export {
+  HEALTH_SCORE_COPY,
+  SCORE_COMPONENT_LABEL,
+  scoreDeltaCopy,
+} from "@/lib/finance/financial-health-copy";
+
 export function budgetUsageCopy(name: string, pct: number, status: BudgetStatus): string {
   if (status === "over") {
     return `از سقف ${name} رد شدی. هنوز می‌تونی سقف رو تنظیم کنی.`;

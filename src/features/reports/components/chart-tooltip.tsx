@@ -1,4 +1,4 @@
-import { formatChartPercent, formatChartTomanFull } from "@/features/reports/components/chart-theme";
+import { formatChartPercent, formatChartScore, formatChartTomanFull } from "@/features/reports/components/chart-theme";
 
 type TooltipRow = {
   name: string;
@@ -15,7 +15,7 @@ export function ChartTooltip({
   active?: boolean;
   label?: string;
   rows: TooltipRow[];
-  kind?: "money" | "percent";
+  kind?: "money" | "percent" | "score";
 }) {
   if (!active || rows.length === 0) {
     return null;
@@ -34,7 +34,11 @@ export function ChartTooltip({
             {row.name}
           </span>
           <span className="numeric-display text-foreground">
-            {kind === "percent" ? formatChartPercent(row.value) : formatChartTomanFull(row.value)}
+            {kind === "percent"
+              ? formatChartPercent(row.value)
+              : kind === "score"
+                ? formatChartScore(row.value)
+                : formatChartTomanFull(row.value)}
           </span>
         </p>
       ))}

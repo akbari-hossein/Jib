@@ -145,6 +145,7 @@ model User {
   contacts               Contact[]
   debtRecords            DebtRecord[]
   splitBills             SplitBill[]
+  financialHealthSnapshots FinancialHealthSnapshot[]
 
   @@index([role, status])
   @@index([createdAt])
@@ -525,6 +526,31 @@ model SettlementPayment {
   createdAt     DateTime @default(now())
 
   @@index([debtRecordId])
+}
+
+model FinancialHealthSnapshot {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  totalScore               Int
+  savingsRateScore         Int
+  budgetAdherenceScore     Int
+  spendingConsistencyScore Int
+  emergencyFundScore       Int
+  debtBurdenScore          Int
+
+  primaryDriver String?
+  explanation   String?
+
+  periodStart DateTime
+  periodEnd   DateTime
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, periodStart])
+  @@index([userId, createdAt])
+  @@index([userId, periodStart])
 }
 
 model SplitBill {
