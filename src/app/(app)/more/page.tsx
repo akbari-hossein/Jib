@@ -67,6 +67,13 @@ export default async function MorePage() {
         ) : null}
       </nav>
 
+      <nav className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card">
+        <p className="px-5 pt-4 text-xs text-muted-foreground">ابزارها</p>
+        <Link href="/tools/calculators" className="px-5 py-4 text-sm hover:bg-surface-muted">
+          محاسبه‌گر مالی
+        </Link>
+      </nav>
+
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">روز درآمد</h2>
         <PaydayForm incomeDayOfMonth={user.incomeDayOfMonth} />

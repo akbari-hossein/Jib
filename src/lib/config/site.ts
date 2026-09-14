@@ -60,6 +60,7 @@ export const PRIVATE_PATH_PREFIXES = [
   "/reports",
   "/notifications",
   "/export",
+  "/tools",
   "/admin",
   "/login",
   "/signup",

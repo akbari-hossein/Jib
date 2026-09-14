@@ -5,6 +5,26 @@ export {
   sumReservedForGoals,
 } from "@/lib/finance/available-money";
 export {
+  calculateDepositInterest,
+} from "@/lib/finance/depositCalculations";
+export type {
+  DepositCalculatorInput,
+  DepositCalculatorResult,
+} from "@/lib/finance/depositCalculations";
+export {
+  calculateEqualInstallmentAmount,
+  calculateLoan,
+  calculateQarzAlHasanehLoan,
+  calculateStandardLoan,
+  periodicRateFromAnnual,
+} from "@/lib/finance/loanCalculations";
+export type {
+  AmortizationRow,
+  LoanCalculationMode,
+  LoanCalculatorInput,
+  LoanCalculatorResult,
+} from "@/lib/finance/loanCalculations";
+export {
   applySettlement,
   calculateContactBalance,
   calculateDebtImpactOnAvailableMoney,
