@@ -126,6 +126,29 @@ export { matchTransactionRule } from "@/lib/finance/rules";
 export type { RuleSnapshot } from "@/lib/finance/rules";
 export { calculateSavingsRate } from "@/lib/finance/savings-rate";
 export {
+  EMERGENCY_FUND_HISTORY_MONTHS,
+  EMERGENCY_FUND_MAX_TARGET_MONTHS,
+  EMERGENCY_FUND_MIN_HISTORY_MONTHS,
+  EMERGENCY_FUND_TARGET_MONTH_PRESETS,
+  assembleEmergencyFund,
+  averageMonthlySavingsFromFlows,
+  buildEssentialMonthlyBuckets,
+  calculateEmergencyFundProgress,
+  calculateEmergencyFundTarget,
+  calculateEssentialMonthlyAverage,
+  calculateMonthsToTarget,
+  emergencyFundMonthKey,
+  resolveEssentialMonthlyAverage,
+} from "@/lib/finance/emergencyFund";
+export type {
+  CategoryMonthTotal,
+  EmergencyFundProgress,
+  EssentialSpendTransaction,
+  MonthlyFlowAmounts,
+  MonthlySpendBucket,
+  MonthsToTarget,
+} from "@/lib/finance/emergencyFund";
+export {
   calculateBudgetAdherenceScore,
   calculateDebtBurdenScore,
   calculateEmergencyFundScore,

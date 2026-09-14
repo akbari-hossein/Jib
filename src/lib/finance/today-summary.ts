@@ -106,6 +106,7 @@ type GoalRow = GoalSnapshot & {
   name: string;
   createdAt: Date;
   account: { balance: bigint } | null;
+  type?: "CUSTOM" | "EMERGENCY_FUND";
 };
 
 type CalendarRow = {
@@ -149,6 +150,7 @@ export type TodaySummaryStore = {
         accountId: true;
         isArchived: true;
         createdAt: true;
+        type: true;
         account: { select: { balance: true } };
       };
     }) => Promise<GoalRow[]>;
@@ -279,7 +281,7 @@ function isTaskOverdue(dueDate: Date, today: JalaliDate): boolean {
 
 function pickActiveGoal(goals: GoalRow[], todayUtc: Date): GoalProgressSummary | null {
   const active = goals
-    .filter((goal) => !goal.isArchived)
+    .filter((goal) => !goal.isArchived && goal.type !== "EMERGENCY_FUND")
     .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())[0];
 
   if (!active) {
@@ -346,6 +348,7 @@ export async function getTodaySummary(
           accountId: true,
           isArchived: true,
           createdAt: true,
+          type: true,
           account: { select: { balance: true } },
         },
       }),

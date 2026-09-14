@@ -109,6 +109,11 @@ enum CheckInMood {
   STRESSED
 }
 
+enum GoalType {
+  CUSTOM
+  EMERGENCY_FUND
+}
+
 model User {
   id                   String     @id @default(cuid())
   email                String     @unique
@@ -274,21 +279,26 @@ model BudgetCategory {
 }
 
 model Goal {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name          String
-  targetAmount  BigInt
-  currentAmount BigInt    @default(0)
-  targetDate    DateTime?
-  accountId     String?
-  account       Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
-  icon          String?
-  isArchived    Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                         String    @id @default(cuid())
+  userId                     String
+  user                       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                       String
+  targetAmount               BigInt
+  currentAmount              BigInt    @default(0)
+  targetDate                 DateTime?
+  accountId                  String?
+  account                    Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  icon                       String?
+  isArchived                 Boolean   @default(false)
+  type                       GoalType  @default(CUSTOM)
+  targetMonths               Int?
+  essentialCategoryIds       String[]  @default([])
+  estimatedMonthlyEssential  BigInt?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
 
   @@index([userId, isArchived])
+  @@index([userId, type, isArchived])
   @@index([createdAt])
 }
 

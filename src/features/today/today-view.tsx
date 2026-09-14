@@ -13,12 +13,14 @@ import { FinancialTaskList } from "@/features/today/financial-task-list";
 import { UpcomingFinancialEventCard } from "@/features/today/upcoming-context-row";
 import { ScoreDashboardWidget } from "@/features/health-score/score-dashboard-widget";
 import { DangCard } from "@/features/debts/dang-card";
+import { EmergencyFundCard } from "@/features/emergency-fund/components/EmergencyFundCard";
 import { APP_NAME } from "@/lib/config/app";
 import { formatToman, toPersianDigits } from "@/lib/currency/format";
 import { formatTehranClockInput } from "@/lib/dates/jalali-form";
 import { getTehranGregorianDate, getTehranJalaliDate, greetingForPeriod } from "@/lib/dates/tehran";
 import type { TimeOfDay, TodaySummary } from "@/lib/finance/today-summary";
 import type { HealthScoreWidgetDto } from "@/server/queries/financial-health";
+import type { EmergencyFundData } from "@/server/emergencyFund/getEmergencyFundData";
 
 function greetingCopy(timeOfDay: TimeOfDay, userName: string): string {
   const period = timeOfDay === "afternoon" ? "noon" : timeOfDay;
@@ -83,10 +85,12 @@ export function TodayView({
   summary,
   unreadCount,
   health,
+  emergencyFund,
 }: {
   summary: TodaySummary;
   unreadCount: number;
   health: HealthScoreWidgetDto;
+  emergencyFund: EmergencyFundData | null;
 }) {
   const today = getTehranJalaliDate();
   const clock = getTehranGregorianDate();
@@ -154,6 +158,13 @@ export function TodayView({
               isOverdue: task.isOverdue,
             }))}
           />
+          {emergencyFund?.configured && emergencyFund.goal ? (
+            <EmergencyFundCard
+              currentAmount={emergencyFund.progress.currentAmount}
+              targetAmount={emergencyFund.progress.targetAmount}
+              progressPercent={emergencyFund.progress.progressPercent}
+            />
+          ) : null}
           {summary.activeGoal ? <ActiveGoalProgress goal={summary.activeGoal} /> : null}
         </>
       )}

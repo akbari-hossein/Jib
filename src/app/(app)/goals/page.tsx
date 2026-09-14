@@ -1,19 +1,22 @@
 import { requireUser } from "@/lib/auth/session";
-import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { EmergencyFundCard, EmergencyFundSetupCard } from "@/features/emergency-fund/components/EmergencyFundCard";
 import { GoalForm } from "@/features/goals/goal-form";
 import { GoalList } from "@/features/goals/goal-list";
 import { listAccounts } from "@/server/queries/accounts";
 import { listGoals } from "@/server/queries/goals";
+import { getEmergencyFundData } from "@/server/emergencyFund/getEmergencyFundData";
 
 export const metadata = { title: "اهداف" };
 
 export default async function GoalsPage() {
   const user = await requireUser();
-  const [goals, accounts] = await Promise.all([
+  const [goals, accounts, emergency] = await Promise.all([
     listGoals(user.id),
     listAccounts(user.id, { activeOnly: true }),
+    getEmergencyFundData(user.id),
   ]);
+  const customGoals = goals.filter((goal) => goal.type !== "EMERGENCY_FUND");
 
   return (
     <main className="flex flex-col gap-6 px-5 pt-8">
@@ -23,14 +26,17 @@ export default async function GoalsPage() {
         dataTour="goals-heading"
       />
 
-      {goals.length === 0 ? (
-        <EmptyState
-          title="هنوز هدفی نداری"
-          description="یک هدف مشخص کن تا بفهمی هر ماه چقدر باید کنار بگذاری و از قابل‌خرج جدا شود."
+      {emergency.configured && emergency.goal ? (
+        <EmergencyFundCard
+          currentAmount={emergency.progress.currentAmount}
+          targetAmount={emergency.progress.targetAmount}
+          progressPercent={emergency.progress.progressPercent}
         />
       ) : (
-        <GoalList goals={goals} />
+        <EmergencyFundSetupCard />
       )}
+
+      {customGoals.length === 0 ? null : <GoalList goals={customGoals} />}
 
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">هدف جدید</h2>

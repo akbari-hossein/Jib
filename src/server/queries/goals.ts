@@ -15,6 +15,7 @@ export async function listGoals(userId: string) {
     return {
       id: goal.id,
       name: goal.name,
+      type: goal.type,
       targetAmount: goal.targetAmount,
       currentAmount,
       targetDate: goal.targetDate,

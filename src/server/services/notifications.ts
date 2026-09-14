@@ -271,12 +271,14 @@ async function loadUserSnapshot(
       weekKey: jalaliKey(weekStart),
     },
     remainingToday: snapshot.allowance.displayRemainingToday,
-    goals: goals.map((goal) => ({
-      id: goal.id,
-      name: goal.name,
-      currentAmount: goal.account ? goal.account.balance : goal.currentAmount,
-      targetAmount: goal.targetAmount,
-    })),
+    goals: goals
+      .filter((goal) => goal.type !== "EMERGENCY_FUND")
+      .map((goal) => ({
+        id: goal.id,
+        name: goal.name,
+        currentAmount: goal.account ? goal.account.balance : goal.currentAmount,
+        targetAmount: goal.targetAmount,
+      })),
   };
 }
 

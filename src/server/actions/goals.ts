@@ -19,6 +19,7 @@ export type GoalActionState = {
 
 function revalidateGoals() {
   revalidatePath("/goals");
+  revalidatePath("/goals/emergency-fund");
   revalidatePath("/home");
   revalidatePath("/reports");
 }
