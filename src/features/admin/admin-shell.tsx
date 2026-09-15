@@ -18,25 +18,39 @@ function navActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+function NavLinks({
+  pathname,
+  onNavigate,
+  pendingReceiptCount = 0,
+}: {
+  pathname: string;
+  onNavigate?: () => void;
+  pendingReceiptCount?: number;
+}) {
   return (
     <ul className="flex flex-col gap-1">
       {ADMIN_NAV.map((item) => {
         const active = navActive(pathname, item.href);
+        const badge = item.href === "/admin/receipts" && pendingReceiptCount > 0 ? pendingReceiptCount : null;
         return (
           <li key={item.href}>
             <Link
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "flex min-h-11 items-center rounded-2xl px-3 text-sm transition-colors",
+                "flex min-h-11 items-center justify-between gap-2 rounded-2xl px-3 text-sm transition-colors",
                 active
                   ? "bg-primary/10 font-medium text-primary"
                   : "text-foreground/70 hover:bg-surface-muted hover:text-foreground",
               )}
               aria-current={active ? "page" : undefined}
             >
-              {item.label}
+              <span>{item.label}</span>
+              {badge != null ? (
+                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-medium text-primary">
+                  {badge}
+                </span>
+              ) : null}
             </Link>
           </li>
         );
@@ -48,10 +62,12 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
 export function AdminShell({
   name,
   email,
+  pendingReceiptCount = 0,
   children,
 }: {
   name: string | null;
   email: string;
+  pendingReceiptCount?: number;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -71,7 +87,7 @@ export function AdminShell({
             </span>
           </Link>
           <nav className="min-h-0 flex-1 overflow-y-auto" aria-label="منوی مدیریت">
-            <NavLinks pathname={pathname} />
+            <NavLinks pathname={pathname} pendingReceiptCount={pendingReceiptCount} />
           </nav>
           <div className="mt-6 border-t border-border pt-4">
             <p className="truncate px-2 text-sm font-medium">{name ?? "مدیر"}</p>
@@ -108,7 +124,7 @@ export function AdminShell({
                     <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-border" />
                     <Drawer.Title className="mb-4 px-2 text-base font-semibold">پنل مدیریت</Drawer.Title>
                     <nav aria-label="منوی مدیریت">
-                      <NavLinks pathname={pathname} onNavigate={() => setOpen(false)} />
+                      <NavLinks pathname={pathname} onNavigate={() => setOpen(false)} pendingReceiptCount={pendingReceiptCount} />
                     </nav>
                   </Drawer.Content>
                 </Drawer.Portal>

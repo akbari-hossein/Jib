@@ -3,18 +3,21 @@ import { PageHeader } from "@/components/ui/page-header";
 import { EmergencyFundCard, EmergencyFundSetupCard } from "@/features/emergency-fund/components/EmergencyFundCard";
 import { GoalForm } from "@/features/goals/goal-form";
 import { GoalList } from "@/features/goals/goal-list";
+import { ReadOnlyOverlay } from "@/features/subscription/components/ReadOnlyOverlay";
 import { listAccounts } from "@/server/queries/accounts";
 import { listGoals } from "@/server/queries/goals";
 import { getEmergencyFundData } from "@/server/emergencyFund/getEmergencyFundData";
+import { getCachedSubscription } from "@/server/services/subscription";
 
 export const metadata = { title: "اهداف" };
 
 export default async function GoalsPage() {
   const user = await requireUser();
-  const [goals, accounts, emergency] = await Promise.all([
+  const [goals, accounts, emergency, snapshot] = await Promise.all([
     listGoals(user.id),
     listAccounts(user.id, { activeOnly: true }),
     getEmergencyFundData(user.id),
+    getCachedSubscription(user.id),
   ]);
   const customGoals = goals.filter((goal) => goal.type !== "EMERGENCY_FUND");
 
@@ -33,14 +36,18 @@ export default async function GoalsPage() {
           progressPercent={emergency.progress.progressPercent}
         />
       ) : (
-        <EmergencyFundSetupCard />
+        <ReadOnlyOverlay status={snapshot.status}>
+          <EmergencyFundSetupCard />
+        </ReadOnlyOverlay>
       )}
 
-      {customGoals.length === 0 ? null : <GoalList goals={customGoals} />}
+      {customGoals.length === 0 ? null : <GoalList goals={customGoals} writeAccess={snapshot.writeAccess} />}
 
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">هدف جدید</h2>
-        <GoalForm accounts={accounts.map((account) => ({ id: account.id, name: account.name }))} />
+        <ReadOnlyOverlay status={snapshot.status}>
+          <GoalForm accounts={accounts.map((account) => ({ id: account.id, name: account.name }))} />
+        </ReadOnlyOverlay>
       </section>
     </main>
   );

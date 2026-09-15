@@ -6,14 +6,16 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getCachedSubscription } from "@/server/services/subscription";
 
 export const metadata = { title: "تراکنش‌ها" };
 
 export default async function TransactionsPage() {
   const user = await requireUser();
-  const [transactions, accounts] = await Promise.all([
+  const [transactions, accounts, snapshot] = await Promise.all([
     listRecentTransactions(user.id),
     listAccounts(user.id, { activeOnly: true }),
+    getCachedSubscription(user.id),
   ]);
 
   return (
@@ -44,7 +46,7 @@ export default async function TransactionsPage() {
           }
         />
       ) : (
-        <TransactionList transactions={transactions} />
+        <TransactionList transactions={transactions} writeAccess={snapshot.writeAccess} />
       )}
     </main>
   );

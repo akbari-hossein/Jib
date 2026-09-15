@@ -4,6 +4,7 @@ import { AdminShell } from "@/features/admin/admin-shell";
 import { SessionKeepAlive } from "@/features/auth/session-keep-alive";
 import { requireAdmin } from "@/lib/auth/admin";
 import { privatePageRobots } from "@/lib/seo/metadata";
+import { countPendingReceipts } from "@/server/services/subscription";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +18,9 @@ export const metadata: Metadata = {
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const admin = await requireAdmin();
+  const pendingReceiptCount = await countPendingReceipts();
   return (
-    <AdminShell name={admin.name} email={admin.email}>
+    <AdminShell name={admin.name} email={admin.email} pendingReceiptCount={pendingReceiptCount}>
       {children}
       <SessionKeepAlive />
     </AdminShell>

@@ -23,6 +23,7 @@ import {
   userFacingMutationError,
 } from "@/server/services/ownership";
 import { persistTransaction } from "@/server/services/transactions";
+import { isWriteBlocked, writeBlockedState } from "@/server/services/subscription";
 
 export type RecurringActionState = {
   ok: boolean;
@@ -56,6 +57,10 @@ export async function createRecurring(
   formData: FormData,
 ): Promise<RecurringActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const name = String(formData.get("name") ?? "").trim();
   const typeResult = typeSchema.safeParse(formData.get("type"));
   const frequencyResult = frequencySchema.safeParse(formData.get("frequency"));
@@ -128,6 +133,9 @@ export async function createRecurring(
 
 export async function pauseRecurring(formData: FormData): Promise<void> {
   const user = await requireUser();
+  if (await isWriteBlocked(user.id)) {
+    return;
+  }
   const id = String(formData.get("id") ?? "");
   await assertRecurringOwned(user.id, id);
   await prisma.recurringTransaction.update({
@@ -139,6 +147,9 @@ export async function pauseRecurring(formData: FormData): Promise<void> {
 
 export async function resumeRecurring(formData: FormData): Promise<void> {
   const user = await requireUser();
+  if (await isWriteBlocked(user.id)) {
+    return;
+  }
   const id = String(formData.get("id") ?? "");
   const item = await assertRecurringOwned(user.id, id);
   const today = getTehranJalaliDate();
@@ -158,6 +169,9 @@ export async function resumeRecurring(formData: FormData): Promise<void> {
 
 export async function deleteRecurring(formData: FormData): Promise<void> {
   const user = await requireUser();
+  if (await isWriteBlocked(user.id)) {
+    return;
+  }
   const id = String(formData.get("id") ?? "");
   await assertRecurringOwned(user.id, id);
   await prisma.recurringTransaction.delete({ where: { id } });
@@ -166,6 +180,9 @@ export async function deleteRecurring(formData: FormData): Promise<void> {
 
 export async function postRecurringNow(formData: FormData): Promise<void> {
   const user = await requireUser();
+  if (await isWriteBlocked(user.id)) {
+    return;
+  }
   const id = String(formData.get("id") ?? "");
   const item = await assertRecurringOwned(user.id, id);
   if (!item.isActive) {

@@ -13,6 +13,7 @@ import {
   userFacingMutationError,
 } from "@/server/services/ownership";
 import { persistTransaction, reverseTransaction } from "@/server/services/transactions";
+import { isWriteBlocked, writeBlockedState } from "@/server/services/subscription";
 
 export type TransactionActionState = {
   ok: boolean;
@@ -41,6 +42,10 @@ export async function createQuickTransaction(input: {
   merchant?: string;
 }): Promise<TransactionActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const typeResult = typeSchema.safeParse(input.type);
   const amount = parseTomanInput(input.amount);
 
@@ -106,6 +111,9 @@ export async function createQuickTransaction(input: {
 
 export async function deleteTransaction(formData: FormData): Promise<void> {
   const user = await requireUser();
+  if (await isWriteBlocked(user.id)) {
+    return;
+  }
   const id = String(formData.get("id") ?? "");
   const transaction = await assertTransactionOwned(user.id, id);
   await prisma.$transaction(async (db) => {

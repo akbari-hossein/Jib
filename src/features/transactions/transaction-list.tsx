@@ -13,7 +13,13 @@ type Row = Transaction & {
   toAccount: Account | null;
 };
 
-export function TransactionList({ transactions }: { transactions: Row[] }) {
+export function TransactionList({
+  transactions,
+  writeAccess = true,
+}: {
+  transactions: Row[];
+  writeAccess?: boolean;
+}) {
   const today = getTehranJalaliDate();
   const groups = new Map<string, { label: string; items: Row[] }>();
 
@@ -64,12 +70,14 @@ export function TransactionList({ transactions }: { transactions: Row[] }) {
                       item.type === "EXPENSE" && "text-expense",
                     )}
                   />
-                  <form action={deleteTransaction}>
-                    <input type="hidden" name="id" value={item.id} />
-                    <Button type="submit" variant="ghost" size="sm" className="h-7 px-2 text-foreground/40">
-                      حذف
-                    </Button>
-                  </form>
+                  {writeAccess ? (
+                    <form action={deleteTransaction}>
+                      <input type="hidden" name="id" value={item.id} />
+                      <Button type="submit" variant="ghost" size="sm" className="h-7 px-2 text-foreground/40">
+                        حذف
+                      </Button>
+                    </form>
+                  ) : null}
                 </div>
               </li>
             ))}

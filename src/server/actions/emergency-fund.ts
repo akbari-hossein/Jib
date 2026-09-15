@@ -10,6 +10,7 @@ import {
   updateEmergencyFundGoal,
 } from "@/server/emergencyFund/updateEmergencyFundGoal";
 import { userFacingMutationError } from "@/server/services/ownership";
+import { writeBlockedState } from "@/server/services/subscription";
 
 export type EmergencyFundActionState = {
   ok: boolean;
@@ -39,6 +40,10 @@ export async function saveEmergencyFund(
   formData: FormData,
 ): Promise<EmergencyFundActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const targetMonths = parseMonths(String(formData.get("targetMonths") ?? ""));
   const essentialCategoryIds = formData
     .getAll("essentialCategoryIds")

@@ -7,6 +7,7 @@ import { MoneyDisplay } from "@/components/money/money-display";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/category-icon";
 import { GoalCurrentForm } from "@/features/goals/goal-current-form";
+import { ReadOnlyOverlay } from "@/features/subscription/components/ReadOnlyOverlay";
 import { EmergencyFundSetupForm } from "@/features/emergency-fund/components/EmergencyFundSetupForm";
 import {
   EMERGENCY_FUND_COPY,
@@ -32,12 +33,14 @@ export function EmergencyFundDetailView({ data }: { data: EmergencyFundData }) {
 
   if (editing) {
     return (
-      <div className="flex flex-col gap-4">
-        <Button type="button" variant="ghost" className="self-start" onClick={() => setEditing(false)}>
-          بازگشت
-        </Button>
-        <EmergencyFundSetupForm data={data} mode="edit" onSaved={() => setEditing(false)} />
-      </div>
+      <ReadOnlyOverlay>
+        <div className="flex flex-col gap-4">
+          <Button type="button" variant="ghost" className="self-start" onClick={() => setEditing(false)}>
+            بازگشت
+          </Button>
+          <EmergencyFundSetupForm data={data} mode="edit" onSaved={() => setEditing(false)} />
+        </div>
+      </ReadOnlyOverlay>
     );
   }
 
@@ -101,22 +104,24 @@ export function EmergencyFundDetailView({ data }: { data: EmergencyFundData }) {
         </WhyThisNumber>
       </section>
 
-      <section className="rounded-3xl border border-border bg-card px-5 py-5">
-        <p className="mb-3 text-sm font-medium">{EMERGENCY_FUND_COPY.currentAmountLabel}</p>
-        <GoalCurrentForm id={goal.id} currentAmount={String(Math.round(goal.currentAmount))} />
-      </section>
+      <ReadOnlyOverlay>
+        <section className="rounded-3xl border border-border bg-card px-5 py-5">
+          <p className="mb-3 text-sm font-medium">{EMERGENCY_FUND_COPY.currentAmountLabel}</p>
+          <GoalCurrentForm id={goal.id} currentAmount={String(Math.round(goal.currentAmount))} />
+        </section>
 
-      <div className="flex flex-col gap-2">
-        <Button type="button" variant="secondary" onClick={() => setEditing(true)}>
-          {EMERGENCY_FUND_COPY.editSettings}
-        </Button>
-        <form action={archiveGoal}>
-          <input type="hidden" name="id" value={goal.id} />
-          <Button type="submit" variant="ghost" className="w-full">
-            {EMERGENCY_FUND_COPY.archive}
+        <div className="flex flex-col gap-2">
+          <Button type="button" variant="secondary" onClick={() => setEditing(true)}>
+            {EMERGENCY_FUND_COPY.editSettings}
           </Button>
-        </form>
-      </div>
+          <form action={archiveGoal}>
+            <input type="hidden" name="id" value={goal.id} />
+            <Button type="submit" variant="ghost" className="w-full">
+              {EMERGENCY_FUND_COPY.archive}
+            </Button>
+          </form>
+        </div>
+      </ReadOnlyOverlay>
     </div>
   );
 }

@@ -17,5 +17,7 @@ export async function deleteUserAndOwnedData(
   await db.userNotificationSetting.deleteMany({ where: { userId } });
   await db.notificationPreference.deleteMany({ where: { userId } });
   await db.pushSubscription.deleteMany({ where: { userId } });
+  await db.paymentReceipt.deleteMany({ where: { userId } });
+  await db.subscription.deleteMany({ where: { userId } });
   await db.user.delete({ where: { id: userId } });
 }

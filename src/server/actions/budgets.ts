@@ -20,6 +20,7 @@ import {
   assertCategoryOwned,
   userFacingMutationError,
 } from "@/server/services/ownership";
+import { isWriteBlocked, writeBlockedState } from "@/server/services/subscription";
 
 export type BudgetActionState = {
   ok: boolean;
@@ -70,6 +71,10 @@ export async function upsertBudgetCategory(
   formData: FormData,
 ): Promise<BudgetActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const categoryId = String(formData.get("categoryId") ?? "");
   const limit = parseTomanInput(String(formData.get("limit") ?? ""));
 
@@ -128,6 +133,10 @@ export async function updateOverallLimit(
   formData: FormData,
 ): Promise<BudgetActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const raw = String(formData.get("overallLimit") ?? "").trim();
   const limit = raw === "" ? null : parseTomanInput(raw);
 
@@ -172,6 +181,9 @@ export async function updateOverallLimit(
 
 export async function deleteBudgetCategory(formData: FormData): Promise<void> {
   const user = await requireUser();
+  if (await isWriteBlocked(user.id)) {
+    return;
+  }
   const id = String(formData.get("id") ?? "");
   await assertBudgetCategoryOwned(user.id, id);
   await prisma.budgetCategory.delete({ where: { id } });

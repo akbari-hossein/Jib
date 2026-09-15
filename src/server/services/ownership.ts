@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
+import { WriteAccessBlockedError } from "@/lib/subscription/access";
+import { SUBSCRIPTION_COPY } from "@/lib/subscription/copy";
 
 export class OwnershipError extends Error {
   constructor() {
@@ -130,6 +132,9 @@ export async function assertSplitBillOwned(userId: string, splitBillId: string) 
 export function userFacingMutationError(error: unknown, fallback: string): string {
   if (error instanceof OwnershipError) {
     return "این مورد در دسترس نیست.";
+  }
+  if (error instanceof WriteAccessBlockedError) {
+    return SUBSCRIPTION_COPY.readOnly;
   }
   return fallback;
 }

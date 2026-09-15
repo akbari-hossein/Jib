@@ -6,9 +6,27 @@ import { QuickAddDrawer } from "@/features/quick-add/quick-add-drawer";
 import { useQuickAddStore } from "@/features/quick-add/store";
 import type { QuickAddContext } from "@/server/queries/quick-add";
 
-export function QuickAddHost({ context }: { context: QuickAddContext }) {
+export function QuickAddHost({
+  context,
+  writeAccess = true,
+}: {
+  context: QuickAddContext;
+  writeAccess?: boolean;
+}) {
   const openDrawer = useQuickAddStore((state) => state.openDrawer);
   const hasAccounts = context.accounts.length > 0;
+
+  if (!writeAccess) {
+    return (
+      <Link
+        href="/upgrade"
+        className="fixed z-20 flex size-14 items-center justify-center rounded-full bg-primary/70 text-primary-foreground end-5 bottom-[calc(6rem+env(safe-area-inset-bottom))]"
+        aria-label="فعال کردن اشتراک"
+      >
+        <Plus className="size-6" />
+      </Link>
+    );
+  }
 
   return (
     <>

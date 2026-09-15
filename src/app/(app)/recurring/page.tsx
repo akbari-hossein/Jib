@@ -3,6 +3,7 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { RecurringForm } from "@/features/recurring/recurring-form";
 import { RecurringList } from "@/features/recurring/recurring-list";
+import { ReadOnlyOverlay } from "@/features/subscription/components/ReadOnlyOverlay";
 import { listAccounts } from "@/server/queries/accounts";
 import { listCategories } from "@/server/queries/categories";
 import { listRecurring } from "@/server/queries/recurring";
@@ -35,14 +36,16 @@ export default async function RecurringPage() {
 
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">تکراری جدید</h2>
-        <RecurringForm
-          accounts={accounts.map((account) => ({ id: account.id, name: account.name }))}
-          categories={categories.map((category) => ({
-            id: category.id,
-            name: category.name,
-            kind: category.kind,
-          }))}
-        />
+        <ReadOnlyOverlay>
+          <RecurringForm
+            accounts={accounts.map((account) => ({ id: account.id, name: account.name }))}
+            categories={categories.map((category) => ({
+              id: category.id,
+              name: category.name,
+              kind: category.kind,
+            }))}
+          />
+        </ReadOnlyOverlay>
       </section>
     </main>
   );

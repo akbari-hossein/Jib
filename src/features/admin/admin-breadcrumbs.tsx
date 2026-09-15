@@ -13,6 +13,7 @@ const LABELS: Record<string, string> = {
   analytics: "تحلیل محصول",
   audit: "گزارش اقدامات",
   settings: "تنظیمات",
+  receipts: "رسیدها",
 };
 
 export function AdminBreadcrumbs({ current }: { current?: string }) {

@@ -8,7 +8,13 @@ import { formatCompactToman, formatToman, toPersianDigits } from "@/lib/currency
 import { formatJalaliDay, getTehranJalaliDate, jalaliFromUtc } from "@/lib/dates/tehran";
 import type { GoalListItem } from "@/server/queries/goals";
 
-export function GoalList({ goals }: { goals: GoalListItem[] }) {
+export function GoalList({
+  goals,
+  writeAccess = true,
+}: {
+  goals: GoalListItem[];
+  writeAccess?: boolean;
+}) {
   const today = getTehranJalaliDate();
 
   return (
@@ -23,12 +29,14 @@ export function GoalList({ goals }: { goals: GoalListItem[] }) {
                 {goal.targetDate ? ` · ${formatJalaliDay(jalaliFromUtc(goal.targetDate), today)}` : ""}
               </p>
             </div>
-            <form action={archiveGoal}>
-              <input type="hidden" name="id" value={goal.id} />
-              <Button type="submit" variant="ghost" size="sm">
-                بایگانی
-              </Button>
-            </form>
+            {writeAccess ? (
+              <form action={archiveGoal}>
+                <input type="hidden" name="id" value={goal.id} />
+                <Button type="submit" variant="ghost" size="sm">
+                  بایگانی
+                </Button>
+              </form>
+            ) : null}
           </div>
           <p className="mt-3 text-sm">
             <MoneyDisplay amount={goal.currentAmount} withUnit={false} className="font-semibold" />
@@ -43,7 +51,7 @@ export function GoalList({ goals }: { goals: GoalListItem[] }) {
               ? ` · هر ماه حدود ${formatCompactToman(goal.progress.monthlyNeed)}`
               : ""}
           </p>
-          {goal.linked ? null : (
+          {goal.linked || !writeAccess ? null : (
             <GoalCurrentForm key={`${goal.id}-${goal.currentAmount.toString()}`} id={goal.id} currentAmount={goal.currentAmount.toString()} />
           )}
           <GoalWhatIf

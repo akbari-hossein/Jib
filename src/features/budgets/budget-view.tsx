@@ -11,6 +11,7 @@ import { budgetUsageCopy } from "@/lib/labels";
 import { deleteBudgetCategory } from "@/server/actions/budgets";
 import type { BudgetMonthDto } from "@/server/queries/budgets";
 import type { BudgetStatus } from "@/lib/finance/types";
+import { ReadOnlyOverlay } from "@/features/subscription/components/ReadOnlyOverlay";
 
 function toneFor(status: BudgetStatus) {
   if (status === "over") return "expense" as const;
@@ -18,7 +19,13 @@ function toneFor(status: BudgetStatus) {
   return "primary" as const;
 }
 
-export function BudgetView({ budget }: { budget: BudgetMonthDto }) {
+export function BudgetView({
+  budget,
+  writeAccess = true,
+}: {
+  budget: BudgetMonthDto;
+  writeAccess?: boolean;
+}) {
   const allocated = sumBudgetLimits(budget.items.map((item) => item.limit));
   const remaining = remainingAllocatable(budget.overallLimit, budget.items.map((item) => item.limit));
 
@@ -78,12 +85,14 @@ export function BudgetView({ budget }: { budget: BudgetMonthDto }) {
                     </p>
                   </div>
                 </div>
-                <form action={deleteBudgetCategory}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <Button type="submit" variant="ghost" size="sm">
-                    حذف
-                  </Button>
-                </form>
+                {writeAccess ? (
+                  <form action={deleteBudgetCategory}>
+                    <input type="hidden" name="id" value={item.id} />
+                    <Button type="submit" variant="ghost" size="sm">
+                      حذف
+                    </Button>
+                  </form>
+                ) : null}
               </div>
               <p className="mt-3 text-sm">
                 <MoneyDisplay amount={item.spent} withUnit={false} className="font-semibold" />
@@ -104,23 +113,27 @@ export function BudgetView({ budget }: { budget: BudgetMonthDto }) {
             دسته‌بندی‌ها
           </Link>
         </div>
-        <BudgetCategoryForm
-          categories={budget.categories}
-          items={budget.items.map((item) => ({
-            categoryId: item.categoryId,
-            limit: item.limit.toString(),
-          }))}
-          overallLimit={budget.overallLimit == null ? null : budget.overallLimit.toString()}
-        />
+        <ReadOnlyOverlay>
+          <BudgetCategoryForm
+            categories={budget.categories}
+            items={budget.items.map((item) => ({
+              categoryId: item.categoryId,
+              limit: item.limit.toString(),
+            }))}
+            overallLimit={budget.overallLimit == null ? null : budget.overallLimit.toString()}
+          />
+        </ReadOnlyOverlay>
       </section>
 
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">سقف کل</h2>
-        <OverallLimitForm
-          key={budget.overallLimit == null ? "empty" : budget.overallLimit.toString()}
-          overallLimit={budget.overallLimit == null ? "" : budget.overallLimit.toString()}
-          allocated={allocated.toString()}
-        />
+        <ReadOnlyOverlay>
+          <OverallLimitForm
+            key={budget.overallLimit == null ? "empty" : budget.overallLimit.toString()}
+            overallLimit={budget.overallLimit == null ? "" : budget.overallLimit.toString()}
+            allocated={allocated.toString()}
+          />
+        </ReadOnlyOverlay>
       </section>
     </main>
   );

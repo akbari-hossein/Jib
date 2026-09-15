@@ -5,11 +5,14 @@ import { PaydayForm } from "@/features/settings/payday-form";
 import { ProfileForm } from "@/features/settings/profile-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { SubscriptionStatusCard } from "@/features/subscription/components/SubscriptionStatusCard";
+import { getCachedSubscription, serializeSubscription } from "@/server/services/subscription";
 
 export const metadata = { title: "بیشتر" };
 
 export default async function MorePage() {
   const user = await requireUser();
+  const snapshot = serializeSubscription(await getCachedSubscription(user.id));
 
   return (
     <main className="flex flex-col gap-8 px-5 pt-8">
@@ -51,6 +54,9 @@ export default async function MorePage() {
         <Link href="/recurring" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           خرج و درآمد تکراری
         </Link>
+        <Link href="/upgrade" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          اشتراک
+        </Link>
         <Link href="/privacy" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           حریم خصوصی
         </Link>
@@ -73,6 +79,8 @@ export default async function MorePage() {
           محاسبه‌گر مالی
         </Link>
       </nav>
+
+      <SubscriptionStatusCard snapshot={snapshot} />
 
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">روز درآمد</h2>

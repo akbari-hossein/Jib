@@ -114,6 +114,25 @@ enum GoalType {
   EMERGENCY_FUND
 }
 
+enum SubscriptionStatus {
+  TRIALING
+  PENDING_REVIEW
+  ACTIVE
+  EXPIRED
+  REJECTED
+}
+
+enum ReceiptType {
+  IMAGE
+  TEXT
+}
+
+enum ReceiptStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id                   String     @id @default(cuid())
   email                String     @unique
@@ -151,6 +170,8 @@ model User {
   debtRecords            DebtRecord[]
   splitBills             SplitBill[]
   financialHealthSnapshots FinancialHealthSnapshot[]
+  subscription             Subscription?
+  paymentReceipts          PaymentReceipt[]
 
   @@index([role, status])
   @@index([createdAt])
@@ -579,5 +600,48 @@ model SplitBill {
 
   debtRecords DebtRecord[]
 
+  @@index([userId])
+}
+
+model Subscription {
+  id               String             @id @default(cuid())
+  userId           String             @unique
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status           SubscriptionStatus @default(TRIALING)
+  trialEndsAt      DateTime
+  currentPeriodEnd DateTime?
+  priceToman       Int                @default(59000)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  receipts PaymentReceipt[]
+
+  @@index([status])
+  @@index([trialEndsAt])
+  @@index([currentPeriodEnd])
+}
+
+model PaymentReceipt {
+  id                  String       @id @default(cuid())
+  subscriptionId      String
+  subscription        Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  userId              String
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type                ReceiptType
+  imageUrl            String?
+  rawText             String?
+  claimedAmount       Int?
+  claimedTransferDate DateTime?
+
+  status              ReceiptStatus @default(PENDING)
+  reviewedByAdminId   String?
+  reviewedAt          DateTime?
+  rejectionReasonCode String?
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([subscriptionId])
   @@index([userId])
 }

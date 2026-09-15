@@ -11,6 +11,7 @@ import {
   assertGoalOwned,
   userFacingMutationError,
 } from "@/server/services/ownership";
+import { isWriteBlocked, writeBlockedState } from "@/server/services/subscription";
 
 export type GoalActionState = {
   ok: boolean;
@@ -29,6 +30,10 @@ export async function createGoal(
   formData: FormData,
 ): Promise<GoalActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const name = String(formData.get("name") ?? "").trim();
   const targetAmount = parseTomanInput(String(formData.get("targetAmount") ?? ""));
   const currentAmount = parseTomanInput(String(formData.get("currentAmount") ?? "0"), {
@@ -80,6 +85,10 @@ export async function updateGoalCurrent(
   formData: FormData,
 ): Promise<GoalActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const id = String(formData.get("id") ?? "");
   const currentAmount = parseTomanInput(String(formData.get("currentAmount") ?? ""), {
     allowZero: true,
@@ -111,6 +120,9 @@ export async function updateGoalCurrent(
 
 export async function archiveGoal(formData: FormData): Promise<void> {
   const user = await requireUser();
+  if (await isWriteBlocked(user.id)) {
+    return;
+  }
   const id = String(formData.get("id") ?? "");
   await assertGoalOwned(user.id, id);
   await prisma.goal.update({

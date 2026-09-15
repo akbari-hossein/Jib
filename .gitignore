@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local receipt image storage (dev adapter)
+/data
+
 
 # vercel
 .vercel
