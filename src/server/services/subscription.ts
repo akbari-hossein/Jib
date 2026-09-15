@@ -14,6 +14,7 @@ import { approvedCopy, SUBSCRIPTION_COPY, writeBlockedCopy } from "@/lib/subscri
 import type { ReceiptSubmissionInput } from "@/lib/subscription/receipt-schema";
 import { isRejectionReasonCode } from "@/lib/subscription/rejection-reasons";
 import { receiptImageOwnerId } from "@/lib/storage/receipt-images";
+import { snapshotApprovalAmount } from "@/lib/subscription/metrics";
 import { notifyAdminNewReceipt } from "@/lib/notifications/adminNotifier";
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
@@ -300,6 +301,7 @@ export async function approveReceipt(input: { receiptId: string; adminId: string
         reviewedByAdminId: input.adminId,
         reviewedAt: now,
         rejectionReasonCode: null,
+        amountToman: snapshotApprovalAmount(receipt.subscription.priceToman),
       },
     });
 

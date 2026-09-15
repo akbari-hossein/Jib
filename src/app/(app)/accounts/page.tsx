@@ -4,6 +4,7 @@ import { AccountForm } from "@/features/accounts/account-form";
 import { AccountList } from "@/features/accounts/account-list";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { ReadOnlyOverlay } from "@/features/subscription/components/ReadOnlyOverlay";
 
 export const metadata = { title: "حساب‌ها" };
 
@@ -25,7 +26,9 @@ export default async function AccountsPage() {
           description="اولین حساب را اضافه کن تا عدد قابل‌خرج ساخته شود."
           action={
             <div data-tour="add-account">
-              <AccountForm />
+              <ReadOnlyOverlay>
+                <AccountForm />
+              </ReadOnlyOverlay>
             </div>
           }
         />
@@ -34,7 +37,9 @@ export default async function AccountsPage() {
           <AccountList accounts={items} />
           <section data-tour="add-account" className="rounded-3xl border border-border bg-card p-5">
             <h2 className="mb-4 text-base font-semibold">حساب جدید</h2>
-            <AccountForm />
+            <ReadOnlyOverlay>
+              <AccountForm />
+            </ReadOnlyOverlay>
           </section>
         </>
       )}

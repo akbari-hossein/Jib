@@ -4,7 +4,7 @@
 
 Jib is a Persian, RTL personal-finance PWA. It answers one question on the home screen: how much you can spend today — after liquid balances, upcoming bills, and savings goals.
 
-The product is designed for Iran: Jalali calendar, Tehran timezone, and amounts in تومان. Jib is fully featured and free — there is no paid plan.
+The product is designed for Iran: Jalali calendar, Tehran timezone, and amounts in تومان. New accounts get a 14-day trial; after that, writing data requires a 59,000 Toman/month card-to-card subscription.
 
 ---
 
@@ -111,6 +111,11 @@ cp .env.example .env
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Web Push public key. Generate with `npx web-push generate-vapid-keys`. |
 | `VAPID_PRIVATE_KEY` | Web Push private key. Keep this on the server only. |
 | `VAPID_SUBJECT` | Optional. `mailto:` or site URL used in VAPID claims. |
+| `JIB_DESTINATION_CARD_NUMBER` | 16-digit card number shown for card-to-card subscription payments. |
+| `TELEGRAM_BOT_TOKEN` | Optional. Telegram bot token for new-receipt admin alerts. |
+| `TELEGRAM_ADMIN_CHAT_ID` | Optional. Telegram chat that receives receipt alerts. |
+| `JIB_SUBSCRIPTION_PRICE_TOMAN` | Optional. Monthly price; defaults to 59000. |
+| `ADMIN_BOOTSTRAP_EMAILS` | First admin bootstrap if no ADMIN users exist. |
 
 Example `.env`:
 

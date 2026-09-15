@@ -2,16 +2,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatJalaliAbsolute } from "@/lib/admin/format";
 import { formatToman } from "@/lib/currency/format";
+import { SUBSCRIPTION_STATUS_LABEL } from "@/lib/subscription/admin-copy";
 import { SUBSCRIPTION_COPY, approvedCopy, rejectionCopy } from "@/lib/subscription/copy";
 import type { ClientSubscriptionSnapshot } from "@/features/subscription/subscription-access";
-
-const STATUS_LABEL = {
-  TRIALING: "دوره آزمایشی",
-  PENDING_REVIEW: "در حال بررسی",
-  ACTIVE: "فعال",
-  EXPIRED: "نیاز به فعال‌سازی",
-  REJECTED: "نیاز به ارسال دوباره",
-} as const;
 
 export function SubscriptionStatusCard({ snapshot }: { snapshot: ClientSubscriptionSnapshot }) {
   const periodEnd = snapshot.currentPeriodEnd
@@ -30,7 +23,7 @@ export function SubscriptionStatusCard({ snapshot }: { snapshot: ClientSubscript
       <dl className="mt-4 grid gap-3 text-sm">
         <div>
           <dt className="text-xs text-muted-foreground">وضعیت</dt>
-          <dd className="mt-1">{STATUS_LABEL[snapshot.status]}</dd>
+          <dd className="mt-1">{SUBSCRIPTION_STATUS_LABEL[snapshot.status]}</dd>
         </div>
         <div>
           <dt className="text-xs text-muted-foreground">مبلغ</dt>

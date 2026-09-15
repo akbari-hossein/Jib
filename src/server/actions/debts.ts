@@ -31,6 +31,7 @@ import {
   OwnershipError,
   userFacingMutationError,
 } from "@/server/services/ownership";
+import { isWriteBlocked, writeBlockedState } from "@/server/services/subscription";
 
 export type DebtActionState = {
   ok: boolean;
@@ -95,6 +96,10 @@ export async function createContact(
   formData: FormData,
 ): Promise<DebtActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const name = contactNameSchema.safeParse(String(formData.get("name") ?? ""));
   if (!name.success) {
     return { ok: false, error: "نام فرد را وارد کن." };
@@ -117,6 +122,10 @@ export async function createDebt(
   formData: FormData,
 ): Promise<DebtActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const typeResult = debtTypeSchema.safeParse(String(formData.get("type") ?? ""));
   const amount = parseTomanInput(String(formData.get("amount") ?? ""));
   const contactId = String(formData.get("contactId") ?? "").trim();
@@ -180,6 +189,10 @@ export async function createSplitBill(
   formData: FormData,
 ): Promise<DebtActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const title = splitTitleSchema.safeParse(String(formData.get("title") ?? ""));
   const totalAmount = parseTomanInput(String(formData.get("totalAmount") ?? ""));
   const paidByMe = String(formData.get("paidByMe") ?? "true") !== "false";
@@ -316,6 +329,10 @@ export async function settleDebt(
   formData: FormData,
 ): Promise<DebtActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const id = String(formData.get("id") ?? "").trim();
   const amount = parseTomanInput(String(formData.get("amount") ?? ""));
   const accountId = parseOptionalAccountId(String(formData.get("accountId") ?? ""));
@@ -358,6 +375,10 @@ export async function settleContact(
   formData: FormData,
 ): Promise<DebtActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const contactId = String(formData.get("contactId") ?? "").trim();
   const amount = parseTomanInput(String(formData.get("amount") ?? ""));
   const accountId = parseOptionalAccountId(String(formData.get("accountId") ?? ""));
@@ -406,6 +427,9 @@ export async function settleContact(
 
 export async function deleteDebt(formData: FormData): Promise<void> {
   const user = await requireUser();
+  if (await isWriteBlocked(user.id)) {
+    return;
+  }
   const id = String(formData.get("id") ?? "").trim();
   if (!id) {
     return;
@@ -439,6 +463,10 @@ export async function updateContact(
   formData: FormData,
 ): Promise<DebtActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const id = String(formData.get("id") ?? "").trim();
   const name = contactNameSchema.safeParse(String(formData.get("name") ?? ""));
   if (!id) {
@@ -467,6 +495,10 @@ export async function updateDebt(
   formData: FormData,
 ): Promise<DebtActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const id = String(formData.get("id") ?? "").trim();
   const reasonRaw = String(formData.get("reason") ?? "").trim();
   if (!id) {
@@ -495,6 +527,9 @@ export async function updateDebt(
 
 export async function deleteContact(formData: FormData): Promise<void> {
   const user = await requireUser();
+  if (await isWriteBlocked(user.id)) {
+    return;
+  }
   const id = String(formData.get("id") ?? "").trim();
   if (!id) {
     return;

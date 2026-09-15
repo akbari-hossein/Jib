@@ -310,7 +310,7 @@ export function FinalCtaSection() {
       <Card className="flex flex-col items-start gap-5 px-6 py-10 md:px-10">
         <h2 className="max-w-xl text-3xl font-semibold tracking-tight">ببین امروز چقدر می‌تونی خرج کنی.</h2>
         <p className="max-w-lg text-base leading-8 text-muted-foreground">
-          حساب بساز، موجودی را بگذار، و همان روز عدد امروز را ببین. جیب کامل است و هزینه‌ای ندارد.
+          حساب بساز، موجودی را بگذار، و همان روز عدد امروز را ببین. ۱۴ روز اول آزمایشی و رایگان است.
         </p>
         <PrimaryCta />
       </Card>

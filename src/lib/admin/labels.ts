@@ -32,6 +32,7 @@ export const USER_FILTER_LABEL = {
 
 export const ADMIN_NAV = [
   { href: "/admin", label: "نمای کلی" },
+  { href: "/admin/dashboard", label: "اشتراک" },
   { href: "/admin/receipts", label: "رسیدها" },
   { href: "/admin/users", label: "کاربران" },
   { href: "/admin/transactions", label: "تراکنش‌ها" },

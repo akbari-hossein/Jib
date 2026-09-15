@@ -13,6 +13,7 @@ import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { parseTomanInput } from "@/lib/validation/money";
 import { assertAccountOwned, userFacingMutationError } from "@/server/services/ownership";
+import { writeBlockedState } from "@/server/services/subscription";
 
 export type AccountActionState = {
   ok: boolean;
@@ -79,6 +80,10 @@ export async function createAccount(
   formData: FormData,
 ): Promise<AccountActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const name = String(formData.get("name") ?? "").trim();
   const typeResult = accountTypeSchema.safeParse(formData.get("type"));
   const balance = parseTomanInput(String(formData.get("balance") ?? "0"), {
@@ -127,6 +132,10 @@ export async function updateAccount(
   formData: FormData,
 ): Promise<AccountActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const typeResult = accountTypeSchema.safeParse(formData.get("type"));
@@ -182,6 +191,10 @@ export async function archiveAccount(
   formData: FormData,
 ): Promise<AccountActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const id = String(formData.get("id") ?? "");
   if (!id) {
     return { ok: false, error: "حساب پیدا نشد." };
@@ -206,6 +219,10 @@ export async function restoreAccount(
   formData: FormData,
 ): Promise<AccountActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const id = String(formData.get("id") ?? "");
   if (!id) {
     return { ok: false, error: "حساب پیدا نشد." };
@@ -236,6 +253,10 @@ export async function deleteAccount(
   formData: FormData,
 ): Promise<AccountActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const id = String(formData.get("id") ?? "");
   if (!id) {
     return { ok: false, error: "حساب پیدا نشد." };

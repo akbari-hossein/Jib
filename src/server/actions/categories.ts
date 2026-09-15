@@ -12,6 +12,7 @@ import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { defaultCategoryIcon, isCategoryIcon } from "@/lib/categories/icons";
 import { assertCategoryOwned, userFacingMutationError } from "@/server/services/ownership";
+import { writeBlockedState } from "@/server/services/subscription";
 
 export type CategoryActionState = {
   ok: boolean;
@@ -62,6 +63,10 @@ export async function createCategory(
   formData: FormData,
 ): Promise<CategoryActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const name = String(formData.get("name") ?? "").trim();
   const kindParsed = kindSchema.safeParse(String(formData.get("kind") ?? ""));
   const iconRaw = String(formData.get("icon") ?? "").trim();
@@ -106,6 +111,10 @@ export async function deleteCategory(
   formData: FormData,
 ): Promise<CategoryActionState> {
   const user = await requireUser();
+  const blocked = await writeBlockedState(user.id);
+  if (blocked) {
+    return blocked;
+  }
   const id = String(formData.get("id") ?? "");
   if (!id) {
     return { ok: false, error: "دسته‌بندی پیدا نشد." };

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const LABELS: Record<string, string> = {
   admin: "نمای کلی",
+  dashboard: "اشتراک",
   users: "کاربران",
   transactions: "تراکنش‌ها",
   accounts: "حساب‌ها",

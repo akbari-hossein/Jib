@@ -638,10 +638,17 @@ model PaymentReceipt {
   reviewedByAdminId   String?
   reviewedAt          DateTime?
   rejectionReasonCode String?
+  /// Snapshot of Subscription.priceToman at approval time. Never recompute from the live price.
+  amountToman         Int?
 
   createdAt DateTime @default(now())
 
   @@index([status])
   @@index([subscriptionId])
   @@index([userId])
+  @@index([status, reviewedAt])
+  @@index([userId, status])
+  // Partial unique index PaymentReceipt_one_pending_per_user lives in SQL (one PENDING row per user).
+  // If user-list PaymentReceipt sums get slow at scale, add a covering index on
+  // (userId, status, amountToman, reviewedAt). Not needed at MVP counts.
 }
