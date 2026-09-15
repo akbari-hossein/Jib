@@ -11,7 +11,7 @@ export function ReadOnlyOverlay({
   children,
   status,
 }: {
-  children: ReactNode;
+  children?: ReactNode;
   status?: SubscriptionStatus;
 }) {
   const snapshot = useSubscriptionAccess();

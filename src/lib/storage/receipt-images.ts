@@ -47,13 +47,11 @@ export function receiptImageOwnerId(imageUrl: string): string | null {
   return userId || null;
 }
 
-function storageDir() {
-  return process.env.RECEIPT_IMAGE_DIR ?? path.join(process.cwd(), "data", "receipt-images");
-}
+const RECEIPT_IMAGE_ROOT = path.join(process.cwd(), "data", "receipt-images");
 
-function safeJoin(root: string, key: string) {
-  const resolved = path.resolve(root, key);
-  if (!resolved.startsWith(path.resolve(root))) {
+function safeJoin(key: string) {
+  const resolved = path.resolve(RECEIPT_IMAGE_ROOT, key);
+  if (!resolved.startsWith(path.resolve(RECEIPT_IMAGE_ROOT))) {
     throw new Error("INVALID_RECEIPT_PATH");
   }
   return resolved;
@@ -67,10 +65,9 @@ export const localReceiptImageStore: ReceiptImageStore = {
   async put({ userId, bytes, mimeType, filename }) {
     const ext = MIME_TO_EXT[mimeType];
     const key = `${userId}/${filename}.${ext}`;
-    const dir = storageDir();
-    const fullPath = safeJoin(dir, key);
-    await mkdir(path.dirname(fullPath), { recursive: true });
-    await writeFile(fullPath, bytes);
+    const fullPath = safeJoin(key);
+    await mkdir(/*turbopackIgnore: true*/ path.dirname(fullPath), { recursive: true });
+    await writeFile(/*turbopackIgnore: true*/ fullPath, bytes);
     return { imageUrl: `${RECEIPT_IMAGE_KEY_PREFIX}${key}` };
   },
   async get(imageUrl) {
@@ -85,7 +82,7 @@ export const localReceiptImageStore: ReceiptImageStore = {
       return null;
     }
     try {
-      const bytes = await readFile(safeJoin(storageDir(), parsed.key));
+      const bytes = await readFile(/*turbopackIgnore: true*/ safeJoin(parsed.key));
       return { bytes, mimeType };
     } catch {
       return null;

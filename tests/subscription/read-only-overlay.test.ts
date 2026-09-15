@@ -6,10 +6,11 @@ import { SUBSCRIPTION_COPY } from "@/lib/subscription/copy";
 
 function render(status: "TRIALING" | "ACTIVE" | "EXPIRED" | "REJECTED" | "PENDING_REVIEW") {
   return renderToStaticMarkup(
-    createElement(ReadOnlyOverlay, {
-      status,
-      children: createElement("button", { type: "button" }, "فرم نوشتن"),
-    }),
+    createElement(
+      ReadOnlyOverlay,
+      { status },
+      createElement("button", { type: "button" }, "فرم نوشتن"),
+    ),
   );
 }
 

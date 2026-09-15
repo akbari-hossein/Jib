@@ -8,9 +8,8 @@ import {
 
 describe("financial health API ownership", () => {
   it("uses the session user and ignores a query-string userId", () => {
-    const params = new URLSearchParams("userId=other-user&months=12");
-    expect(financialHealthOwnerId({ id: "session-user" }, params)).toBe("session-user");
-    expect(financialHealthOwnerId(null, params)).toBeNull();
+    expect(financialHealthOwnerId({ id: "session-user" })).toBe("session-user");
+    expect(financialHealthOwnerId(null)).toBeNull();
   });
 
   it("scopes snapshot history to the authenticated user only", () => {

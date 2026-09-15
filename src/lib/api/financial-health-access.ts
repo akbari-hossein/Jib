@@ -7,10 +7,7 @@ export const financialHealthQuerySchema = z.object({
 });
 
 /** Session user always wins. Query-string userId is ignored on purpose. */
-export function financialHealthOwnerId(
-  session: { id: string } | null,
-  _searchParams?: URLSearchParams,
-): string | null {
+export function financialHealthOwnerId(session: { id: string } | null): string | null {
   return session?.id ?? null;
 }
 
