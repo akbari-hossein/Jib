@@ -33,7 +33,7 @@ export function LoanCalculatorForm({
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-medium">{CALCULATOR_COPY.loanModeLabel}</legend>
+        <legend className="text-sm font-medium mb-2">{CALCULATOR_COPY.loanModeLabel}</legend>
         <div className="flex flex-wrap gap-2">
           {(
             [

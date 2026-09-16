@@ -98,7 +98,7 @@ export function EmergencyFundSetupForm({
       <input type="hidden" name="targetMonths" value={targetMonths > 0 ? String(targetMonths) : ""} />
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-medium">{EMERGENCY_FUND_COPY.targetLabel}</legend>
+        <legend className="text-sm font-medium mb-2">{EMERGENCY_FUND_COPY.targetLabel}</legend>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {EMERGENCY_FUND_TARGET_MONTH_PRESETS.map((months) => (
             <button
