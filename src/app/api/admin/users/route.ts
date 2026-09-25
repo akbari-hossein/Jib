@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
 import { maybePromoteBootstrapAdmin } from "@/lib/auth/admin";
+import { getCurrentUser } from "@/lib/auth/session";
 import { parseAdminUsersQuery } from "@/lib/subscription/admin-users";
 import { authorizeAdminList } from "@/lib/subscription/api-access";
 import { listAdminSubscribers } from "@/server/queries/admin/subscribers";
