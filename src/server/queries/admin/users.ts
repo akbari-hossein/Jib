@@ -9,8 +9,12 @@ import {
   userOrderBy,
   userSearchWhere,
 } from "@/lib/admin/params";
+import {
+  addJalaliMonths,
+  getTehranJalaliDate,
+  tehranMidnightUtc,
+} from "@/lib/dates/tehran";
 import { prisma } from "@/lib/db/prisma";
-import { getAdminUserById } from "@/server/admin/admin-user-query";
 
 const userListSelect = {
   id: true,
@@ -68,11 +72,132 @@ export async function listAdminUsers(input: {
 export type AdminUserListItem = Awaited<ReturnType<typeof listAdminUsers>>["users"][number];
 
 export async function getAdminUserDetail(id: string) {
-  const user = await getAdminUserById(id);
+  const today = getTehranJalaliDate();
+  const monthStart = tehranMidnightUtc({ year: today.year, month: today.month, day: 1 });
+  const nextMonthStart = tehranMidnightUtc(
+    addJalaliMonths({ year: today.year, month: today.month, day: 1 }, 1),
+  );
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      status: true,
+      locale: true,
+      createdAt: true,
+      lastActiveAt: true,
+      onboardingCompletedAt: true,
+      incomeDayOfMonth: true,
+      googleId: true,
+      passwordHash: true,
+      _count: {
+        select: {
+          accounts: true,
+          transactions: true,
+          budgets: true,
+          goals: true,
+          sessions: true,
+          recurring: true,
+        },
+      },
+      accounts: {
+        orderBy: [{ isActive: "desc" }, { createdAt: "asc" }],
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          balance: true,
+          isActive: true,
+          createdAt: true,
+        },
+      },
+      goals: {
+        where: { isArchived: false },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        select: {
+          id: true,
+          name: true,
+          targetAmount: true,
+          currentAmount: true,
+          isArchived: true,
+          createdAt: true,
+        },
+      },
+      transactions: {
+        orderBy: { occurredAt: "desc" },
+        take: 8,
+        select: {
+          id: true,
+          type: true,
+          amount: true,
+          occurredAt: true,
+          merchant: true,
+          category: { select: { name: true } },
+          account: { select: { name: true } },
+        },
+      },
+    },
+  });
+
   if (!user) {
     notFound();
   }
-  return user;
+
+  const [monthlyIncome, monthlyExpense, sessionCount] = await Promise.all([
+    prisma.transaction.aggregate({
+      where: {
+        userId: id,
+        type: "INCOME",
+        occurredAt: { gte: monthStart, lt: nextMonthStart },
+      },
+      _sum: { amount: true },
+    }),
+    prisma.transaction.aggregate({
+      where: {
+        userId: id,
+        type: "EXPENSE",
+        occurredAt: { gte: monthStart, lt: nextMonthStart },
+      },
+      _sum: { amount: true },
+    }),
+    prisma.session.count({
+      where: { userId: id, expiresAt: { gt: new Date() } },
+    }),
+  ]);
+
+  const totalBalance = user.accounts.reduce((sum, account) => sum + account.balance, 0n);
+  const monthlyIncomeAmount = monthlyIncome._sum.amount ?? 0n;
+  const monthlyExpenseAmount = monthlyExpense._sum.amount ?? 0n;
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    status: user.status,
+    locale: user.locale,
+    createdAt: user.createdAt,
+    lastActiveAt: user.lastActiveAt,
+    onboardingCompletedAt: user.onboardingCompletedAt,
+    incomeDayOfMonth: user.incomeDayOfMonth,
+    signedInWithGoogle: Boolean(user.googleId),
+    hasPassword: Boolean(user.passwordHash),
+    counts: {
+      ...user._count,
+      activeSessions: sessionCount,
+    },
+    totalBalance,
+    monthlyIncome: monthlyIncomeAmount,
+    monthlyExpense: monthlyExpenseAmount,
+    monthlySaved: monthlyIncomeAmount - monthlyExpenseAmount,
+    accounts: user.accounts,
+    goals: user.goals,
+    recentTransactions: user.transactions,
+  };
 }
 
 export type AdminUserDetail = Awaited<ReturnType<typeof getAdminUserDetail>>;
