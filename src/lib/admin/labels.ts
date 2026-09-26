@@ -26,8 +26,6 @@ export const USER_FILTER_LABEL = {
   recently_active: "فعالیت اخیر",
   onboarding_complete: "راهنمای شروع تمام شده",
   onboarding_incomplete: "راهنمای شروع ناتمام",
-  with_accounts: "با حساب",
-  with_transactions: "با تراکنش",
 } as const;
 
 export const ADMIN_NAV = [
@@ -35,10 +33,6 @@ export const ADMIN_NAV = [
   { href: "/admin/dashboard", label: "اشتراک" },
   { href: "/admin/receipts", label: "رسیدها" },
   { href: "/admin/users", label: "کاربران" },
-  { href: "/admin/transactions", label: "تراکنش‌ها" },
-  { href: "/admin/accounts", label: "حساب‌ها" },
-  { href: "/admin/budgets", label: "بودجه‌ها" },
-  { href: "/admin/goals", label: "اهداف" },
   { href: "/admin/analytics", label: "تحلیل محصول" },
   { href: "/admin/audit", label: "گزارش اقدامات" },
   { href: "/admin/settings", label: "تنظیمات" },

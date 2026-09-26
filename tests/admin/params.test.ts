@@ -37,7 +37,6 @@ describe("admin query params", () => {
     expect(userFilterWhere("onboarding_incomplete", now)).toEqual({
       onboardingCompletedAt: null,
     });
-    expect(userFilterWhere("with_accounts", now)).toEqual({ accounts: { some: {} } });
     expect(userFilterWhere("new", now).createdAt).toEqual({
       gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
     });

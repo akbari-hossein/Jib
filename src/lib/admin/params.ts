@@ -10,19 +10,11 @@ export const USER_FILTERS = [
   "recently_active",
   "onboarding_complete",
   "onboarding_incomplete",
-  "with_accounts",
-  "with_transactions",
 ] as const;
 
 export type UserFilter = (typeof USER_FILTERS)[number];
 
-export const USER_SORTS = [
-  "createdAt",
-  "lastActiveAt",
-  "email",
-  "accounts",
-  "transactions",
-] as const;
+export const USER_SORTS = ["createdAt", "lastActiveAt", "email"] as const;
 
 export type UserSort = (typeof USER_SORTS)[number];
 
@@ -128,10 +120,6 @@ export function userFilterWhere(
       return { onboardingCompletedAt: { not: null } };
     case "onboarding_incomplete":
       return { onboardingCompletedAt: null };
-    case "with_accounts":
-      return { accounts: { some: {} } };
-    case "with_transactions":
-      return { transactions: { some: {} } };
     default:
       return {};
   }
@@ -141,12 +129,6 @@ export function userOrderBy(
   sort: UserSort,
   dir: SortDir,
 ): Prisma.UserOrderByWithRelationInput {
-  if (sort === "accounts") {
-    return { accounts: { _count: dir } };
-  }
-  if (sort === "transactions") {
-    return { transactions: { _count: dir } };
-  }
   if (sort === "email") {
     return { email: dir };
   }

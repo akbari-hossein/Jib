@@ -265,9 +265,5 @@ export async function deleteAdminUser(
   revalidatePath("/admin/users");
   revalidatePath("/admin/audit");
   revalidatePath("/admin/analytics");
-  revalidatePath("/admin/transactions");
-  revalidatePath("/admin/accounts");
-  revalidatePath("/admin/goals");
-  revalidatePath("/admin/budgets");
   redirect("/admin/users");
 }
