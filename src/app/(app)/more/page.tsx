@@ -30,17 +30,8 @@ export default async function MorePage() {
         <Link href="/budgets" className="px-5 py-4 text-sm hover:bg-surface-muted">
           بودجه
         </Link>
-        <Link href="/notifications" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
-          اعلان‌ها
-        </Link>
-        <Link href="/settings/notifications" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
-          تنظیمات اعلان‌ها
-        </Link>
         <Link href="/reports" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           گزارش‌ها
-        </Link>
-        <Link href="/health-score" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
-          امتیاز مالی
         </Link>
         <Link href="/accounts" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           حساب‌ها
@@ -56,15 +47,6 @@ export default async function MorePage() {
         </Link>
         <Link href="/upgrade" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
           اشتراک
-        </Link>
-        <Link href="/privacy" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
-          حریم خصوصی
-        </Link>
-        <Link href="/about" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
-          درباره جیب
-        </Link>
-        <Link href="/home?tour=1" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
-          راهنمای جیب
         </Link>
         {user.role === "ADMIN" ? (
           <Link href="/admin" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
