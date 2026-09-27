@@ -27,29 +27,37 @@ export default async function MorePage() {
       </header>
 
       <nav className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card">
-        <Link href="/budgets" className="px-5 py-4 text-sm hover:bg-surface-muted">
+        <Link href="/budgets" className="flex items-center gap-3 px-5 py-4 text-sm hover:bg-surface-muted">
+          <span aria-hidden>💰</span>
           بودجه
         </Link>
-        <Link href="/reports" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+        <Link href="/reports" className="flex items-center gap-3 border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          <span aria-hidden>📈</span>
           گزارش‌ها
         </Link>
-        <Link href="/accounts" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+        <Link href="/accounts" className="flex items-center gap-3 border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          <span aria-hidden>🏦</span>
           حساب‌ها
         </Link>
-        <Link href="/categories" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+        <Link href="/categories" className="flex items-center gap-3 border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          <span aria-hidden>🏷️</span>
           دسته‌بندی‌ها
         </Link>
-        <Link href="/rules" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+        <Link href="/rules" className="flex items-center gap-3 border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          <span aria-hidden>⚙️</span>
           قوانین دسته‌بندی
         </Link>
-        <Link href="/recurring" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+        <Link href="/recurring" className="flex items-center gap-3 border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          <span aria-hidden>🔁</span>
           خرج و درآمد تکراری
         </Link>
-        <Link href="/upgrade" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+        <Link href="/upgrade" className="flex items-center gap-3 border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          <span aria-hidden>⭐</span>
           اشتراک
         </Link>
         {user.role === "ADMIN" ? (
-          <Link href="/admin" className="border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+          <Link href="/admin" className="flex items-center gap-3 border-t border-border px-5 py-4 text-sm hover:bg-surface-muted">
+            <span aria-hidden>🛡️</span>
             پنل مدیریت
           </Link>
         ) : null}
