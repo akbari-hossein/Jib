@@ -124,6 +124,10 @@ body {
   outline-offset: 3px;
 }
 
+input.numeric-display:focus-visible {
+  outline: none;
+}
+
 .numeric-display {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.035em;
