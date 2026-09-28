@@ -184,7 +184,7 @@ export function MoneyInput({
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
         aria-invalid={showInvalid || undefined}
-        className="numeric-display min-w-0 flex-1 bg-transparent text-left text-xl font-semibold tracking-tight text-foreground outline-none border-none focus:border-none placeholder:font-normal placeholder:text-muted-foreground"
+        className="numeric-display min-w-0 flex-1 bg-transparent text-left text-xl font-semibold tracking-tight text-foreground outline-none focus:ring-0 focus:ring-transparent placeholder:font-normal placeholder:text-muted-foreground"
       />
       <span className="shrink-0 text-sm text-muted-foreground">{CURRENCY_LABEL}</span>
     </div>
