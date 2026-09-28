@@ -184,8 +184,8 @@ export function MoneyInput({
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
         aria-invalid={showInvalid || undefined}
-        className="numeric-display min-w-0 flex-1 bg-transparent text-left text-xl font-semibold tracking-tight text-foreground outline-none focus:ring-0 focus:ring-transparent placeholder:font-normal placeholder:text-muted-foreground"
-      />
+        className="numeric-display min-w-0 flex-1 border-0 bg-transparent text-left text-xl font-semibold tracking-tight text-foreground shadow-none outline-none ring-0 focus:border-0 focus:shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:font-normal placeholder:text-muted-foreground"
+        />
       <span className="shrink-0 text-sm text-muted-foreground">{CURRENCY_LABEL}</span>
     </div>
   );
