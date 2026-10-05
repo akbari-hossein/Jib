@@ -125,7 +125,6 @@ export async function getCalendarMonthData(
   userId: string,
   year: number,
   month: number,
-  _now: Date = new Date(),
   store: CalendarMonthStore = prisma as unknown as CalendarMonthStore,
 ): Promise<CalendarMonthData> {
   const range = jalaliMonthRange(year, month);
