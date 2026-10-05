@@ -7,7 +7,6 @@ import {
 } from "@/lib/finance/today-summary";
 
 const USER_ID = "user_1";
-const OTHER_USER_ID = "user_2";
 const TODAY = { year: 1404, month: 6, day: 10 } as const;
 const NOW = new Date(tehranMidnightUtc(TODAY).getTime() + 8 * 60 * 60 * 1000);
 
@@ -54,15 +53,6 @@ type Seed = {
     linkedCostEstimate: bigint | null;
     isDismissed: boolean;
   }>;
-  financialTasks?: Array<{
-    userId: string;
-    id: string;
-    title: string;
-    type: "BILL_DUE" | "BUDGET_CHECK" | "RECURRING_REMINDER" | "CUSTOM";
-    isCompleted: boolean;
-    dueDate: Date;
-  }>;
-  checkInMood?: "GOOD" | "NEUTRAL" | "STRESSED";
   spentToday?: bigint;
   openDebts?: Array<{
     userId: string;
@@ -169,51 +159,6 @@ function createStore(seed: Seed = {}): TodaySummaryStore & { writes: string[] } 
       delete: track("calendarEvent.delete"),
       upsert: track("calendarEvent.upsert"),
     },
-    financialTask: {
-      findMany: async ({
-        where,
-      }: {
-        where: {
-          userId: string;
-          isCompleted: false;
-          dueDate: { lt: Date };
-        };
-      }) =>
-        (seed.financialTasks ?? [])
-          .filter(
-            (task) =>
-              task.userId === where.userId &&
-              task.isCompleted === false &&
-              task.dueDate.getTime() < where.dueDate.lt.getTime(),
-          )
-          .sort((left, right) => left.dueDate.getTime() - right.dueDate.getTime())
-          .map(({ id, title, type, isCompleted, dueDate }) => ({
-            id,
-            title,
-            type,
-            isCompleted,
-            dueDate,
-          })),
-      create: track("financialTask.create"),
-      update: track("financialTask.update"),
-      delete: track("financialTask.delete"),
-      upsert: track("financialTask.upsert"),
-    },
-    dailyCheckIn: {
-      findUnique: async ({
-        where,
-      }: {
-        where: { userId_date: { userId: string; date: Date } };
-      }) => {
-        if (where.userId_date.userId !== USER_ID || !seed.checkInMood) {
-          return null;
-        }
-        return { mood: seed.checkInMood };
-      },
-      create: track("dailyCheckIn.create"),
-      update: track("dailyCheckIn.update"),
-      upsert: track("dailyCheckIn.upsert"),
-    },
     debtRecord: {
       findMany: async ({
         where,
@@ -257,58 +202,10 @@ describe("getTodaySummary", () => {
     expect(summary.greeting).toEqual({ timeOfDay: "morning", userName: "سارا" });
     expect(summary.upcomingFinancialEvents).toEqual([]);
     expect(summary.calendarEventsToday).toEqual([]);
-    expect(summary.financialTasks).toEqual([]);
     expect(summary.activeGoal).toBeNull();
     expect(summary.hasAccounts).toBe(false);
-    expect(summary.checkIn).toBeNull();
     expect(summary.dang).toEqual({ owedToMe: 0n, iOwe: 0n });
     expect(summary.money.daysRemainingInPeriod).toBeGreaterThan(0);
-    expect(store.writes).toEqual([]);
-  });
-
-  it("still surfaces an overdue incomplete task from yesterday", async () => {
-    const yesterday = gregorianUtcFromJalali(addJalaliDays(TODAY, -1));
-    const store = createStore({
-      financialTasks: [
-        {
-          userId: USER_ID,
-          id: "task_overdue",
-          title: "قبض اینترنت",
-          type: "BILL_DUE",
-          isCompleted: false,
-          dueDate: yesterday,
-        },
-        {
-          userId: USER_ID,
-          id: "task_done",
-          title: "کار تمام‌شده",
-          type: "CUSTOM",
-          isCompleted: true,
-          dueDate: yesterday,
-        },
-        {
-          userId: OTHER_USER_ID,
-          id: "task_other",
-          title: "کار کاربر دیگر",
-          type: "CUSTOM",
-          isCompleted: false,
-          dueDate: yesterday,
-        },
-      ],
-    });
-
-    const summary = await getTodaySummary(USER_ID, NOW, store);
-
-    expect(summary.financialTasks).toEqual([
-      {
-        id: "task_overdue",
-        title: "قبض اینترنت",
-        type: "BILL_DUE",
-        isCompleted: false,
-        dueDate: yesterday,
-        isOverdue: true,
-      },
-    ]);
     expect(store.writes).toEqual([]);
   });
 
@@ -398,14 +295,6 @@ describe("getTodaySummary", () => {
     ]);
   });
 
-  it("returns today's check-in without writing", async () => {
-    const store = createStore({ checkInMood: "STRESSED" });
-    const summary = await getTodaySummary(USER_ID, NOW, store);
-
-    expect(summary.checkIn).toEqual({ mood: "STRESSED" });
-    expect(store.writes).toEqual([]);
-  });
-
   it("subtracts debts the user owes from available money and keeps owed-to-me separate", async () => {
     const store = createStore({
       accounts: [
@@ -441,14 +330,15 @@ describe("getTodaySummary", () => {
 
   it("is read-only even when write methods exist on the store", async () => {
     const store = createStore({
-      financialTasks: [
+      calendarEvents: [
         {
           userId: USER_ID,
-          id: "task_today",
-          title: "بررسی بودجه",
-          type: "BUDGET_CHECK",
-          isCompleted: false,
-          dueDate: gregorianUtcFromJalali(TODAY),
+          id: "event_1",
+          title: "دندانپزشکی",
+          startTime: new Date(tehranMidnightUtc(TODAY).getTime() + 10 * 60 * 60 * 1000),
+          endTime: null,
+          linkedCostEstimate: null,
+          isDismissed: false,
         },
       ],
     });
