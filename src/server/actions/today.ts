@@ -1,24 +1,19 @@
 "use server";
 
-import { CheckInMood } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { requireUser } from "@/lib/auth/session";
 import { parseJalaliForm, parseTehranClock } from "@/lib/dates/jalali-form";
 import {
   getTehranJalaliDate,
-  jalaliDateOnlyUtc,
   tehranDateTimeUtc,
 } from "@/lib/dates/tehran";
 import { prisma } from "@/lib/db/prisma";
 import { parseTomanInput } from "@/lib/validation/money";
 import {
   assertCalendarEventOwned,
-  assertFinancialTaskOwned,
   userFacingMutationError,
 } from "@/server/services/ownership";
 
-export type CompleteFinancialTaskResult = TodayMutationResult;
 export type TodayMutationResult = {
   ok: boolean;
   error?: string;
@@ -26,105 +21,8 @@ export type TodayMutationResult = {
 
 export type TodayFormState = TodayMutationResult;
 
-const moodSchema = z.enum(["GOOD", "NEUTRAL", "STRESSED"]);
-
 function revalidateHome() {
   revalidatePath("/home");
-}
-
-export async function setFinancialTaskCompleted(
-  taskId: string,
-  isCompleted: boolean,
-): Promise<TodayMutationResult> {
-  const user = await requireUser();
-
-  try {
-    const task = await assertFinancialTaskOwned(user.id, taskId);
-    if (task.isCompleted === isCompleted) {
-      return { ok: true };
-    }
-
-    await prisma.financialTask.update({
-      where: { id: task.id },
-      data: {
-        isCompleted,
-        completedAt: isCompleted ? new Date() : null,
-      },
-    });
-    revalidateHome();
-    return { ok: true };
-  } catch (error) {
-    return {
-      ok: false,
-      error: userFacingMutationError(error, "ذخیره نشد. دوباره تلاش کن."),
-    };
-  }
-}
-
-export async function completeFinancialTask(taskId: string): Promise<TodayMutationResult> {
-  return setFinancialTaskCompleted(taskId, true);
-}
-
-export async function createCustomFinancialTask(
-  _previous: TodayFormState | undefined,
-  formData: FormData,
-): Promise<TodayFormState> {
-  const user = await requireUser();
-  const title = String(formData.get("title") ?? "").trim();
-  const due = parseJalaliForm(formData, "due");
-  const today = getTehranJalaliDate();
-
-  if (title.length < 1 || title.length > 80) {
-    return { ok: false, error: "عنوان کار را وارد کن." };
-  }
-  if (!due.ok) {
-    return { ok: false, error: "تاریخ معتبر نیست." };
-  }
-
-  const dueDate = due.value ?? today;
-
-  try {
-    await prisma.financialTask.create({
-      data: {
-        userId: user.id,
-        title,
-        type: "CUSTOM",
-        dueDate: jalaliDateOnlyUtc(dueDate),
-      },
-    });
-    revalidateHome();
-    return { ok: true };
-  } catch (error) {
-    return {
-      ok: false,
-      error: userFacingMutationError(error, "ذخیره نشد. دوباره تلاش کن."),
-    };
-  }
-}
-
-export async function saveDailyCheckIn(mood: CheckInMood): Promise<TodayMutationResult> {
-  const user = await requireUser();
-  const parsed = moodSchema.safeParse(mood);
-  if (!parsed.success) {
-    return { ok: false, error: "حالت معتبر نیست." };
-  }
-
-  const today = jalaliDateOnlyUtc(getTehranJalaliDate());
-
-  try {
-    await prisma.dailyCheckIn.upsert({
-      where: { userId_date: { userId: user.id, date: today } },
-      create: { userId: user.id, date: today, mood: parsed.data },
-      update: { mood: parsed.data },
-    });
-    revalidateHome();
-    return { ok: true };
-  } catch (error) {
-    return {
-      ok: false,
-      error: userFacingMutationError(error, "ذخیره نشد. دوباره تلاش کن."),
-    };
-  }
 }
 
 export async function createCalendarEvent(

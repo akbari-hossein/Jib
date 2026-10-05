@@ -8,21 +8,15 @@ import { Button } from "@/components/ui/button";
 import { formatToman, toPersianDigits } from "@/lib/currency/format";
 import { formatTehranTime, jalaliWeekdayIndex, type JalaliDate } from "@/lib/dates/tehran";
 import {
-  CHECK_IN_MOOD_DAY_LABEL,
   JALALI_MONTHS,
   JALALI_WEEKDAYS,
-  MOOD_EMOJI,
   TRANSACTION_TYPE_LABEL,
 } from "@/lib/labels";
-import { cn } from "@/lib/utils";
 import {
   deleteCalendarEvent,
-  deleteCustomFinancialTask,
   type CalendarDayItems,
   type CalendarEventItem,
-  type CalendarTaskItem,
 } from "@/server/actions/calendar";
-import { setFinancialTaskCompleted } from "@/server/actions/today";
 
 function formatDayHeading(date: JalaliDate, today: JalaliDate): string {
   const weekday = JALALI_WEEKDAYS[jalaliWeekdayIndex(date)] ?? "";
@@ -49,7 +43,7 @@ export function SelectedDayPanel({
   const income = BigInt(items.totals.income);
   const expense = BigInt(items.totals.expense);
   const hasTotals = income !== 0n || expense !== 0n;
-  const empty = items.events.length === 0 && items.tasks.length === 0;
+  const empty = items.events.length === 0;
 
   return (
     <section className="flex flex-col gap-4">
@@ -91,11 +85,6 @@ export function SelectedDayPanel({
           </div>
         </div>
       ) : null}
-      {items.mood ? (
-        <p className="text-sm text-muted-foreground">
-          <span aria-hidden>{MOOD_EMOJI[items.mood]}</span> {CHECK_IN_MOOD_DAY_LABEL[items.mood]}
-        </p>
-      ) : null}
       {adding ? (
         <AddItemForm
           day={day}
@@ -106,7 +95,7 @@ export function SelectedDayPanel({
           }}
         />
       ) : null}
-      {empty && !adding && !items.mood && !hasTotals ? (
+      {empty && !adding && !hasTotals ? (
         <p className="text-sm text-muted-foreground">چیزی برای این روز ثبت نشده</p>
       ) : null}
       {items.events.length > 0 ? (
@@ -115,16 +104,6 @@ export function SelectedDayPanel({
           <ul className="overflow-hidden rounded-3xl border border-border bg-card">
             {items.events.map((event) => (
               <CalendarEventRow key={event.id} event={event} onDeleted={onChanged} />
-            ))}
-          </ul>
-        </div>
-      ) : null}
-      {items.tasks.length > 0 ? (
-        <div>
-          <h3 className="mb-2 text-xs text-muted-foreground">کارهای مالی</h3>
-          <ul className="overflow-hidden rounded-3xl border border-border bg-card">
-            {items.tasks.map((task) => (
-              <FinancialTaskRow key={task.id} task={task} onChanged={onChanged} />
             ))}
           </ul>
         </div>
@@ -177,81 +156,6 @@ function CalendarEventRow({
           حذف
         </Button>
       ) : null}
-    </li>
-  );
-}
-
-function FinancialTaskRow({
-  task,
-  onChanged,
-}: {
-  task: CalendarTaskItem;
-  onChanged: () => void;
-}) {
-  const [pending, startTransition] = useTransition();
-  const checkboxId = `calendar-task-${task.id}`;
-  const canDelete = task.type === "CUSTOM" && task.sourceType == null;
-
-  function toggle() {
-    startTransition(async () => {
-      const result = await setFinancialTaskCompleted(task.id, !task.isCompleted);
-      if (!result.ok) {
-        toast.error(result.error ?? "ذخیره نشد. دوباره تلاش کن.");
-        return;
-      }
-      onChanged();
-    });
-  }
-
-  function remove() {
-    startTransition(async () => {
-      const result = await deleteCustomFinancialTask(task.id);
-      if (!result.ok) {
-        toast.error(result.error ?? "ذخیره نشد. دوباره تلاش کن.");
-        return;
-      }
-      onChanged();
-    });
-  }
-
-  return (
-    <li
-      className={cn(
-        "border-s-2",
-        task.isOverdue ? "border-s-warning" : "border-s-transparent",
-      )}
-    >
-      <div className="flex items-center gap-3 px-4 py-4">
-        <input
-          id={checkboxId}
-          type="checkbox"
-          checked={task.isCompleted}
-          disabled={pending}
-          onChange={toggle}
-          className="size-4 shrink-0 rounded border-border accent-primary"
-        />
-        <label
-          htmlFor={checkboxId}
-          className={cn(
-            "min-w-0 flex-1 text-sm leading-6",
-            task.isCompleted && "text-muted-foreground line-through",
-          )}
-        >
-          {task.title}
-        </label>
-        {canDelete ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 shrink-0 px-2 text-foreground/40"
-            disabled={pending}
-            onClick={remove}
-          >
-            حذف
-          </Button>
-        ) : null}
-      </div>
     </li>
   );
 }

@@ -91,24 +91,6 @@ enum CalendarEventSource {
   GOOGLE
 }
 
-enum FinancialTaskType {
-  BILL_DUE
-  BUDGET_CHECK
-  RECURRING_REMINDER
-  CUSTOM
-}
-
-enum FinancialTaskSource {
-  RECURRING_TRANSACTION
-  BUDGET
-}
-
-enum CheckInMood {
-  GOOD
-  NEUTRAL
-  STRESSED
-}
-
 enum GoalType {
   CUSTOM
   EMERGENCY_FUND
@@ -158,8 +140,6 @@ model User {
   goals                Goal[]
   recurring            RecurringTransaction[]
   calendarEvents       CalendarEvent[]
-  financialTasks       FinancialTask[]
-  dailyCheckIns        DailyCheckIn[]
   rules                  TransactionRule[]
   notificationPref       NotificationPreference?
   notificationSettings   UserNotificationSetting[]
@@ -367,34 +347,6 @@ model CalendarEvent {
 
   @@index([userId, startTime])
   @@index([userId, externalId])
-}
-
-model FinancialTask {
-  id          String               @id @default(cuid())
-  userId      String
-  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       String
-  type        FinancialTaskType
-  dueDate     DateTime             @db.Date
-  isCompleted Boolean              @default(false)
-  completedAt DateTime?
-  sourceType  FinancialTaskSource?
-  sourceId    String?
-  createdAt   DateTime             @default(now())
-
-  @@index([userId, dueDate, isCompleted])
-  @@unique([userId, sourceType, sourceId, dueDate])
-}
-
-model DailyCheckIn {
-  id        String       @id @default(cuid())
-  userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date      DateTime     @db.Date
-  mood      CheckInMood
-  createdAt DateTime     @default(now())
-
-  @@unique([userId, date])
 }
 
 model TransactionRule {

@@ -1,15 +1,7 @@
-import type {
-  CalendarEventSource,
-  CheckInMood,
-  FinancialTaskSource,
-  FinancialTaskType,
-  TransactionType,
-} from "@prisma/client";
+import type { CalendarEventSource, TransactionType } from "@prisma/client";
 import { getHolidayForJalaliDate, type IranianHoliday } from "@/lib/dates/iranian-holidays";
 import {
   addJalaliMonths,
-  compareJalaliDate,
-  getTehranJalaliDate,
   jalaliDateOnlyUtc,
   jalaliFromInstant,
   jalaliMonthLength,
@@ -17,14 +9,10 @@ import {
   type JalaliDate,
 } from "@/lib/dates/tehran";
 import { prisma } from "@/lib/db/prisma";
-import type { CalendarEventSummary, FinancialTaskSummary } from "@/lib/finance/today-summary";
+import type { CalendarEventSummary } from "@/lib/finance/today-summary";
 
 export type CalendarMonthEvent = CalendarEventSummary & {
   source: CalendarEventSource;
-};
-
-export type CalendarMonthTask = FinancialTaskSummary & {
-  sourceType: FinancialTaskSource | null;
 };
 
 export interface CalendarDayTotals {
@@ -34,8 +22,6 @@ export interface CalendarDayTotals {
 
 export interface CalendarMonthDay {
   events: CalendarMonthEvent[];
-  tasks: CalendarMonthTask[];
-  mood: CheckInMood | null;
   totals: CalendarDayTotals;
   holiday: IranianHoliday | null;
 }
@@ -57,20 +43,6 @@ type CalendarRow = {
   endTime: Date | null;
   linkedCostEstimate: bigint | null;
   source: CalendarEventSource;
-};
-
-type TaskRow = {
-  id: string;
-  title: string;
-  type: FinancialTaskType;
-  isCompleted: boolean;
-  dueDate: Date;
-  sourceType: FinancialTaskSource | null;
-};
-
-type CheckInRow = {
-  date: Date;
-  mood: CheckInMood;
 };
 
 type TransactionRow = {
@@ -98,35 +70,6 @@ export type CalendarMonthStore = {
       };
     }) => Promise<CalendarRow[]>;
   };
-  financialTask: {
-    findMany: (args: {
-      where: {
-        userId: string;
-        dueDate: { gte: Date; lt: Date };
-      };
-      orderBy: { dueDate: "asc" };
-      select: {
-        id: true;
-        title: true;
-        type: true;
-        isCompleted: true;
-        dueDate: true;
-        sourceType: true;
-      };
-    }) => Promise<TaskRow[]>;
-  };
-  dailyCheckIn: {
-    findMany: (args: {
-      where: {
-        userId: string;
-        date: { gte: Date; lt: Date };
-      };
-      select: {
-        date: true;
-        mood: true;
-      };
-    }) => Promise<CheckInRow[]>;
-  };
   transaction: {
     findMany: (args: {
       where: {
@@ -144,7 +87,7 @@ export type CalendarMonthStore = {
 };
 
 function emptyDay(): CalendarMonthDay {
-  return { events: [], tasks: [], mood: null, totals: { income: 0n, expense: 0n }, holiday: null };
+  return { events: [], totals: { income: 0n, expense: 0n }, holiday: null };
 }
 
 function dayBucket(days: Record<string, CalendarMonthDay>, date: JalaliDate): CalendarMonthDay {
@@ -182,13 +125,12 @@ export async function getCalendarMonthData(
   userId: string,
   year: number,
   month: number,
-  now: Date = new Date(),
+  _now: Date = new Date(),
   store: CalendarMonthStore = prisma as unknown as CalendarMonthStore,
 ): Promise<CalendarMonthData> {
   const range = jalaliMonthRange(year, month);
-  const today = getTehranJalaliDate(now);
 
-  const [events, tasks, checkIns, transactions] = await Promise.all([
+  const [events, transactions] = await Promise.all([
     store.calendarEvent.findMany({
       where: {
         userId,
@@ -203,31 +145,6 @@ export async function getCalendarMonthData(
         endTime: true,
         linkedCostEstimate: true,
         source: true,
-      },
-    }),
-    store.financialTask.findMany({
-      where: {
-        userId,
-        dueDate: { gte: range.taskStart, lt: range.taskEnd },
-      },
-      orderBy: { dueDate: "asc" },
-      select: {
-        id: true,
-        title: true,
-        type: true,
-        isCompleted: true,
-        dueDate: true,
-        sourceType: true,
-      },
-    }),
-    store.dailyCheckIn.findMany({
-      where: {
-        userId,
-        date: { gte: range.taskStart, lt: range.taskEnd },
-      },
-      select: {
-        date: true,
-        mood: true,
       },
     }),
     store.transaction.findMany({
@@ -260,30 +177,6 @@ export async function getCalendarMonthData(
       linkedCostEstimate: event.linkedCostEstimate,
       source: event.source,
     });
-  }
-
-  for (const task of tasks) {
-    const day = jalaliFromInstant(task.dueDate);
-    if (day.year !== year || day.month !== month) {
-      continue;
-    }
-    dayBucket(days, day).tasks.push({
-      id: task.id,
-      title: task.title,
-      type: task.type,
-      isCompleted: task.isCompleted,
-      dueDate: task.dueDate,
-      isOverdue: !task.isCompleted && compareJalaliDate(day, today) < 0,
-      sourceType: task.sourceType,
-    });
-  }
-
-  for (const checkIn of checkIns) {
-    const day = jalaliFromInstant(checkIn.date);
-    if (day.year !== year || day.month !== month) {
-      continue;
-    }
-    dayBucket(days, day).mood = checkIn.mood;
   }
 
   for (const transaction of transactions) {

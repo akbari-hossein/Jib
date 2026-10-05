@@ -1,7 +1,6 @@
 import type {
   AccountType,
   CategoryGroup,
-  CheckInMood,
   DebtStatus,
   DebtType,
   RecurringFrequency,
@@ -49,24 +48,6 @@ export const FREQUENCY_LABEL: Record<RecurringFrequency, string> = {
   WEEKLY: "هفتگی",
   MONTHLY: "ماهانه",
   YEARLY: "سالانه",
-};
-
-export const CHECK_IN_MOOD_LABEL: Record<CheckInMood, string> = {
-  GOOD: "خوب",
-  NEUTRAL: "معمولی",
-  STRESSED: "پراسترس",
-};
-
-export const MOOD_EMOJI: Record<CheckInMood, string> = {
-  GOOD: "🙂",
-  NEUTRAL: "😐",
-  STRESSED: "😞",
-};
-
-export const CHECK_IN_MOOD_DAY_LABEL: Record<CheckInMood, string> = {
-  GOOD: "حس خوبی داشتی این روز",
-  NEUTRAL: "حس معمولی داشتی این روز",
-  STRESSED: "حس پراسترسی داشتی این روز",
 };
 
 export function periodChangeCopy(

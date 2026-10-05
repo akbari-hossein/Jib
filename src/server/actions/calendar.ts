@@ -1,18 +1,12 @@
 "use server";
 
-import type {
-  CalendarEventSource,
-  CheckInMood,
-  FinancialTaskSource,
-  FinancialTaskType,
-} from "@prisma/client";
+import type { CalendarEventSource } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import type { IranianHoliday } from "@/lib/dates/iranian-holidays";
 import { getCalendarMonthData } from "@/lib/finance/calendar-month";
 import {
   assertCalendarEventOwned,
-  assertFinancialTaskOwned,
   userFacingMutationError,
 } from "@/server/services/ownership";
 import { prisma } from "@/lib/db/prisma";
@@ -30,19 +24,8 @@ export type CalendarEventItem = {
   source: CalendarEventSource;
 };
 
-export type CalendarTaskItem = {
-  id: string;
-  title: string;
-  type: FinancialTaskType;
-  isCompleted: boolean;
-  isOverdue: boolean;
-  sourceType: FinancialTaskSource | null;
-};
-
 export type CalendarDayItems = {
   events: CalendarEventItem[];
-  tasks: CalendarTaskItem[];
-  mood: CheckInMood | null;
   totals: {
     income: string;
     expense: string;
@@ -93,15 +76,6 @@ export async function loadCalendarMonth(
           linkedCostEstimate: event.linkedCostEstimate?.toString() ?? null,
           source: event.source,
         })),
-        tasks: day.tasks.map((task) => ({
-          id: task.id,
-          title: task.title,
-          type: task.type,
-          isCompleted: task.isCompleted,
-          isOverdue: task.isOverdue,
-          sourceType: task.sourceType,
-        })),
-        mood: day.mood,
         totals: {
           income: day.totals.income.toString(),
           expense: day.totals.expense.toString(),
@@ -127,25 +101,6 @@ export async function deleteCalendarEvent(eventId: string): Promise<CalendarMuta
       return { ok: false, error: "این مورد در دسترس نیست." };
     }
     await prisma.calendarEvent.delete({ where: { id: event.id } });
-    revalidateCalendar();
-    return { ok: true };
-  } catch (error) {
-    return {
-      ok: false,
-      error: userFacingMutationError(error, "ذخیره نشد. دوباره تلاش کن."),
-    };
-  }
-}
-
-export async function deleteCustomFinancialTask(taskId: string): Promise<CalendarMutationResult> {
-  const user = await requireUser();
-
-  try {
-    const task = await assertFinancialTaskOwned(user.id, taskId);
-    if (task.type !== "CUSTOM" || task.sourceType != null) {
-      return { ok: false, error: "این مورد در دسترس نیست." };
-    }
-    await prisma.financialTask.delete({ where: { id: task.id } });
     revalidateCalendar();
     return { ok: true };
   } catch (error) {

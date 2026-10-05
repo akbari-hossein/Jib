@@ -9,7 +9,7 @@ import {
   type JalaliDate,
 } from "@/lib/dates/tehran";
 import { jalaliDateKey } from "@/lib/finance/calendar-month";
-import { JALALI_WEEKDAY_SHORT, MOOD_EMOJI } from "@/lib/labels";
+import { JALALI_WEEKDAY_SHORT } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import type { CalendarDayItems } from "@/server/actions/calendar";
 
@@ -64,8 +64,6 @@ export function MonthGrid({
           const key = jalaliDateKey(day);
           const items = days[key];
           const hasEvents = (items?.events.length ?? 0) > 0;
-          const hasTasks = (items?.tasks.length ?? 0) > 0;
-          const mood = items?.mood ?? null;
           const holiday = items?.holiday ?? null;
           const isToday = isSameJalaliDay(day, today);
           const isSelected = isSameJalaliDay(day, selected);
@@ -79,7 +77,7 @@ export function MonthGrid({
               aria-current={isToday ? "date" : undefined}
               aria-pressed={isSelected}
               className={cn(
-                "relative flex aspect-square flex-col items-center justify-center rounded-2xl text-sm transition-colors",
+                "flex aspect-square flex-col items-center justify-center rounded-2xl text-sm transition-colors",
                 isSelected && "bg-primary text-primary-foreground",
                 !isSelected && isToday && "ring-1 ring-inset ring-primary/45",
                 !isSelected && isToday && !holiday && "bg-primary/10",
@@ -88,26 +86,15 @@ export function MonthGrid({
                 !isSelected && !isToday && !holiday && "hover:bg-surface-muted",
               )}
             >
-              {mood ? (
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute start-1 top-1 text-[11px] leading-none"
-                >
-                  {MOOD_EMOJI[mood]}
-                </span>
-              ) : null}
               <span className="numeric-display leading-none">{toPersianDigits(day.day)}</span>
-              {hasEvents || hasTasks ? (
+              {hasEvents ? (
                 <span className="mt-1 flex items-center justify-center gap-0.5">
-                  {hasEvents ? (
-                    <span
-                      className={cn(
-                        "size-1.5 rounded-full",
-                        isSelected ? "bg-primary-foreground" : "bg-primary",
-                      )}
-                    />
-                  ) : null}
-                  {hasTasks ? <span className="size-1.5 rounded-full bg-warning" /> : null}
+                  <span
+                    className={cn(
+                      "size-1.5 rounded-full",
+                      isSelected ? "bg-primary-foreground" : "bg-primary",
+                    )}
+                  />
                 </span>
               ) : (
                 <span className="mt-1 h-1.5" />

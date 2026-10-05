@@ -8,8 +8,6 @@ import { Card } from "@/components/ui/card";
 import { TodayDateHeader } from "@/features/calendar/today-date-header";
 import { NotificationBell } from "@/features/notifications/notification-bell";
 import { CalendarToday } from "@/features/today/calendar-today";
-import { DailyCheckIn } from "@/features/today/daily-check-in";
-import { FinancialTaskList } from "@/features/today/financial-task-list";
 import { UpcomingFinancialEventCard } from "@/features/today/upcoming-context-row";
 import { ScoreDashboardWidget } from "@/features/health-score/score-dashboard-widget";
 import { DangCard } from "@/features/debts/dang-card";
@@ -122,8 +120,6 @@ export function TodayView({
         empty={!summary.hasAccounts}
       />
 
-      <DailyCheckIn mood={summary.checkIn?.mood ?? null} />
-
       {!summary.hasAccounts ? (
         <EmptyState
           title="هنوز حسابی اضافه نکردی"
@@ -150,14 +146,6 @@ export function TodayView({
               }))}
             />
           </div>
-          <FinancialTaskList
-            defaultDueDate={today}
-            tasks={summary.financialTasks.map((task) => ({
-              id: task.id,
-              title: task.title,
-              isOverdue: task.isOverdue,
-            }))}
-          />
           {emergencyFund?.configured && emergencyFund.goal ? (
             <EmergencyFundCard
               currentAmount={emergencyFund.progress.currentAmount}

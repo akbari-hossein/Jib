@@ -54,14 +54,10 @@ export type {
   CalendarMonthData,
   CalendarMonthDay,
   CalendarMonthEvent,
-  CalendarMonthTask,
 } from "@/lib/finance/calendar-month";
 export { getTodaySummary, timeOfDayFromNow, UPCOMING_RECURRING_HORIZON_DAYS } from "@/lib/finance/today-summary";
-export { proposeGeneratedTasks } from "@/lib/finance/financial-tasks";
-export type { GeneratedTaskCandidate } from "@/lib/finance/financial-tasks";
 export type {
   CalendarEventSummary,
-  FinancialTaskSummary,
   GoalProgressSummary,
   TimeOfDay,
   TodaySummary,

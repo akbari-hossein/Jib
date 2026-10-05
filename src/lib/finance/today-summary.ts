@@ -1,9 +1,4 @@
-import type {
-  CheckInMood,
-  FinancialTaskType,
-  RecurringFrequency,
-  TransactionType,
-} from "@prisma/client";
+import type { RecurringFrequency, TransactionType } from "@prisma/client";
 import { addRecurringOccurrence, firstOccurrenceOnOrAfter } from "@/lib/dates/recurring";
 import {
   addJalaliDays,
@@ -11,7 +6,6 @@ import {
   getDayPeriod,
   getTehranJalaliDate,
   gregorianUtcFromJalali,
-  jalaliDateOnlyUtc,
   jalaliFromInstant,
   jalaliToEpochDay,
   tehranMidnightUtc,
@@ -48,9 +42,7 @@ export interface TodaySummary {
   hasAccounts: boolean;
   upcomingFinancialEvents: UpcomingFinancialEvent[];
   calendarEventsToday: CalendarEventSummary[];
-  financialTasks: FinancialTaskSummary[];
   activeGoal: GoalProgressSummary | null;
-  checkIn: { mood: CheckInMood } | null;
 }
 
 export interface UpcomingFinancialEvent {
@@ -69,15 +61,6 @@ export interface CalendarEventSummary {
   endTime: Date | null;
   hasLinkedCost: boolean;
   linkedCostEstimate: bigint | null;
-}
-
-export interface FinancialTaskSummary {
-  id: string;
-  title: string;
-  type: FinancialTaskType;
-  isCompleted: boolean;
-  dueDate: Date;
-  isOverdue: boolean;
 }
 
 export interface GoalProgressSummary {
@@ -115,14 +98,6 @@ type CalendarRow = {
   startTime: Date;
   endTime: Date | null;
   linkedCostEstimate: bigint | null;
-};
-
-type TaskRow = {
-  id: string;
-  title: string;
-  type: FinancialTaskType;
-  isCompleted: boolean;
-  dueDate: Date;
 };
 
 export type TodaySummaryStore = {
@@ -200,29 +175,6 @@ export type TodaySummaryStore = {
       };
     }) => Promise<CalendarRow[]>;
   };
-  financialTask: {
-    findMany: (args: {
-      where: {
-        userId: string;
-        isCompleted: false;
-        dueDate: { lt: Date };
-      };
-      orderBy: { dueDate: "asc" };
-      select: {
-        id: true;
-        title: true;
-        type: true;
-        isCompleted: true;
-        dueDate: true;
-      };
-    }) => Promise<TaskRow[]>;
-  };
-  dailyCheckIn: {
-    findUnique: (args: {
-      where: { userId_date: { userId: string; date: Date } };
-      select: { mood: true };
-    }) => Promise<{ mood: CheckInMood } | null>;
-  };
   debtRecord: {
     findMany: (args: {
       where: {
@@ -275,10 +227,6 @@ function upcomingOccurrences(item: RecurringRow, today: JalaliDate): JalaliDate[
   return dates;
 }
 
-function isTaskOverdue(dueDate: Date, today: JalaliDate): boolean {
-  return compareJalaliDate(jalaliFromInstant(dueDate), today) < 0;
-}
-
 function pickActiveGoal(goals: GoalRow[], todayUtc: Date): GoalProgressSummary | null {
   const active = goals
     .filter((goal) => !goal.isArchived && goal.type !== "EMERGENCY_FUND")
@@ -314,8 +262,6 @@ export async function getTodaySummary(
   const todayUtc = gregorianUtcFromJalali(today);
   const dayStart = tehranMidnightUtc(today);
   const dayEnd = tehranMidnightUtc(addJalaliDays(today, 1));
-  const tomorrowDate = jalaliDateOnlyUtc(addJalaliDays(today, 1));
-  const todayDate = jalaliDateOnlyUtc(today);
 
   const [
     user,
@@ -324,8 +270,6 @@ export async function getTodaySummary(
     recurring,
     spentTodayResult,
     calendarEvents,
-    financialTasks,
-    checkIn,
     openDebts,
   ] =
     await Promise.all([
@@ -390,25 +334,6 @@ export async function getTodaySummary(
           endTime: true,
           linkedCostEstimate: true,
         },
-      }),
-      store.financialTask.findMany({
-        where: {
-          userId,
-          isCompleted: false,
-          dueDate: { lt: tomorrowDate },
-        },
-        orderBy: { dueDate: "asc" },
-        select: {
-          id: true,
-          title: true,
-          type: true,
-          isCompleted: true,
-          dueDate: true,
-        },
-      }),
-      store.dailyCheckIn.findUnique({
-        where: { userId_date: { userId, date: todayDate } },
-        select: { mood: true },
       }),
       store.debtRecord.findMany({
         where: { userId, status: { not: "SETTLED" } },
@@ -487,15 +412,6 @@ export async function getTodaySummary(
       hasLinkedCost: event.linkedCostEstimate != null,
       linkedCostEstimate: event.linkedCostEstimate,
     })),
-    financialTasks: financialTasks.map((task) => ({
-      id: task.id,
-      title: task.title,
-      type: task.type,
-      isCompleted: task.isCompleted,
-      dueDate: task.dueDate,
-      isOverdue: isTaskOverdue(task.dueDate, today),
-    })),
     activeGoal: pickActiveGoal(goals, todayUtc),
-    checkIn: checkIn ? { mood: checkIn.mood } : null,
   };
 }
