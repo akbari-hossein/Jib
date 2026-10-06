@@ -55,7 +55,6 @@ export function DebtForm({
         <MoneyInput id="debt-amount" name="amount" required />
       </div>
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-medium">جهت</legend>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
