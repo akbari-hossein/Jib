@@ -7,12 +7,16 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { SubscriptionStatusCard } from "@/features/subscription/components/SubscriptionStatusCard";
 import { getCachedSubscription, serializeSubscription } from "@/server/services/subscription";
+import { getReferralSummary } from "@/server/services/referrals";
+import { getSiteUrl } from "@/lib/config/site";
+import { ReferralCard } from "@/features/referrals/referral-card";
 
 export const metadata = { title: "بیشتر" };
 
 export default async function MorePage() {
   const user = await requireUser();
   const snapshot = serializeSubscription(await getCachedSubscription(user.id));
+  const referralSummary = await getReferralSummary(user.id);
 
   return (
     <main className="flex flex-col gap-8 px-5 pt-8">
@@ -71,6 +75,8 @@ export default async function MorePage() {
       </nav>
 
       <SubscriptionStatusCard snapshot={snapshot} />
+
+      <ReferralCard summary={referralSummary} signupUrl={`${getSiteUrl()}/signup`} />
 
       <section className="rounded-3xl border border-border bg-card p-5">
         <h2 className="mb-4 text-base font-semibold">روز درآمد</h2>

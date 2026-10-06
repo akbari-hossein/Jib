@@ -1,4 +1,4 @@
-export const TRIAL_DAYS = 14;
+export const TRIAL_DAYS = 7;
 export const PERIOD_DAYS = 30;
 export const SUBSCRIPTION_PRICE_TOMAN = 59_000;
 export const MAX_RECEIPT_TEXT_LENGTH = 2000;
