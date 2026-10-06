@@ -65,7 +65,7 @@ export function DebtForm({
               gave ? "bg-primary text-primary-foreground" : "bg-surface-muted",
             )}
           >
-            من دادم
+            طلبکارم
           </button>
           <button
             type="button"
@@ -75,7 +75,7 @@ export function DebtForm({
               !gave ? "bg-primary text-primary-foreground" : "bg-surface-muted",
             )}
           >
-            من گرفتم
+            بدهکارم
           </button>
         </div>
       </fieldset>
