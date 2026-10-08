@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatCardNumber } from "@/lib/subscription/format-card";
-import { SUBSCRIPTION_COPY, approvedCopy, rejectionCopy } from "@/lib/subscription/copy";
+import {
+  SUBSCRIPTION_COPY,
+  approvedCopy,
+  paymentInstructionsCopy,
+  rejectionCopy,
+  trialExpiredCopy,
+} from "@/lib/subscription/copy";
 import { formatJalaliAbsolute } from "@/lib/admin/format";
 import { formatToman } from "@/lib/currency/format";
 import {
@@ -42,10 +48,10 @@ export function UpgradeScreen({ snapshot }: { snapshot: ClientSubscriptionSnapsh
           {snapshot.status === "PENDING_REVIEW"
             ? SUBSCRIPTION_COPY.receiptPending
             : snapshot.status === "ACTIVE" && activeUntil
-              ? approvedCopy(activeUntil)
+            ? approvedCopy(activeUntil)
               : snapshot.status === "EXPIRED"
-                ? SUBSCRIPTION_COPY.trialExpired
-                : SUBSCRIPTION_COPY.paymentInstructions}
+                ? trialExpiredCopy(snapshot.priceToman)
+                : paymentInstructionsCopy(snapshot.priceToman)}
         </p>
       </header>
 
@@ -66,7 +72,9 @@ export function UpgradeScreen({ snapshot }: { snapshot: ClientSubscriptionSnapsh
             <span className="ms-2">۵۰٪ تخفیف</span>
           </p>
         ) : null}
-        <p className="mt-4 text-sm leading-7 text-muted-foreground">{SUBSCRIPTION_COPY.paymentInstructions}</p>
+        <p className="mt-4 text-sm leading-7 text-muted-foreground">
+          {paymentInstructionsCopy(snapshot.priceToman)}
+        </p>
         <div className="mt-4 rounded-2xl bg-surface-muted px-4 py-4">
           <p className="text-xs text-muted-foreground">شماره کارت جیب</p>
           <p className="numeric-display mt-2 text-lg font-semibold tracking-wide" dir="ltr">

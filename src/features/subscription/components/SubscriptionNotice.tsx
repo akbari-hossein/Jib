@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SUBSCRIPTION_COPY, rejectionCopy } from "@/lib/subscription/copy";
+import { SUBSCRIPTION_COPY, rejectionCopy, trialExpiredCopy } from "@/lib/subscription/copy";
 import { useSubscriptionAccess } from "@/features/subscription/subscription-access";
 
 export function SubscriptionNotice() {
@@ -24,7 +24,7 @@ export function SubscriptionNotice() {
   if (snapshot.status === "EXPIRED") {
     return (
       <div role="status" className="border-b border-border bg-surface-muted px-4 py-3 text-sm leading-7">
-        {SUBSCRIPTION_COPY.trialExpired}{" "}
+        {trialExpiredCopy(snapshot.priceToman)}{" "}
         <Link href="/upgrade" className="font-medium text-primary">
           {SUBSCRIPTION_COPY.activateCta}
         </Link>

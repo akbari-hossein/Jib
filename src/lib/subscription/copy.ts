@@ -1,13 +1,14 @@
 import type { SubscriptionStatus } from "@prisma/client";
+import { formatToman } from "@/lib/currency/format";
+import {
+  SUBSCRIPTION_ORIGINAL_PRICE_TOMAN,
+  SUBSCRIPTION_PRICE_TOMAN,
+} from "@/lib/subscription/constants";
 import { REJECTION_REASON_COPY, type RejectionReasonCode } from "@/lib/subscription/rejection-reasons";
 
 export const SUBSCRIPTION_COPY = {
   trialThreeDaysLeft: "۳ روز دیگه از دورهٔ آزمایشی رایگانت باقی مونده.",
   trialOneDayLeft: "فردا دورهٔ آزمایشی رایگانت تموم می‌شه.",
-  trialExpired:
-    "دورهٔ آزمایشی رایگان تموم شده. برای ادامهٔ استفاده از جیب، اشتراک ماهانه رو با ۵۰٪ تخفیف و مبلغ ۹۹٬۰۰۰ تومان فعال کن.",
-  paymentInstructions:
-    "مبلغ ۹۹٬۰۰۰ تومان (با ۵۰٪ تخفیف از ۱۹۸٬۰۰۰ تومان) رو به شمارهٔ کارت زیر واریز کن و بعد رسیدشو (عکس یا متن) اینجا بفرست.",
   receiptPending: "رسیدت دریافت شد و داره بررسی می‌شه. معمولاً این کار چند ساعت طول می‌کشه.",
   resubmitReceipt: "ارسال دوبارهٔ رسید",
   readOnly:
@@ -26,6 +27,19 @@ export const SUBSCRIPTION_COPY = {
   upgradeTitle: "اشتراک جیب",
   statusCardTitle: "اشتراک",
 } as const;
+
+export function trialExpiredCopy(priceToman: number): string {
+  return `دورهٔ آزمایشی رایگان تموم شده. برای ادامهٔ استفاده از جیب، اشتراک ماهانه (${formatToman(BigInt(priceToman))}) رو فعال کن.`;
+}
+
+export function paymentInstructionsCopy(priceToman: number): string {
+  const amount = formatToman(BigInt(priceToman));
+  const discount =
+    priceToman === SUBSCRIPTION_PRICE_TOMAN
+      ? ` (با ۵۰٪ تخفیف از ${formatToman(BigInt(SUBSCRIPTION_ORIGINAL_PRICE_TOMAN))})`
+      : "";
+  return `مبلغ ${amount}${discount} رو به شمارهٔ کارت زیر واریز کن و بعد رسیدشو (عکس یا متن) اینجا بفرست.`;
+}
 
 export function trialReminderCopy(daysRemaining: number): string | null {
   if (daysRemaining === 3) {
