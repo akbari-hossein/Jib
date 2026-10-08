@@ -562,7 +562,7 @@ model Subscription {
   status           SubscriptionStatus @default(TRIALING)
   trialEndsAt      DateTime
   currentPeriodEnd DateTime?
-  priceToman       Int                @default(59000)
+  priceToman       Int                @default(99000)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 

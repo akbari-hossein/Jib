@@ -40,9 +40,9 @@ export function softwareApplicationJsonLd() {
     image: absoluteUrl("/icons/icon-512.png"),
     offers: {
       "@type": "Offer",
-      price: "59000",
+      price: "99000",
       priceCurrency: "IRR",
-      description: "۱۴ روز آزمایش رایگان، سپس اشتراک ماهانه ۵۹٬۰۰۰ تومان.",
+      description: "۱۴ روز آزمایش رایگان، سپس اشتراک ماهانه با ۵۰٪ تخفیف: ۹۹٬۰۰۰ تومان به‌جای ۱۹۸٬۰۰۰ تومان.",
     },
   };
 }

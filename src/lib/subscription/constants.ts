@@ -1,6 +1,7 @@
 export const TRIAL_DAYS = 14;
 export const PERIOD_DAYS = 30;
-export const SUBSCRIPTION_PRICE_TOMAN = 59_000;
+export const SUBSCRIPTION_PRICE_TOMAN = 99_000;
+export const SUBSCRIPTION_ORIGINAL_PRICE_TOMAN = 198_000;
 export const MAX_RECEIPT_TEXT_LENGTH = 2000;
 export const MIN_RECEIPT_TEXT_LENGTH = 5;
 export const MAX_RECEIPT_IMAGE_BYTES = 4 * 1024 * 1024;

@@ -6,6 +6,10 @@ import { formatCardNumber } from "@/lib/subscription/format-card";
 import { SUBSCRIPTION_COPY, approvedCopy, rejectionCopy } from "@/lib/subscription/copy";
 import { formatJalaliAbsolute } from "@/lib/admin/format";
 import { formatToman } from "@/lib/currency/format";
+import {
+  SUBSCRIPTION_ORIGINAL_PRICE_TOMAN,
+  SUBSCRIPTION_PRICE_TOMAN,
+} from "@/lib/subscription/constants";
 import { ReceiptUploadForm } from "@/features/subscription/components/ReceiptUploadForm";
 import type { ClientSubscriptionSnapshot } from "@/features/subscription/subscription-access";
 
@@ -56,6 +60,12 @@ export function UpgradeScreen({ snapshot }: { snapshot: ClientSubscriptionSnapsh
         <p className="numeric-display mt-1 text-2xl font-semibold">
           {formatToman(BigInt(snapshot.priceToman))}
         </p>
+        {snapshot.priceToman === SUBSCRIPTION_PRICE_TOMAN ? (
+          <p className="mt-1 text-sm text-muted-foreground">
+            <span className="line-through">{formatToman(BigInt(SUBSCRIPTION_ORIGINAL_PRICE_TOMAN))}</span>
+            <span className="ms-2">۵۰٪ تخفیف</span>
+          </p>
+        ) : null}
         <p className="mt-4 text-sm leading-7 text-muted-foreground">{SUBSCRIPTION_COPY.paymentInstructions}</p>
         <div className="mt-4 rounded-2xl bg-surface-muted px-4 py-4">
           <p className="text-xs text-muted-foreground">شماره کارت جیب</p>
