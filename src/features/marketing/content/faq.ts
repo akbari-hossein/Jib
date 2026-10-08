@@ -1,3 +1,9 @@
+import { formatToman } from "@/lib/currency/format";
+import {
+  getSubscriptionOriginalPriceToman,
+  getSubscriptionPriceToman,
+} from "@/lib/subscription/config";
+
 export type FaqItem = {
   question: string;
   answer: string;
@@ -37,7 +43,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
   {
     question: "آیا جیب رایگانه؟",
     answer:
-      "هر حساب جدید ۱۴ روز دورهٔ آزمایشی رایگان دارد. بعد از آن، برای ثبت تراکنش یا تغییر بودجه اشتراک ماهانه با ۵۰٪ تخفیف، ۹۹٬۰۰۰ تومان به‌جای ۱۹۸٬۰۰۰ تومان لازم است. پرداخت کارت‌به‌کارت است و اطلاعات قبلی همچنان قابل مشاهده می‌ماند.",
+      `هر حساب جدید ۷ روز دورهٔ آزمایشی رایگان دارد. بعد از آن، برای ثبت تراکنش یا تغییر بودجه اشتراک ماهانه با ۵۰٪ تخفیف، ${formatToman(BigInt(getSubscriptionPriceToman()))} به‌جای ${formatToman(BigInt(getSubscriptionOriginalPriceToman()))} لازم است. پرداخت کارت‌به‌کارت است و اطلاعات قبلی همچنان قابل مشاهده می‌ماند.`,
   },
   {
     question: "جیب برای چه کسانی مناسبه؟",

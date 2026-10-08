@@ -129,7 +129,7 @@ describe("rejection reasons", () => {
   it("exposes only the fixed reason codes", () => {
     expect(isRejectionReasonCode("AMOUNT_MISMATCH")).toBe(true);
     expect(isRejectionReasonCode("free text")).toBe(false);
-    expect(REJECTION_REASON_COPY.AMOUNT_MISMATCH).toContain("۹۹٬۰۰۰");
+    expect(REJECTION_REASON_COPY.AMOUNT_MISMATCH).toContain("اشتراک");
   });
 });
 

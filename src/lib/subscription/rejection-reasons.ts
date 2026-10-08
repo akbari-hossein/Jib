@@ -9,7 +9,7 @@ export const REJECTION_REASON_CODES = [
 export type RejectionReasonCode = (typeof REJECTION_REASON_CODES)[number];
 
 export const REJECTION_REASON_COPY: Record<RejectionReasonCode, string> = {
-  AMOUNT_MISMATCH: "مبلغ رسید با مبلغ اشتراک تخفیف‌خورده (۹۹٬۰۰۰ تومان) مطابقت ندارد.",
+  AMOUNT_MISMATCH: "مبلغ رسید با مبلغ اشتراک مطابقت ندارد.",
   UNREADABLE: "رسید ارسالی خوانا نیست. لطفاً دوباره تلاش کن.",
   WRONG_DESTINATION: "رسید به شماره کارت جیب واریز نشده است.",
   DUPLICATE: "این رسید قبلاً برای یک اشتراک دیگر ثبت شده است.",

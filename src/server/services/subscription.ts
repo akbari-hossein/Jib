@@ -8,8 +8,11 @@ import { calculateNextPeriodEnd } from "@/lib/subscription/calculateNextPeriodEn
 import { calculateSubscriptionStatus } from "@/lib/subscription/calculateSubscriptionStatus";
 import { calculateTrialDaysRemaining } from "@/lib/subscription/calculateTrialDaysRemaining";
 import { calculateTrialEndsAt } from "@/lib/subscription/calculateTrialEndsAt";
-import { getDestinationCardNumber, getSubscriptionPriceToman } from "@/lib/subscription/config";
-import { SUBSCRIPTION_PRICE_TOMAN } from "@/lib/subscription/constants";
+import {
+  getDestinationCardNumber,
+  getSubscriptionOriginalPriceToman,
+  getSubscriptionPriceToman,
+} from "@/lib/subscription/config";
 import { approvedCopy, SUBSCRIPTION_COPY, writeBlockedCopy } from "@/lib/subscription/copy";
 import type { ReceiptSubmissionInput } from "@/lib/subscription/receipt-schema";
 import { isRejectionReasonCode } from "@/lib/subscription/rejection-reasons";
@@ -39,6 +42,7 @@ export type SubscriptionSnapshot = {
   currentPeriodEnd: Date | null;
   daysRemaining: number;
   priceToman: number;
+  originalPriceToman: number | null;
   writeAccess: boolean;
   latestReceipt: {
     id: string;
@@ -107,12 +111,17 @@ function snapshotFromRow(
     latestReceiptStatus: latestReceipt?.status ?? null,
   });
 
+  const priceToman = row.priceToman || getSubscriptionPriceToman();
+  const originalPriceToman =
+    priceToman === getSubscriptionPriceToman() ? getSubscriptionOriginalPriceToman() : null;
+
   return {
     status,
     trialEndsAt: row.trialEndsAt,
     currentPeriodEnd: row.currentPeriodEnd,
     daysRemaining: calculateTrialDaysRemaining(now, row.trialEndsAt),
-    priceToman: row.priceToman || SUBSCRIPTION_PRICE_TOMAN,
+    priceToman,
+    originalPriceToman,
     writeAccess: hasWriteAccess(status),
     latestReceipt: latestReceipt
       ? {
@@ -166,6 +175,7 @@ export function serializeSubscription(snapshot: SubscriptionSnapshot) {
     currentPeriodEnd: snapshot.currentPeriodEnd?.toISOString() ?? null,
     daysRemaining: snapshot.daysRemaining,
     priceToman: snapshot.priceToman,
+    originalPriceToman: snapshot.originalPriceToman,
     writeAccess: snapshot.writeAccess,
     latestReceipt: snapshot.latestReceipt
       ? {

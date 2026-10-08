@@ -1,6 +1,11 @@
 import { APP_DESCRIPTION, APP_NAME, APP_NAME_EN } from "@/lib/config/app";
 import { absoluteUrl, SITE } from "@/lib/config/site";
 import type { FaqItem } from "@/features/marketing/content/faq";
+import { formatToman } from "@/lib/currency/format";
+import {
+  getSubscriptionOriginalPriceToman,
+  getSubscriptionPriceToman,
+} from "@/lib/subscription/config";
 
 export function websiteJsonLd() {
   return {
@@ -27,6 +32,8 @@ export function organizationJsonLd() {
 }
 
 export function softwareApplicationJsonLd() {
+  const price = getSubscriptionPriceToman();
+  const originalPrice = getSubscriptionOriginalPriceToman();
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -40,9 +47,9 @@ export function softwareApplicationJsonLd() {
     image: absoluteUrl("/icons/icon-512.png"),
     offers: {
       "@type": "Offer",
-      price: "99000",
+      price: String(price),
       priceCurrency: "IRR",
-      description: "۱۴ روز آزمایش رایگان، سپس اشتراک ماهانه با ۵۰٪ تخفیف: ۹۹٬۰۰۰ تومان به‌جای ۱۹۸٬۰۰۰ تومان.",
+      description: `۷ روز آزمایش رایگان، سپس اشتراک ماهانه با ۵۰٪ تخفیف: ${formatToman(BigInt(price))} به‌جای ${formatToman(BigInt(originalPrice))}.`,
     },
   };
 }

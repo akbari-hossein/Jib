@@ -1,9 +1,5 @@
 import type { SubscriptionStatus } from "@prisma/client";
 import { formatToman } from "@/lib/currency/format";
-import {
-  SUBSCRIPTION_ORIGINAL_PRICE_TOMAN,
-  SUBSCRIPTION_PRICE_TOMAN,
-} from "@/lib/subscription/constants";
 import { REJECTION_REASON_COPY, type RejectionReasonCode } from "@/lib/subscription/rejection-reasons";
 
 export const SUBSCRIPTION_COPY = {
@@ -32,12 +28,11 @@ export function trialExpiredCopy(priceToman: number): string {
   return `دورهٔ آزمایشی رایگان تموم شده. برای ادامهٔ استفاده از جیب، اشتراک ماهانه (${formatToman(BigInt(priceToman))}) رو فعال کن.`;
 }
 
-export function paymentInstructionsCopy(priceToman: number): string {
+export function paymentInstructionsCopy(priceToman: number, originalPriceToman: number | null): string {
   const amount = formatToman(BigInt(priceToman));
-  const discount =
-    priceToman === SUBSCRIPTION_PRICE_TOMAN
-      ? ` (با ۵۰٪ تخفیف از ${formatToman(BigInt(SUBSCRIPTION_ORIGINAL_PRICE_TOMAN))})`
-      : "";
+  const discount = originalPriceToman
+    ? ` (با ۵۰٪ تخفیف از ${formatToman(BigInt(originalPriceToman))})`
+    : "";
   return `مبلغ ${amount}${discount} رو به شمارهٔ کارت زیر واریز کن و بعد رسیدشو (عکس یا متن) اینجا بفرست.`;
 }
 

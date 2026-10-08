@@ -1,14 +1,22 @@
 import { MarketingArticle } from "@/features/marketing/article";
+import { formatToman } from "@/lib/currency/format";
 import { publicPageMetadata } from "@/lib/seo/metadata";
+import {
+  getSubscriptionOriginalPriceToman,
+  getSubscriptionPriceToman,
+} from "@/lib/subscription/config";
 
 export const metadata = publicPageMetadata({
   title: "شرایط استفاده جیب",
   description:
-    "جیب یک ابزار محاسباتی شخصی است، نه مشاور مالی و نه بانک. حساب جدید ۱۴ روز آزمایش رایگان دارد.",
+    "جیب یک ابزار محاسباتی شخصی است، نه مشاور مالی و نه بانک. حساب جدید ۷ روز آزمایش رایگان دارد.",
   path: "/terms",
 });
 
 export default function TermsPage() {
+  const monthlyPrice = formatToman(BigInt(getSubscriptionPriceToman()));
+  const originalPrice = formatToman(BigInt(getSubscriptionOriginalPriceToman()));
+
   return (
     <MarketingArticle
       title="شرایط استفاده"
@@ -32,8 +40,8 @@ export default function TermsPage() {
       </p>
       <h2>هزینه</h2>
       <p>
-        هر حساب جدید ۱۴ روز دورهٔ آزمایشی رایگان دارد. بعد از آن، برای ثبت تراکنش، بودجه یا هدف، اشتراک
-        ماهانه با ۵۰٪ تخفیف، ۹۹٬۰۰۰ تومان به‌جای ۱۹۸٬۰۰۰ تومان، لازم است. پرداخت به‌صورت کارت‌به‌کارت انجام می‌شود و تأیید رسید را یک انسان
+        هر حساب جدید ۷ روز دورهٔ آزمایشی رایگان دارد. بعد از آن، برای ثبت تراکنش، بودجه یا هدف، اشتراک ماهانه با ۵۰٪ تخفیف، {monthlyPrice}
+        به‌جای {originalPrice} لازم است. پرداخت به‌صورت کارت‌به‌کارت انجام می‌شود و تأیید رسید را یک انسان
         انجام می‌دهد، نه سیستم خودکار. اطلاعات قبلی همچنان قابل مشاهده می‌ماند.
       </p>
       <h2>تغییر</h2>

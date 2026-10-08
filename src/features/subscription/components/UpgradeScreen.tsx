@@ -12,10 +12,6 @@ import {
 } from "@/lib/subscription/copy";
 import { formatJalaliAbsolute } from "@/lib/admin/format";
 import { formatToman } from "@/lib/currency/format";
-import {
-  SUBSCRIPTION_ORIGINAL_PRICE_TOMAN,
-  SUBSCRIPTION_PRICE_TOMAN,
-} from "@/lib/subscription/constants";
 import { ReceiptUploadForm } from "@/features/subscription/components/ReceiptUploadForm";
 import type { ClientSubscriptionSnapshot } from "@/features/subscription/subscription-access";
 
@@ -48,10 +44,10 @@ export function UpgradeScreen({ snapshot }: { snapshot: ClientSubscriptionSnapsh
           {snapshot.status === "PENDING_REVIEW"
             ? SUBSCRIPTION_COPY.receiptPending
             : snapshot.status === "ACTIVE" && activeUntil
-            ? approvedCopy(activeUntil)
+              ? approvedCopy(activeUntil)
               : snapshot.status === "EXPIRED"
                 ? trialExpiredCopy(snapshot.priceToman)
-                : paymentInstructionsCopy(snapshot.priceToman)}
+                : paymentInstructionsCopy(snapshot.priceToman, snapshot.originalPriceToman)}
         </p>
       </header>
 
@@ -66,14 +62,14 @@ export function UpgradeScreen({ snapshot }: { snapshot: ClientSubscriptionSnapsh
         <p className="numeric-display mt-1 text-2xl font-semibold">
           {formatToman(BigInt(snapshot.priceToman))}
         </p>
-        {snapshot.priceToman === SUBSCRIPTION_PRICE_TOMAN ? (
+        {snapshot.originalPriceToman ? (
           <p className="mt-1 text-sm text-muted-foreground">
-            <span className="line-through">{formatToman(BigInt(SUBSCRIPTION_ORIGINAL_PRICE_TOMAN))}</span>
+            <span className="line-through">{formatToman(BigInt(snapshot.originalPriceToman))}</span>
             <span className="ms-2">۵۰٪ تخفیف</span>
           </p>
         ) : null}
         <p className="mt-4 text-sm leading-7 text-muted-foreground">
-          {paymentInstructionsCopy(snapshot.priceToman)}
+          {paymentInstructionsCopy(snapshot.priceToman, snapshot.originalPriceToman)}
         </p>
         <div className="mt-4 rounded-2xl bg-surface-muted px-4 py-4">
           <p className="text-xs text-muted-foreground">شماره کارت جیب</p>

@@ -4,7 +4,7 @@
 
 Jib is a Persian, RTL personal-finance PWA. It answers one question on the home screen: how much you can spend today — after liquid balances, upcoming bills, and savings goals.
 
-The product is designed for Iran: Jalali calendar, Tehran timezone, and amounts in تومان. New accounts get a 14-day trial; after that, writing data requires a 99,000 Toman/month card-to-card subscription (50% off the 198,000 Toman list price).
+The product is designed for Iran: Jalali calendar, Tehran timezone, and amounts in تومان. New accounts get a 7-day trial; after that, writing data requires a card-to-card subscription. Set `JIB_SUBSCRIPTION_PRICE_TOMAN` to change the discounted monthly price; the 50% off list price is calculated automatically.
 
 ---
 
@@ -114,7 +114,7 @@ cp .env.example .env
 | `JIB_DESTINATION_CARD_NUMBER` | 16-digit card number shown for card-to-card subscription payments. |
 | `TELEGRAM_BOT_TOKEN` | Optional. Telegram bot token for new-receipt admin alerts. |
 | `TELEGRAM_ADMIN_CHAT_ID` | Optional. Telegram chat that receives receipt alerts. |
-| `JIB_SUBSCRIPTION_PRICE_TOMAN` | Optional. Monthly price; defaults to 99000. |
+| `JIB_SUBSCRIPTION_PRICE_TOMAN` | Discounted monthly price in Toman; defaults to 99000. The 50% off list price is calculated automatically. |
 | `ADMIN_BOOTSTRAP_EMAILS` | First admin bootstrap if no ADMIN users exist. |
 
 Example `.env`:
