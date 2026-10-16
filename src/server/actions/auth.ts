@@ -19,7 +19,7 @@ import {
   setSessionCookie,
 } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
-import { createUserWithDefaults } from "@/server/services/users";
+import { createUserWithReferral } from "@/server/services/referrals";
 
 export type AuthActionState = {
   ok: boolean;
@@ -82,6 +82,7 @@ export async function signup(
     name: formData.get("name") ?? "",
     email: formData.get("email"),
     password: formData.get("password"),
+    referralCode: formData.get("referralCode") ?? undefined,
   });
   if (!parsed.success) {
     return { ok: false, error: firstIssue(parsed.error) };
@@ -101,13 +102,17 @@ export async function signup(
 
   try {
     const passwordHash = await hashPassword(parsed.data.password);
-    const user = await createUserWithDefaults({
+    const user = await createUserWithReferral({
       email: parsed.data.email,
       passwordHash,
       name: parsed.data.name ?? null,
+      referralCode: parsed.data.referralCode,
     });
     await issueSession(user.id, headerList);
   } catch (error) {
+    if (error instanceof Error && error.message === "INVALID_REFERRAL_CODE") {
+      return { ok: false, error: "کد معرفی معتبر نیست یا دیگر فعال نیست." };
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return { ok: false, error: "این ایمیل قبلاً ثبت شده." };
     }

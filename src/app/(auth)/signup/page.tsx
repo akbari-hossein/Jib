@@ -7,7 +7,12 @@ export const metadata = {
   title: "ثبت‌نام",
 };
 
-export default async function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ref?: string; error?: string }>;
+}) {
+  const params = await searchParams;
   const user = await getCurrentUser();
   if (user) {
     redirect("/home");
@@ -21,7 +26,11 @@ export default async function SignupPage() {
           فقط یک ایمیل و رمز عبور لازم است.
         </p>
       </div>
-      <SignupForm googleEnabled={isGoogleAuthEnabled()} />
+      <SignupForm
+        googleEnabled={isGoogleAuthEnabled()}
+        referralCode={params.ref?.trim().toUpperCase().slice(0, 32)}
+        referralError={params.error === "referral"}
+      />
     </section>
   );
 }

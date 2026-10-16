@@ -115,48 +115,87 @@ enum ReceiptStatus {
   REJECTED
 }
 
-model User {
-  id                   String     @id @default(cuid())
-  email                String     @unique
-  passwordHash         String?
-  googleId             String?    @unique
-  name                 String?
-  role                 UserRole   @default(USER)
-  status               UserStatus @default(ACTIVE)
-  incomeDayOfMonth     Int?
-  expectedIncomeAmount BigInt?
-  locale                 String    @default("fa-IR")
-  currency               String    @default("TOMAN")
-  onboardingCompletedAt  DateTime?
-  lastActiveAt           DateTime?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+enum ReferralRewardType {
+  INVITER
+  INVITEE
+}
 
-  sessions             Session[]
-  accounts             Account[]
-  categories           Category[]
-  transactions         Transaction[]
-  budgets              Budget[]
-  goals                Goal[]
-  recurring            RecurringTransaction[]
-  calendarEvents       CalendarEvent[]
-  rules                  TransactionRule[]
-  notificationPref       NotificationPreference?
-  notificationSettings   UserNotificationSetting[]
-  notificationLogs       NotificationLog[]
-  pushSubscriptions      PushSubscription[]
-  adminAuditLogs         AdminAuditLog[]           @relation("AdminActor")
-  contacts               Contact[]
-  debtRecords            DebtRecord[]
-  splitBills             SplitBill[]
+model User {
+  id                    String     @id @default(cuid())
+  email                 String     @unique
+  passwordHash          String?
+  googleId              String?    @unique
+  name                  String?
+  referralCode          String     @unique
+  role                  UserRole   @default(USER)
+  status                UserStatus @default(ACTIVE)
+  incomeDayOfMonth      Int?
+  expectedIncomeAmount  BigInt?
+  locale                String     @default("fa-IR")
+  currency              String     @default("TOMAN")
+  onboardingCompletedAt DateTime?
+  lastActiveAt          DateTime?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  sessions                 Session[]
+  accounts                 Account[]
+  categories               Category[]
+  transactions             Transaction[]
+  budgets                  Budget[]
+  goals                    Goal[]
+  recurring                RecurringTransaction[]
+  calendarEvents           CalendarEvent[]
+  rules                    TransactionRule[]
+  notificationPref         NotificationPreference?
+  notificationSettings     UserNotificationSetting[]
+  notificationLogs         NotificationLog[]
+  pushSubscriptions        PushSubscription[]
+  adminAuditLogs           AdminAuditLog[]           @relation("AdminActor")
+  contacts                 Contact[]
+  debtRecords              DebtRecord[]
+  splitBills               SplitBill[]
   financialHealthSnapshots FinancialHealthSnapshot[]
   subscription             Subscription?
   paymentReceipts          PaymentReceipt[]
+  referralsSent            Referral[]                @relation("ReferralInviter")
+  referralReceived         Referral?                 @relation("ReferralInvitee")
+  referralRewards          ReferralReward[]
 
   @@index([role, status])
   @@index([createdAt])
   @@index([lastActiveAt])
   @@index([onboardingCompletedAt])
+}
+
+model Referral {
+  id             String           @id @default(cuid())
+  referrerUserId String
+  referrer       User             @relation("ReferralInviter", fields: [referrerUserId], references: [id], onDelete: Cascade)
+  referredUserId String           @unique
+  referred       User             @relation("ReferralInvitee", fields: [referredUserId], references: [id], onDelete: Cascade)
+  referralCode   String
+  createdAt      DateTime         @default(now())
+  rewards        ReferralReward[]
+
+  @@index([referrerUserId, createdAt])
+}
+
+model ReferralReward {
+  id                String             @id @default(cuid())
+  referralId        String
+  referral          Referral           @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  beneficiaryUserId String
+  type              ReferralRewardType
+  beneficiary       User               @relation(fields: [beneficiaryUserId], references: [id], onDelete: Cascade)
+  cyclePosition     Int
+  requestedDays     Int
+  grantedDays       Int
+  jalaliYear        Int
+  createdAt         DateTime           @default(now())
+
+  @@unique([referralId, type])
+  @@index([beneficiaryUserId, jalaliYear, type])
 }
 
 model Session {
@@ -221,24 +260,24 @@ model Category {
 }
 
 model Transaction {
-  id                     String          @id @default(cuid())
+  id                     String                @id @default(cuid())
   userId                 String
-  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   type                   TransactionType
   amount                 BigInt
   accountId              String
-  account                Account         @relation("AccountFrom", fields: [accountId], references: [id], onDelete: Restrict)
+  account                Account               @relation("AccountFrom", fields: [accountId], references: [id], onDelete: Restrict)
   toAccountId            String?
-  toAccount              Account?        @relation("AccountTo", fields: [toAccountId], references: [id], onDelete: Restrict)
+  toAccount              Account?              @relation("AccountTo", fields: [toAccountId], references: [id], onDelete: Restrict)
   categoryId             String?
-  category               Category?       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  category               Category?             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   occurredAt             DateTime
   merchant               String?
   note                   String?
   recurringTransactionId String?
   recurringTransaction   RecurringTransaction? @relation(fields: [recurringTransactionId], references: [id], onDelete: SetNull)
-  createdAt              DateTime        @default(now())
-  updatedAt              DateTime        @updatedAt
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
 
   debtRecord        DebtRecord?
   settlementPayment SettlementPayment?
@@ -280,23 +319,23 @@ model BudgetCategory {
 }
 
 model Goal {
-  id                         String    @id @default(cuid())
-  userId                     String
-  user                       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name                       String
-  targetAmount               BigInt
-  currentAmount              BigInt    @default(0)
-  targetDate                 DateTime?
-  accountId                  String?
-  account                    Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
-  icon                       String?
-  isArchived                 Boolean   @default(false)
-  type                       GoalType  @default(CUSTOM)
-  targetMonths               Int?
-  essentialCategoryIds       String[]  @default([])
-  estimatedMonthlyEssential  BigInt?
-  createdAt                  DateTime  @default(now())
-  updatedAt                  DateTime  @updatedAt
+  id                        String    @id @default(cuid())
+  userId                    String
+  user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                      String
+  targetAmount              BigInt
+  currentAmount             BigInt    @default(0)
+  targetDate                DateTime?
+  accountId                 String?
+  account                   Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  icon                      String?
+  isArchived                Boolean   @default(false)
+  type                      GoalType  @default(CUSTOM)
+  targetMonths              Int?
+  essentialCategoryIds      String[]  @default([])
+  estimatedMonthlyEssential BigInt?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
 
   @@index([userId, isArchived])
   @@index([userId, type, isArchived])
@@ -304,25 +343,25 @@ model Goal {
 }
 
 model RecurringTransaction {
-  id         String              @id @default(cuid())
+  id         String             @id @default(cuid())
   userId     String
-  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   name       String
   type       TransactionType
   amount     BigInt
   frequency  RecurringFrequency
-  interval   Int                 @default(1)
+  interval   Int                @default(1)
   startDate  DateTime
   endDate    DateTime?
   nextRunAt  DateTime
   dayOfMonth Int?
   categoryId String
-  category   Category            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  category   Category           @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   accountId  String
-  account    Account             @relation(fields: [accountId], references: [id], onDelete: Restrict)
-  isActive   Boolean             @default(true)
-  createdAt  DateTime            @default(now())
-  updatedAt  DateTime            @updatedAt
+  account    Account            @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  isActive   Boolean            @default(true)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
 
   transactions Transaction[]
 
@@ -405,12 +444,12 @@ model UserNotificationSetting {
 }
 
 model NotificationLog {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   ruleKey   String
   payload   Json
-  sentAt    DateTime @default(now())
+  sentAt    DateTime  @default(now())
   dedupeKey String
   readAt    DateTime?
 
@@ -467,26 +506,26 @@ model Contact {
 }
 
 model DebtRecord {
-  id               String     @id @default(cuid())
-  userId           String
-  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contactId        String
-  contact          Contact    @relation(fields: [contactId], references: [id], onDelete: Restrict)
-  type             DebtType
-  originalAmount   BigInt
-  remainingAmount  BigInt
-  reason           String?
-  date             DateTime
-  dueDate          DateTime?
-  accountId        String?
-  account          Account?   @relation(fields: [accountId], references: [id], onDelete: SetNull)
-  status           DebtStatus @default(OPEN)
-  splitBillId      String?
-  splitBill        SplitBill? @relation(fields: [splitBillId], references: [id], onDelete: SetNull)
-  transactionId    String?    @unique
-  transaction      Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contactId       String
+  contact         Contact      @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  type            DebtType
+  originalAmount  BigInt
+  remainingAmount BigInt
+  reason          String?
+  date            DateTime
+  dueDate         DateTime?
+  accountId       String?
+  account         Account?     @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  status          DebtStatus   @default(OPEN)
+  splitBillId     String?
+  splitBill       SplitBill?   @relation(fields: [splitBillId], references: [id], onDelete: SetNull)
+  transactionId   String?      @unique
+  transaction     Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   settlements SettlementPayment[]
 
@@ -496,17 +535,17 @@ model DebtRecord {
 }
 
 model SettlementPayment {
-  id            String   @id @default(cuid())
+  id            String       @id @default(cuid())
   debtRecordId  String
-  debtRecord    DebtRecord @relation(fields: [debtRecordId], references: [id], onDelete: Cascade)
+  debtRecord    DebtRecord   @relation(fields: [debtRecordId], references: [id], onDelete: Cascade)
   amount        BigInt
-  date          DateTime @default(now())
+  date          DateTime     @default(now())
   accountId     String?
-  account       Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  account       Account?     @relation(fields: [accountId], references: [id], onDelete: SetNull)
   note          String?
-  transactionId String?  @unique
+  transactionId String?      @unique
   transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
-  createdAt     DateTime @default(now())
+  createdAt     DateTime     @default(now())
 
   @@index([debtRecordId])
 }
@@ -537,18 +576,18 @@ model FinancialHealthSnapshot {
 }
 
 model SplitBill {
-  id            String   @id @default(cuid())
+  id            String       @id @default(cuid())
   userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   title         String
   totalAmount   BigInt
   date          DateTime
-  paidByMe      Boolean  @default(true)
+  paidByMe      Boolean      @default(true)
   accountId     String?
-  account       Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
-  transactionId String?  @unique
+  account       Account?     @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  transactionId String?      @unique
   transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
-  createdAt     DateTime @default(now())
+  createdAt     DateTime     @default(now())
 
   debtRecords DebtRecord[]
 
@@ -574,11 +613,11 @@ model Subscription {
 }
 
 model PaymentReceipt {
-  id                  String       @id @default(cuid())
-  subscriptionId      String
-  subscription        Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  userId              String
-  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   type                ReceiptType
   imageUrl            String?
@@ -594,13 +633,13 @@ model PaymentReceipt {
   amountToman         Int?
 
   createdAt DateTime @default(now())
+  // Partial unique index PaymentReceipt_one_pending_per_user lives in SQL (one PENDING row per user).
+  // If user-list PaymentReceipt sums get slow at scale, add a covering index on
+  // (userId, status, amountToman, reviewedAt). Not needed at MVP counts.
 
   @@index([status])
   @@index([subscriptionId])
   @@index([userId])
   @@index([status, reviewedAt])
   @@index([userId, status])
-  // Partial unique index PaymentReceipt_one_pending_per_user lives in SQL (one PENDING row per user).
-  // If user-list PaymentReceipt sums get slow at scale, add a covering index on
-  // (userId, status, amountToman, reviewedAt). Not needed at MVP counts.
 }

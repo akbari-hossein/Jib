@@ -36,6 +36,23 @@ describe("signupSchema", () => {
     }
   });
 
+  it("accepts an optional referral code and treats blank as omitted", () => {
+    const referred = signupSchema.safeParse({
+      name: "Friend",
+      email: "friend@example.com",
+      password: "secret123",
+      referralCode: " abcd2345 ",
+    });
+    expect(referred.success && referred.data.referralCode).toBe("abcd2345");
+    const blank = signupSchema.safeParse({
+      name: "Friend",
+      email: "friend@example.com",
+      password: "secret123",
+      referralCode: "  ",
+    });
+    expect(blank.success && blank.data.referralCode).toBeUndefined();
+  });
+
   it("treats a blank name as omitted", () => {
     const parsed = signupSchema.safeParse({
       name: "   ",

@@ -7,6 +7,7 @@ export const APP_DESCRIPTION =
 export const SESSION_COOKIE = "jib_session";
 export const OAUTH_STATE_COOKIE = "jib_oauth_state";
 export const OAUTH_VERIFIER_COOKIE = "jib_oauth_verifier";
+export const OAUTH_REFERRAL_COOKIE = "jib_oauth_referral";
 
 /** Sliding session lifetime: each visit extends both cookie and server session. */
 export const SESSION_TTL_DAYS = 180;

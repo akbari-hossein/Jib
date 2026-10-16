@@ -32,4 +32,5 @@ export const signupSchema = z.object({
     .transform((value) => value || undefined),
   email: emailSchema,
   password: passwordSchema,
+  referralCode: z.string().trim().max(32, "کد معرفی معتبر نیست.").optional().transform((value) => value || undefined),
 });

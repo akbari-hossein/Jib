@@ -1,6 +1,6 @@
 import type { Prisma, SubscriptionStatus } from "@prisma/client";
 import { calculateSubscriptionStatus } from "@/lib/subscription/calculateSubscriptionStatus";
-import { calculateTrialEndsAt } from "@/lib/subscription/calculateTrialEndsAt";
+import { calculateLegacyTrialEndsAt } from "@/lib/subscription/calculateTrialEndsAt";
 
 export const ADMIN_USER_STATUS_FILTERS = [
   "ALL",
@@ -90,7 +90,7 @@ export function adminUsersWhere(input: {
 }
 
 export function serializeAdminSubscriber(row: AdminSubscriberRow, now = new Date()): AdminSubscriberDto {
-  const trialEndsAt = row.subscription?.trialEndsAt ?? calculateTrialEndsAt(row.createdAt);
+  const trialEndsAt = row.subscription?.trialEndsAt ?? calculateLegacyTrialEndsAt(row.createdAt);
   const subscriptionStatus =
     row.subscription?.status ??
     calculateSubscriptionStatus({

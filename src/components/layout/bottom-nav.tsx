@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import { House, List, MoreHorizontal, Target, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const items = [
+export const BOTTOM_NAV_ITEMS = [
   { href: "/home", label: "خانه", icon: House },
-  { href: "/transactions", label: "تراکنش‌ها", icon: List },
   { href: "/dang", label: "دنگ", icon: Users },
   { href: "/goals", label: "اهداف", icon: Target },
+  { href: "/transactions", label: "تراکنش‌ها", icon: List },
   { href: "/more", label: "بیشتر", icon: MoreHorizontal },
 ] as const;
 
@@ -22,7 +22,7 @@ export function BottomNav() {
       className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
     >
       <ul className="mx-auto grid max-w-xl grid-cols-5">
-        {items.map((item) => {
+        {BOTTOM_NAV_ITEMS.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 
-export function GoogleButton() {
+export function GoogleButton({ referralCode }: { referralCode?: string }) {
   return (
     <>
       <div className="flex items-center gap-3 text-xs text-foreground/40">
@@ -9,7 +9,7 @@ export function GoogleButton() {
         <span className="h-px flex-1 bg-border" />
       </div>
       <Button asChild variant="outline" className="w-full">
-        <a href="/api/auth/google">
+        <a href={referralCode ? `/api/auth/google?ref=${encodeURIComponent(referralCode)}` : "/api/auth/google"}>
           <GoogleMark />
           ادامه با گوگل
         </a>

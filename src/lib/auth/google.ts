@@ -1,5 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { requestOrigin } from "@/lib/auth/request";
+import { timingSafeEqual } from "node:crypto";
+import { hashSecret } from "@/lib/auth/crypto";
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -51,6 +53,22 @@ export function createPkcePair() {
   const challenge = createHash("sha256").update(verifier).digest("base64url");
   const state = randomBytes(16).toString("base64url");
   return { verifier, challenge, state };
+}
+
+export function signOAuthReferral(code: string, state: string): string {
+  const normalized = code.trim().toUpperCase();
+  return `${normalized}.${hashSecret(`oauth-referral:${state}:${normalized}`)}`;
+}
+
+export function verifyOAuthReferral(value: string | undefined, state: string): string | null {
+  if (!value) return null;
+  const separator = value.lastIndexOf(".");
+  if (separator <= 0) return null;
+  const code = value.slice(0, separator);
+  const supplied = Buffer.from(value.slice(separator + 1));
+  const expected = Buffer.from(hashSecret(`oauth-referral:${state}:${code}`));
+  if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) return null;
+  return /^[A-Z0-9]{4,32}$/.test(code) ? code : null;
 }
 
 export function googleAuthUrl(params: {

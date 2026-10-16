@@ -11,7 +11,7 @@ import {
 } from "@/lib/admin/params";
 import { prisma } from "@/lib/db/prisma";
 import { calculateSubscriptionStatus } from "@/lib/subscription/calculateSubscriptionStatus";
-import { calculateTrialEndsAt } from "@/lib/subscription/calculateTrialEndsAt";
+import { calculateLegacyTrialEndsAt } from "@/lib/subscription/calculateTrialEndsAt";
 
 const subscriptionSelect = {
   status: true,
@@ -42,7 +42,7 @@ function resolveSubscriptionStatus(
   },
   now = new Date(),
 ): SubscriptionStatus {
-  const trialEndsAt = user.subscription?.trialEndsAt ?? calculateTrialEndsAt(user.createdAt);
+  const trialEndsAt = user.subscription?.trialEndsAt ?? calculateLegacyTrialEndsAt(user.createdAt);
   return (
     user.subscription?.status ??
     calculateSubscriptionStatus({

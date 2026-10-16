@@ -7,7 +7,7 @@ import { canSubmitReceipt, pickLatestReceipt } from "@/lib/subscription/api-acce
 import { calculateNextPeriodEnd } from "@/lib/subscription/calculateNextPeriodEnd";
 import { calculateSubscriptionStatus } from "@/lib/subscription/calculateSubscriptionStatus";
 import { calculateTrialDaysRemaining } from "@/lib/subscription/calculateTrialDaysRemaining";
-import { calculateTrialEndsAt } from "@/lib/subscription/calculateTrialEndsAt";
+import { calculateLegacyTrialEndsAt } from "@/lib/subscription/calculateTrialEndsAt";
 import {
   getDestinationCardNumber,
   getSubscriptionOriginalPriceToman,
@@ -70,7 +70,7 @@ export async function ensureUserSubscription(userId: string, db: DbClient = pris
     throw new Error("USER_NOT_FOUND");
   }
 
-  const trialEndsAt = calculateTrialEndsAt(user.createdAt);
+  const trialEndsAt = calculateLegacyTrialEndsAt(user.createdAt);
   const status = calculateSubscriptionStatus({
     now,
     trialEndsAt,
