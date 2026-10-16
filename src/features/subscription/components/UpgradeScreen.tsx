@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatCardNumber } from "@/lib/subscription/format-card";
-import { SUBSCRIPTION_COPY, approvedCopy, rejectionCopy } from "@/lib/subscription/copy";
+import {
+  SUBSCRIPTION_COPY,
+  approvedCopy,
+  paymentInstructionsCopy,
+  rejectionCopy,
+  trialExpiredCopy,
+} from "@/lib/subscription/copy";
 import { formatJalaliAbsolute } from "@/lib/admin/format";
 import { formatToman } from "@/lib/currency/format";
 import { ReceiptUploadForm } from "@/features/subscription/components/ReceiptUploadForm";
@@ -40,8 +46,8 @@ export function UpgradeScreen({ snapshot }: { snapshot: ClientSubscriptionSnapsh
             : snapshot.status === "ACTIVE" && activeUntil
               ? approvedCopy(activeUntil)
               : snapshot.status === "EXPIRED"
-                ? SUBSCRIPTION_COPY.trialExpired
-                : SUBSCRIPTION_COPY.paymentInstructions}
+                ? trialExpiredCopy(snapshot.priceToman)
+                : paymentInstructionsCopy(snapshot.priceToman, snapshot.originalPriceToman)}
         </p>
       </header>
 
@@ -56,7 +62,15 @@ export function UpgradeScreen({ snapshot }: { snapshot: ClientSubscriptionSnapsh
         <p className="numeric-display mt-1 text-2xl font-semibold">
           {formatToman(BigInt(snapshot.priceToman))}
         </p>
-        <p className="mt-4 text-sm leading-7 text-muted-foreground">{SUBSCRIPTION_COPY.paymentInstructions}</p>
+        {snapshot.originalPriceToman ? (
+          <p className="mt-1 text-sm text-muted-foreground">
+            <span className="line-through">{formatToman(BigInt(snapshot.originalPriceToman))}</span>
+            <span className="ms-2">۵۰٪ تخفیف</span>
+          </p>
+        ) : null}
+        <p className="mt-4 text-sm leading-7 text-muted-foreground">
+          {paymentInstructionsCopy(snapshot.priceToman, snapshot.originalPriceToman)}
+        </p>
         <div className="mt-4 rounded-2xl bg-surface-muted px-4 py-4">
           <p className="text-xs text-muted-foreground">شماره کارت جیب</p>
           <p className="numeric-display mt-2 text-lg font-semibold tracking-wide" dir="ltr">

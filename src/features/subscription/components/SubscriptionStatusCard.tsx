@@ -28,6 +28,12 @@ export function SubscriptionStatusCard({ snapshot }: { snapshot: ClientSubscript
         <div>
           <dt className="text-xs text-muted-foreground">مبلغ</dt>
           <dd className="mt-1">{formatToman(BigInt(snapshot.priceToman))}</dd>
+          {snapshot.originalPriceToman ? (
+            <dd className="mt-1 text-xs text-muted-foreground">
+              <span className="line-through">{formatToman(BigInt(snapshot.originalPriceToman))}</span>
+              <span className="ms-2">۵۰٪ تخفیف</span>
+            </dd>
+          ) : null}
         </div>
         {periodEnd ? (
           <div>
