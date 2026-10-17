@@ -111,9 +111,8 @@ function snapshotFromRow(
     latestReceiptStatus: latestReceipt?.status ?? null,
   });
 
-  const priceToman = row.priceToman || getSubscriptionPriceToman();
-  const originalPriceToman =
-    priceToman === getSubscriptionPriceToman() ? getSubscriptionOriginalPriceToman() : null;
+  const priceToman = getSubscriptionPriceToman();
+  const originalPriceToman = getSubscriptionOriginalPriceToman();
 
   return {
     status,
@@ -218,6 +217,12 @@ export async function submitPaymentReceipt(input: {
 
   try {
     const receipt = await prisma.$transaction(async (tx) => {
+      const priceToman = getSubscriptionPriceToman();
+      await tx.subscription.update({
+        where: { id: subscription.id },
+        data: { priceToman },
+      });
+
       const created = await tx.paymentReceipt.create({
         data: {
           subscriptionId: subscription.id,
@@ -238,7 +243,7 @@ export async function submitPaymentReceipt(input: {
         {
           trialEndsAt: subscription.trialEndsAt,
           currentPeriodEnd: subscription.currentPeriodEnd,
-          priceToman: subscription.priceToman,
+          priceToman,
           receipts: [created],
         },
         now,
