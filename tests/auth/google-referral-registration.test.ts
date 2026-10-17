@@ -14,7 +14,7 @@ const { prisma, createUserWithReferral } = vi.hoisted(() => ({
 vi.mock("@/lib/db/prisma", () => ({ prisma }));
 vi.mock("@/server/services/referrals", () => ({ createUserWithReferral }));
 
-import { findOrCreateGoogleUser } from "@/app/api/auth/google/callback/route";
+import { findOrCreateGoogleUser } from "@/server/services/google-users";
 
 describe("Google referral registration", () => {
   const profile = { googleId: "google-id", email: "user@example.com", name: "User" };

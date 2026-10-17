@@ -1,17 +1,14 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { Prisma } from "@prisma/client";
 import {
   fetchGoogleProfile,
   googleRedirectUri,
   GoogleAuthError,
-  type GoogleProfile,
   verifyOAuthReferral,
 } from "@/lib/auth/google";
 import { requestOrigin } from "@/lib/auth/request";
 import { createSession, readOAuthCookies, sessionCookieOptions } from "@/lib/auth/session";
-import { prisma } from "@/lib/db/prisma";
-import { createUserWithReferral } from "@/server/services/referrals";
+import { findOrCreateGoogleUser } from "@/server/services/google-users";
 import { OAUTH_REFERRAL_COOKIE, OAUTH_STATE_COOKIE, OAUTH_VERIFIER_COOKIE, SESSION_COOKIE } from "@/lib/config/app";
 
 function loginError(origin: string, code: string) {
@@ -20,55 +17,6 @@ function loginError(origin: string, code: string) {
   response.cookies.delete(OAUTH_VERIFIER_COOKIE);
   response.cookies.delete(OAUTH_REFERRAL_COOKIE);
   return response;
-}
-
-export async function findOrCreateGoogleUser(profile: GoogleProfile, referralCode: string | null) {
-  const existingByGoogle = await prisma.user.findUnique({
-    where: { googleId: profile.googleId },
-  });
-  if (existingByGoogle) {
-    if (!existingByGoogle.name && profile.name) {
-      return prisma.user.update({
-        where: { id: existingByGoogle.id },
-        data: { name: profile.name },
-      });
-    }
-    return existingByGoogle;
-  }
-
-  const existingByEmail = await prisma.user.findUnique({
-    where: { email: profile.email },
-  });
-  if (existingByEmail) {
-    return prisma.user.update({
-      where: { id: existingByEmail.id },
-      data: {
-        googleId: profile.googleId,
-        name: existingByEmail.name ?? profile.name,
-      },
-    });
-  }
-
-  try {
-    return await createUserWithReferral({
-      email: profile.email,
-      googleId: profile.googleId,
-      name: profile.name,
-      referralCode,
-    });
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      const raced = await prisma.user.findFirst({
-        where: {
-          OR: [{ googleId: profile.googleId }, { email: profile.email }],
-        },
-      });
-      if (raced) {
-        return raced;
-      }
-    }
-    throw error;
-  }
 }
 
 export async function GET(request: Request) {

@@ -29,10 +29,13 @@ describe("subscription discount pricing", () => {
     expect(discountedInstructions).toContain("۵۰٪ تخفیف");
   });
 
-  it("keeps payment instructions accurate for subscriptions with an older price", () => {
-    const existingPriceInstructions = paymentInstructionsCopy(59_000, null);
-    expect(existingPriceInstructions).toContain("۵۹٬۰۰۰ تومان");
-    expect(existingPriceInstructions).not.toContain("۱۹۸٬۰۰۰ تومان");
+  it("uses the current price and discount for existing subscriptions", () => {
+    const existingPriceInstructions = paymentInstructionsCopy(
+      getSubscriptionPriceToman(),
+      getSubscriptionOriginalPriceToman(),
+    );
+    expect(existingPriceInstructions).toContain("۹۹٬۰۰۰ تومان");
+    expect(existingPriceInstructions).toContain("۱۹۸٬۰۰۰ تومان");
   });
 
   it("derives the current and list prices from one environment variable", () => {
